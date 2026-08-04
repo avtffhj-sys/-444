@@ -1,0 +1,6 @@
+# اسمح لكل محركات البحث بفهرسة كل صفحات الموقع
+User-agent: *
+Allow: /
+
+# مهم: استبدل الرابط أدناه بنطاقك الحقيقي بعد رفع الموقع
+Sitemap: https://REPLACE-WITH-YOUR-DOMAIN.com/sitemap.xml

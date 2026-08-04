@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ملاحظة: استبدل https://REPLACE-WITH-YOUR-DOMAIN.com بنطاقك الحقيقي
+  بعد رفع الموقع على الإنترنت (نفس الرابط الذي وضعته في index.html
+  و robots.txt). حدّث قيمة lastmod كل مرة تُجري فيها تعديلًا مهمًا
+  على الموقع حتى تُخبر جوجل بوجود تحديث.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://REPLACE-WITH-YOUR-DOMAIN.com/</loc>
+        <lastmod>2026-08-03</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+</urlset>

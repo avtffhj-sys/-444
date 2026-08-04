@@ -1,0 +1,28 @@
+{
+  "name": "منصة القرآن والسنة | المنصة الإسلامية الشاملة",
+  "short_name": "القرآن والسنة",
+  "description": "منصة إسلامية شاملة: تلاوات القرآن الكريم، الأحاديث النبوية، الفتاوى، أذكار وأدعية، أوقات الصلاة، وأدوات إسلامية متعددة.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "background_color": "#f1f5f9",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "72x72 96x96 128x128 144x144 152x152 192x192 384x384 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["education", "lifestyle", "books"]
+}
