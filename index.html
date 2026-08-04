@@ -1765,6 +1765,22 @@
         .fatwa-preview-footer { padding-top: 8px; flex-wrap: wrap; gap: 6px; }
         .fatwa-read-more { font-size: 0.68rem; }
         .fatwa-ruling-badge { font-size: 0.62rem; padding: 3px 8px; }
+
+        /* قسم "مناسبات إسلامية قادمة" - تنسيق احترافي ومرتب على شاشات الهواتف
+           (اسم المناسبة في سطر مستقل، وأزرار التذكير/المشاركة مع الوقت المتبقي في سطر ثانٍ) */
+        .upcoming-occasions-wrap { padding-top: 18px; margin-top: 18px; }
+        .upcoming-occasions-wrap h4 { font-size: 0.96rem; margin-bottom: 12px; }
+        .occasion-item {
+            flex-wrap: wrap;
+            row-gap: 10px;
+            padding: 12px 14px;
+            border-radius: 14px;
+        }
+        .occasion-name { flex: 1 1 100%; font-size: 0.85rem; gap: 8px; }
+        .occasion-name i { width: 30px; height: 30px; font-size: 0.85rem; }
+        .occasion-actions { flex: 1 1 100%; justify-content: space-between; }
+        .occasion-icon-btn { width: 30px; height: 30px; font-size: 0.78rem; }
+        .occasion-remaining { font-size: 0.72rem; padding: 4px 10px; }
     }
 
     @media (max-width: 480px) {
@@ -1790,6 +1806,12 @@
         .zikr-text { font-size: calc(0.6rem * var(--zikr-font-scale)); }
         .rafiq-habit-card { padding: 10px 8px; }
         .radio-card { padding: 10px 8px; }
+
+        .occasion-item { padding: 10px 12px; }
+        .occasion-name { font-size: 0.8rem; }
+        .occasion-name i { width: 28px; height: 28px; font-size: 0.8rem; }
+        .occasion-icon-btn { width: 28px; height: 28px; font-size: 0.72rem; }
+        .occasion-remaining { font-size: 0.68rem; padding: 4px 9px; }
     }
 
     @media (max-width: 360px) {
