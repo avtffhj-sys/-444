@@ -2455,6 +2455,15 @@
                     </div>
                 </div>
 
+                <div style="border-top:1px solid var(--border-color); padding-top:22px;">
+                    <h3 style="margin-bottom:16px; color:var(--primary); font-size:1.25rem;">قناة المنصة على واتساب</h3>
+                    <a href="https://whatsapp.com/channel/0029Vb8nveK1dAvz6IdssN3c" target="_blank" rel="noopener noreferrer"
+                       style="display:inline-flex; align-items:center; gap:10px; width:fit-content; padding:12px 24px; border-radius:14px; background:#25D366; color:#ffffff; font-weight:700; box-shadow:0 8px 20px rgba(37,211,102,0.35);">
+                        <i class="fa-solid fa-bullhorn" style="font-size:1.2rem;"></i>
+                        <span>انضم إلى قناتنا على واتساب</span>
+                    </a>
+                </div>
+
                 <div style="border-top:1px solid var(--border-color); padding-top:16px; text-align:center; color:var(--text-muted); font-size:0.9rem;">
                     © <span id="about-copyright-year"></span> منصة القرآن والسنة — جميع الحقوق محفوظة.
                 </div>
@@ -2705,8 +2714,17 @@
 
             textDisplay.textContent = "جاري جلب الحديث الشريف من الكتب الشاملة...";
 
+            // عرض حديث محلي احتياطي (يعمل دون إنترنت دائمًا) عند تعذّر
+            // الوصول للـ API أو عدم توفر نسخة مخزّنة له مسبقًا
+            const showOfflineFallback = () => {
+                const item = hadithsList[Math.floor(Math.random() * hadithsList.length)];
+                textDisplay.textContent = `"${item.text}"`;
+                titleDisplay.textContent = `${item.source} - حديث شريف (وضع بلا إنترنت)`;
+            };
+
             try {
                 const res = await fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${book}/${hadithNum}.json`);
+                if (!res.ok) { showOfflineFallback(); return; }
                 const data = await res.json();
                 if (data && data.hadiths && data.hadiths[0]) {
                     textDisplay.textContent = `"${data.hadiths[0].text}"`;
@@ -2723,12 +2741,10 @@
                     currentHadithNum = parseInt(hadithNum);
                     document.getElementById('hadith-number-input').value = currentHadithNum;
                 } else {
-                    textDisplay.textContent = "لم يتم العثور على الحديث المحدد بهذا الرقم.";
+                    showOfflineFallback();
                 }
             } catch (e) {
-                const item = hadithsList[Math.floor(Math.random() * hadithsList.length)];
-                textDisplay.textContent = `"${item.text}"`;
-                titleDisplay.textContent = `${item.source} - حديث شريف`;
+                showOfflineFallback();
             }
         }
 
