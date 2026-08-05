@@ -548,15 +548,13 @@
         .theme-dropdown { position: relative; }
 
         .theme-menu {
-            position: absolute;
-            top: 55px;
-            left: 0;
+            position: fixed;
             padding: 14px;
             display: none;
             flex-direction: column;
             gap: 8px;
             min-width: 190px;
-            z-index: 999;
+            z-index: 9999;
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
         }
 
@@ -579,7 +577,39 @@
         }
 
         .color-option:hover { background: var(--border-color); color: var(--primary); }
-        .color-dot { width: 18px; height: 18px; border-radius: 50%; }
+        .color-dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ── Mobile compact dropdown ── */
+        @media (max-width: 768px) {
+            .theme-menu {
+                padding: 8px;
+                gap: 4px;
+                min-width: unset;
+                max-width: 160px;
+                border-radius: 12px !important;
+            }
+            .color-option {
+                padding: 7px 9px;
+                gap: 8px;
+                font-size: 0.78rem;
+                border-radius: 8px;
+            }
+            .color-dot { width: 13px; height: 13px; }
+        }
+
+        @media (max-width: 480px) {
+            .theme-menu {
+                padding: 6px;
+                gap: 3px;
+                max-width: 148px;
+            }
+            .color-option {
+                padding: 6px 8px;
+                gap: 7px;
+                font-size: 0.74rem;
+            }
+            .color-dot { width: 12px; height: 12px; }
+        }
 
         .container {
             max-width: 1400px;
@@ -1651,7 +1681,6 @@
         .logo-text span.sub-title { display: none; }
         .toolbar { gap: 6px; }
         .tool-btn { width: 36px; height: 36px; font-size: 0.9rem; border-radius: 12px; }
-        .theme-menu { left: auto; right: 0; min-width: 170px; }
         .nav-links-outer { margin-top: 2px; }
         .nav-links a { font-size: 0.75rem; padding: 6px 10px; }
 
@@ -3322,21 +3351,72 @@
         }, { passive: false });
 
         const htmlRoot = document.documentElement;
+
+        // استعادة إعدادات الثيم واللون من الذاكرة المحلية عند بدء التشغيل
+        (function initThemeAndColor() {
+            try {
+                const savedTheme = localStorage.getItem('site-theme');
+                const savedColor = localStorage.getItem('site-color');
+                if (savedTheme) htmlRoot.setAttribute('data-theme', savedTheme);
+                if (savedColor) htmlRoot.setAttribute('data-color', savedColor);
+                // الاتجاه يبقى RTL دائماً مهما كانت اللغة
+                htmlRoot.setAttribute('dir', 'rtl');
+            } catch (e) {}
+        })();
         document.getElementById('mode-toggle-btn').addEventListener('click', () => {
             const theme = htmlRoot.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             htmlRoot.setAttribute('data-theme', theme);
+            try { localStorage.setItem('site-theme', theme); } catch (e) {}
         });
+
+        function positionDropdown(btn, menu) {
+            const rect = btn.getBoundingClientRect();
+            const isMobile = window.innerWidth <= 768;
+            const menuWidth = isMobile ? Math.min(window.innerWidth - 16, 160) : 195;
+            const menuHeight = menu.scrollHeight || 250;
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            // Vertical: prefer below button, flip up if not enough space
+            let top = rect.bottom + 8;
+            if (top + menuHeight > vh - 10) top = rect.top - menuHeight - 8;
+            if (top < 8) top = 8;
+
+            menu.style.top = top + 'px';
+
+            if (isMobile) {
+                // On mobile: always anchor to LEFT side of screen
+                const leftPos = Math.max(8, rect.left);
+                const clampedLeft = Math.min(leftPos, vw - menuWidth - 8);
+                menu.style.left = clampedLeft + 'px';
+                menu.style.right = 'auto';
+                menu.style.width = menuWidth + 'px';
+            } else {
+                // Desktop: align to button's right edge
+                let right = vw - rect.right;
+                if (right + menuWidth > vw - 8) right = 8;
+                menu.style.right = right + 'px';
+                menu.style.left = 'auto';
+                menu.style.width = '';
+            }
+        }
 
         document.getElementById('theme-menu-btn').addEventListener('click', (e) => {
             e.stopPropagation();
-            document.getElementById('theme-menu').classList.toggle('show');
-            document.getElementById('lang-menu')?.classList.remove('show');
+            const menu = document.getElementById('theme-menu');
+            const langMenu = document.getElementById('lang-menu');
+            langMenu?.classList.remove('show');
+            menu.classList.toggle('show');
+            if (menu.classList.contains('show')) positionDropdown(e.currentTarget, menu);
         });
 
         document.getElementById('lang-menu-btn')?.addEventListener('click', (e) => {
             e.stopPropagation();
-            document.getElementById('lang-menu').classList.toggle('show');
-            document.getElementById('theme-menu').classList.remove('show');
+            const menu = document.getElementById('lang-menu');
+            const themeMenu = document.getElementById('theme-menu');
+            themeMenu.classList.remove('show');
+            menu.classList.toggle('show');
+            if (menu.classList.contains('show')) positionDropdown(e.currentTarget, menu);
         });
 
         window.addEventListener('click', () => {
@@ -3344,8 +3424,20 @@
             document.getElementById('lang-menu')?.classList.remove('show');
         });
 
+        // Close dropdowns on scroll or resize (important for mobile)
+        window.addEventListener('scroll', () => {
+            document.getElementById('theme-menu')?.classList.remove('show');
+            document.getElementById('lang-menu')?.classList.remove('show');
+        }, { passive: true });
+
+        window.addEventListener('resize', () => {
+            document.getElementById('theme-menu')?.classList.remove('show');
+            document.getElementById('lang-menu')?.classList.remove('show');
+        });
+
         function changeColorTheme(color) {
             htmlRoot.setAttribute('data-color', color);
+            try { localStorage.setItem('site-color', color); } catch (e) {}
             document.getElementById('theme-menu').classList.remove('show');
         }
 
@@ -3536,7 +3628,9 @@
 
         function changeLanguage(lang) {
             if (!I18N_DICT[lang]) lang = 'ar';
+            // تغيير لغة المحتوى فقط - الاتجاه RTL يبقى ثابتاً دائماً
             document.documentElement.setAttribute('lang', lang);
+            document.documentElement.setAttribute('dir', 'rtl'); // الواجهة ثابتة RTL دائماً
             applyTranslations(lang);
             try { localStorage.setItem('site-lang', lang); } catch (e) {}
             document.getElementById('lang-menu')?.classList.remove('show');
