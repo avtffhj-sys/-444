@@ -318,7 +318,7 @@
             border-radius: 4px;
             cursor: pointer;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .progress-fill {
@@ -326,6 +326,34 @@
             background: var(--primary);
             width: 0%;
             border-radius: 4px;
+            position: relative;
+        }
+
+        /* مقبض السحب (Thumb) لشريط التقدّم — يظهر عند التمرير أو السحب فقط */
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -1px;
+            transform: translate(50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.15s ease;
+        }
+
+        .progress-bar:hover .progress-fill::after,
+        .progress-bar.seeking .progress-fill::after {
+            opacity: 1;
+        }
+
+        .progress-bar.seeking .progress-fill::after {
+            transform: translate(50%, -50%) scale(1.15);
         }
 
         .player-volume-side {
@@ -822,6 +850,46 @@
             background: var(--primary);
             color: #fff;
             transform: scale(1.08);
+        }
+
+        /* أزرار الحفظ للاستماع بدون إنترنت (قسم الصوتيات/المواعظ) */
+        .sound-card-actions { display: flex; align-items: center; gap: 8px; }
+
+        .offline-save-btn {
+            background: var(--border-color);
+            color: var(--primary);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        .offline-save-btn:hover { background: var(--primary); color: #fff; transform: scale(1.08); }
+
+        .offline-save-btn.is-saved {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .offline-save-btn.is-saving {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .offline-badge {
+            font-size: 0.68rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
         }
 
         .tafseer-box, .hadith-display { padding: 35px; display: flex; flex-direction: column; gap: 20px; }
@@ -1650,7 +1718,7 @@
             text-overflow: ellipsis;
             max-width: 34vw;
         }
-        .player-controls { order: 2; flex: 0 0 auto; gap: 5px; }
+        .player-controls { order: 2; flex: 0 0 100%; justify-content: center; gap: 5px; }
         .player-controls button { width: 27px; height: 27px; font-size: 0.85rem; }
         .player-controls button.main-play { width: 33px; height: 33px; font-size: 0.95rem; }
         .player-progress-container { order: 3; flex: 0 0 100%; gap: 7px; }
@@ -1932,6 +2000,7 @@
             <a href="#" onclick="switchPage('rafiq', event)" class="nav-item" data-target="rafiq"><i class="fa-solid fa-seedling"></i><span data-i18n="nav_rafiq">الرفيق الروحي</span></a>
             <a href="#" onclick="switchPage('murshid', event)" class="nav-item" data-target="murshid"><i class="fa-solid fa-comment-dots"></i><span data-i18n="nav_murshid">مرشد</span></a>
             <a href="#" onclick="switchPage('radio', event)" class="nav-item" data-target="radio"><i class="fa-solid fa-tower-broadcast"></i><span data-i18n="nav_radio">الإذاعات</span></a>
+            <a href="#" onclick="switchPage('sounds', event)" class="nav-item" data-target="sounds"><i class="fa-solid fa-microphone-lines"></i><span data-i18n="nav_sounds">الصوتيات</span></a>
             <a href="#" onclick="switchPage('about', event)" class="nav-item" data-target="about"><i class="fa-solid fa-circle-info"></i><span data-i18n="nav_about">من نحن</span></a>
         </nav>
         <span class="scroll-hint-fade" aria-hidden="true"></span>
@@ -2225,6 +2294,7 @@
                 <select class="select-custom" id="moshaf-select"><option value="">اختر الرواية / القراءة...</option></select>
                 <input type="text" id="surah-search-input" class="select-custom" placeholder="البحث عن السورة..." />
             </div>
+            <div id="riwaya-fallback-note" style="display:none; margin: 0 4px 10px; padding: 8px 14px; border-radius: 10px; background: rgba(212,175,55,0.12); color: var(--primary); font-size: 0.85rem; font-weight: 700;"></div>
             <div class="quran-grid" id="surah-grid"></div>
         </section>
 
@@ -2367,6 +2437,7 @@
                 <button class="fatwa-cat-btn" data-cat="muamalat" onclick="switchFatwaCategory('muamalat', event)"><i class="fa-solid fa-handshake"></i><span>المعاملات</span></button>
                 <button class="fatwa-cat-btn" data-cat="siyam" onclick="switchFatwaCategory('siyam', event)"><i class="fa-solid fa-moon"></i><span>الصيام</span></button>
                 <button class="fatwa-cat-btn" data-cat="usra" onclick="switchFatwaCategory('usra', event)"><i class="fa-solid fa-people-roof"></i><span>الأسرة</span></button>
+                <button class="fatwa-cat-btn" data-cat="akhlaq" onclick="switchFatwaCategory('akhlaq', event)"><i class="fa-solid fa-heart"></i><span>الأخلاق والآداب</span></button>
                 <button class="fatwa-cat-btn" data-cat="zakah" onclick="switchFatwaCategory('zakah', event)"><i class="fa-solid fa-hand-holding-dollar"></i><span>الزكاة</span></button>
                 <button class="fatwa-cat-btn" data-cat="hajj" onclick="switchFatwaCategory('hajj', event)"><i class="fa-solid fa-kaaba"></i><span>الحج والعمرة</span></button>
                 <button class="fatwa-cat-btn" data-cat="muasira" onclick="switchFatwaCategory('muasira', event)"><i class="fa-solid fa-microchip"></i><span>فتاوى معاصرة</span><span class="tag-new">جديد</span></button>
@@ -2443,6 +2514,12 @@
         <section id="page-radio" class="page-view">
             <div class="section-header"><div class="section-title"><i class="fa-solid fa-tower-broadcast"></i><span data-i18n="title_radio">إذاعات القرآن الكريم المباشرة</span></div></div>
             <div class="radio-grid" id="radio-grid"></div>
+        </section>
+
+        <!-- الصوتيات: مواعظ ومقاطع صوتية قصيرة -->
+        <section id="page-sounds" class="page-view">
+            <div class="section-header"><div class="section-title"><i class="fa-solid fa-microphone-lines"></i><span data-i18n="title_sounds">صوتيات ومواعظ قصيرة</span></div></div>
+            <div class="radio-grid" id="sounds-grid"></div>
         </section>
 
         <!-- من نحن -->
@@ -3665,7 +3742,9 @@
 
         function isQuranPageActive() {
             const quranPage = document.getElementById('page-quran');
-            return !!(quranPage && quranPage.classList.contains('active-page'));
+            const soundsPage = document.getElementById('page-sounds');
+            const radioPage = document.getElementById('page-radio');
+            return !!((quranPage && quranPage.classList.contains('active-page')) || (soundsPage && soundsPage.classList.contains('active-page')) || (radioPage && radioPage.classList.contains('active-page')));
         }
 
         function syncGlobalPlayerVisibility() {
@@ -3725,8 +3804,51 @@
         progressBar.addEventListener('click', (e) => {
             if (!audio.duration) return;
             const rect = progressBar.getBoundingClientRect();
-            const pos = (e.clientX - rect.left) / rect.width;
+            const pos = 1 - ((e.clientX - rect.left) / rect.width);
             audio.currentTime = pos * audio.duration;
+        });
+
+        /* ============================================================
+           سحب شريط التقدّم بالماوس أو باللمس للتقديم/التأخير بسلاسة
+           (بالإضافة إلى النقر المباشر الموجود مسبقًا أعلاه)
+        ============================================================ */
+        let isDraggingProgress = false;
+
+        function seekFromPointer(e, commit) {
+            if (!audio.duration || !isFinite(audio.duration)) return;
+            const rect = progressBar.getBoundingClientRect();
+            const clientX = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX;
+            const pos = 1 - Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+            progressFill.style.width = (pos * 100) + '%';
+            document.getElementById('current-time').textContent = formatTime(pos * audio.duration);
+            if (commit) audio.currentTime = pos * audio.duration;
+        }
+
+        progressBar.addEventListener('mousedown', (e) => {
+            isDraggingProgress = true;
+            progressBar.classList.add('seeking');
+            seekFromPointer(e, true);
+        });
+        progressBar.addEventListener('touchstart', (e) => {
+            isDraggingProgress = true;
+            progressBar.classList.add('seeking');
+            seekFromPointer(e, true);
+        }, { passive: true });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDraggingProgress) seekFromPointer(e, true);
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (isDraggingProgress) seekFromPointer(e, true);
+        }, { passive: true });
+
+        window.addEventListener('mouseup', () => {
+            isDraggingProgress = false;
+            progressBar.classList.remove('seeking');
+        });
+        window.addEventListener('touchend', () => {
+            isDraggingProgress = false;
+            progressBar.classList.remove('seeking');
         });
 
         function formatTime(secs) {
@@ -4319,19 +4441,127 @@
                         moshaf: [
                             { id: 1, name: "قالون عن نافع", server: "https://server10.mp3quran.net/dokali/", surah_total: 114, surah_list: "1-114" }
                         ]
+                    },
+                    {
+                        id: 121,
+                        name: "عبدالرشيد صوفي",
+                        moshaf: [
+                            { id: 1, name: "السوسي عن أبي عمرو", server: "https://server16.mp3quran.net/download/soufi/Rewayat-Assosi-A-n-Abi-Amr/", surah_total: 114, surah_list: "1-114" },
+                            { id: 2, name: "خلف عن حمزة", server: "https://server16.mp3quran.net/download/soufi/Rewayat-Khalaf-A-n-Hamzah/", surah_total: 114, surah_list: "1-114" }
+                        ]
+                    },
+                    {
+                        id: 122,
+                        name: "أحمد ديبان",
+                        moshaf: [
+                            { id: 1, name: "شعبة عن عاصم", server: "https://server16.mp3quran.net/download/deban/Rewayat-Sho-bah-A-n-Asim/", surah_total: 114, surah_list: "1-114" }
+                        ]
+                    },
+                    {
+                        id: 123,
+                        name: "محمد العبدالله",
+                        moshaf: [
+                            { id: 1, name: "البزي وقنبل عن ابن كثير", server: "https://server9.mp3quran.net/download/abdullah/", surah_total: 114, surah_list: "1-114" },
+                            { id: 2, name: "الدوري عن الكسائي", server: "https://server9.mp3quran.net/download/abdullah/Rewayat-AlDorai-A-n-Al-Kisa-ai/", surah_total: 114, surah_list: "1-114" }
+                        ]
                     }
                 );
             }
 
             renderRecitersOptions(recitersData);
+            buildGlobalRiwayatList();
+            renderRiwayatOptions();
             if (recitersData.length > 0) {
-                currentReciter = recitersData[0];
-                renderMoshafOptions(currentReciter);
-                document.getElementById('reciter-select').value = 0;
+                // الرواية الرئيسية الافتراضية عند فتح نافذة القرآن الكريم: حفص عن عاصم
+                const defaultRiwayaName = 'حفص عن عاصم';
+                const defaultOwner = recitersData.find(r => findMoshafInReciter(r, defaultRiwayaName));
+                if (defaultOwner) {
+                    currentReciter = defaultOwner;
+                    document.getElementById('reciter-select').value = recitersData.indexOf(defaultOwner);
+                    document.getElementById('moshaf-select').value = defaultRiwayaName;
+                    selectRiwayaForReciter(currentReciter, defaultRiwayaName);
+                } else {
+                    currentReciter = recitersData[0];
+                    document.getElementById('reciter-select').value = 0;
+                    selectRiwayaForReciter(currentReciter, currentReciter.moshaf && currentReciter.moshaf[0] ? currentReciter.moshaf[0].name : null);
+                }
             }
         }
 
         loadReciters();
+
+        // قائمة موحّدة بكل أسماء الروايات الموجودة لدى جميع القراء مجتمعين،
+        // بحيث تكون متاحة للاختيار بغض النظر عن القارئ المحدد حاليًا
+        let globalRiwayatNames = [];
+
+        function normalizeRiwayaName(name) {
+            return (name || '').replace(/\s*-\s*(مرتل|المصحف المجود|المصحف المعلم)\s*-?\s*/g, '').trim();
+        }
+
+        function buildGlobalRiwayatList() {
+            const set = new Set();
+            recitersData.forEach(r => {
+                (r.moshaf || []).forEach(m => {
+                    const n = normalizeRiwayaName(m.name) || 'حفص عن عاصم';
+                    set.add(n);
+                });
+            });
+            globalRiwayatNames = Array.from(set).sort((a, b) => a.localeCompare('ar'));
+        }
+
+        function renderRiwayatOptions() {
+            const select = document.getElementById('moshaf-select');
+            select.innerHTML = '<option value="">-- اختر الرواية / القراءة --</option>';
+            globalRiwayatNames.forEach((name) => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            });
+        }
+
+        function findMoshafInReciter(reciter, riwayaName) {
+            if (!reciter || !reciter.moshaf) return null;
+            return reciter.moshaf.find(m => normalizeRiwayaName(m.name) === riwayaName)
+                || reciter.moshaf.find(m => normalizeRiwayaName(m.name).includes(riwayaName) || riwayaName.includes(normalizeRiwayaName(m.name)))
+                || null;
+        }
+
+        function showRiwayaNote(text) {
+            const note = document.getElementById('riwaya-fallback-note');
+            if (!text) { note.style.display = 'none'; note.textContent = ''; return; }
+            note.textContent = text;
+            note.style.display = 'block';
+        }
+
+        // يحاول تشغيل القارئ بالرواية المطلوبة، وإن لم تكن مسجّلة لديه
+        // يعرض تنبيهًا ويشغّل أقرب رواية متوفرة له بدلًا من قفل الاختيار
+        function selectRiwayaForReciter(reciter, preferredRiwayaName) {
+            if (!reciter || !reciter.moshaf || reciter.moshaf.length === 0) return;
+            const wanted = preferredRiwayaName || document.getElementById('moshaf-select').value;
+            let match = wanted ? findMoshafInReciter(reciter, wanted) : null;
+            const moshafSelect = document.getElementById('moshaf-select');
+            if (match) {
+                showRiwayaNote(null);
+                moshafSelect.value = normalizeRiwayaName(match.name);
+            } else {
+                match = reciter.moshaf[0];
+                const fallbackName = normalizeRiwayaName(match.name);
+                if (wanted) {
+                    showRiwayaNote(`القارئ "${reciter.name}" ليس لديه تسجيل برواية "${wanted}"، تم تشغيل رواية "${fallbackName}" المتوفرة له بدلًا منها.`);
+                } else {
+                    showRiwayaNote(null);
+                }
+                if (![...moshafSelect.options].some(o => o.value === fallbackName)) {
+                    globalRiwayatNames.push(fallbackName);
+                    globalRiwayatNames.sort((a, b) => a.localeCompare('ar'));
+                    renderRiwayatOptions();
+                }
+                moshafSelect.value = fallbackName;
+            }
+            currentMoshaf = match;
+            renderSurahsGrid(currentReciter, currentMoshaf);
+        }
 
         function renderRecitersOptions(list) {
             const select = document.getElementById('reciter-select');
@@ -4345,35 +4575,35 @@
             });
         }
 
-        function renderMoshafOptions(reciter) {
-            const select = document.getElementById('moshaf-select');
-            select.innerHTML = '<option value="">-- اختر الرواية / القراءة --</option>';
-            if (!reciter || !reciter.moshaf) return;
-            reciter.moshaf.forEach((m, idx) => {
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.textContent = m.name || `رواية ${idx + 1}`;
-                select.appendChild(opt);
-            });
-            if (reciter.moshaf.length > 0) {
-                select.value = 0;
-                currentMoshaf = reciter.moshaf[0];
-                renderSurahsGrid(currentReciter, currentMoshaf);
-            }
-        }
-
         document.getElementById('reciter-select').addEventListener('change', (e) => {
             const idx = e.target.value;
             if (idx === "") return;
             currentReciter = recitersData[idx];
-            renderMoshafOptions(currentReciter);
+            // عند تبديل القارئ نحافظ على الرواية المختارة حاليًا إن كانت متوفرة له،
+            // وإلا نعرض له أقرب رواية متاحة مع تنبيه واضح
+            const wantedRiwaya = document.getElementById('moshaf-select').value || null;
+            selectRiwayaForReciter(currentReciter, wantedRiwaya);
         });
 
         document.getElementById('moshaf-select').addEventListener('change', (e) => {
-            const idx = e.target.value;
-            if (idx === "" || !currentReciter) return;
-            currentMoshaf = currentReciter.moshaf[idx];
-            renderSurahsGrid(currentReciter, currentMoshaf);
+            const wantedRiwaya = e.target.value;
+            if (wantedRiwaya === "") { showRiwayaNote(null); renderRecitersOptions(recitersData); return; }
+            // عند اختيار رواية: يتم عرض أسماء القراء المسجّلة لديهم هذه الرواية فقط (بأسمائهم)
+            const owners = recitersData.filter(r => findMoshafInReciter(r, wantedRiwaya));
+            renderRecitersOptions(owners);
+            if (owners.length > 0) {
+                const keepCurrent = currentReciter && findMoshafInReciter(currentReciter, wantedRiwaya) ? currentReciter : owners[0];
+                currentReciter = keepCurrent;
+                const ownerIdx = recitersData.indexOf(currentReciter);
+                document.getElementById('reciter-select').value = ownerIdx;
+                showRiwayaNote(null);
+                const match = findMoshafInReciter(currentReciter, wantedRiwaya);
+                currentMoshaf = match;
+                document.getElementById('moshaf-select').value = wantedRiwaya;
+                renderSurahsGrid(currentReciter, currentMoshaf);
+            } else {
+                showRiwayaNote(`لا يوجد حاليًا أي قارئ مسجَّل بهذه الرواية "${wantedRiwaya}".`);
+            }
         });
 
         document.getElementById('reciter-search-input').addEventListener('input', (e) => {
@@ -4384,7 +4614,8 @@
                 const firstOriginalIdx = recitersData.indexOf(filtered[0]);
                 document.getElementById('reciter-select').value = firstOriginalIdx;
                 currentReciter = filtered[0];
-                renderMoshafOptions(currentReciter);
+                const wantedRiwaya = document.getElementById('moshaf-select').value || null;
+                selectRiwayaForReciter(currentReciter, wantedRiwaya);
             }
         });
 
@@ -4563,6 +4794,187 @@
             });
         }
         loadRadios();
+
+        /* ============================================================
+           تخزين "الصوتيات/المواعظ" محليًا عبر IndexedDB لتعمل بدون إنترنت
+           (لا نستخدم Cache API/Service Worker هنا لأن ملفات mp3 كبيرة
+           ولا تتعامل بشكل صحيح مع طلبات Range، فنخزّنها كـ Blob كامل
+           داخل قاعدة بيانات المتصفح بعد أن يطلب المستخدم حفظها صراحةً)
+        ============================================================ */
+        const OFFLINE_SOUNDS_DB = 'quran-sunnah-offline-sounds';
+        const OFFLINE_SOUNDS_STORE = 'sounds';
+
+        function openOfflineSoundsDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(OFFLINE_SOUNDS_DB, 1);
+                req.onupgradeneeded = () => {
+                    const db = req.result;
+                    if (!db.objectStoreNames.contains(OFFLINE_SOUNDS_STORE)) {
+                        db.createObjectStore(OFFLINE_SOUNDS_STORE, { keyPath: 'url' });
+                    }
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function saveSoundOffline(url, blob, meta) {
+            const db = await openOfflineSoundsDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(OFFLINE_SOUNDS_STORE, 'readwrite');
+                tx.objectStore(OFFLINE_SOUNDS_STORE).put({ url, blob, title: meta.title, sheikh: meta.sheikh, savedAt: Date.now() });
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        async function getSoundOffline(url) {
+            const db = await openOfflineSoundsDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(OFFLINE_SOUNDS_STORE, 'readonly');
+                const req = tx.objectStore(OFFLINE_SOUNDS_STORE).get(url);
+                req.onsuccess = () => resolve(req.result || null);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function deleteSoundOffline(url) {
+            const db = await openOfflineSoundsDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(OFFLINE_SOUNDS_STORE, 'readwrite');
+                tx.objectStore(OFFLINE_SOUNDS_STORE).delete(url);
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        async function listOfflineSoundUrls() {
+            try {
+                const db = await openOfflineSoundsDB();
+                return await new Promise((resolve, reject) => {
+                    const tx = db.transaction(OFFLINE_SOUNDS_STORE, 'readonly');
+                    const req = tx.objectStore(OFFLINE_SOUNDS_STORE).getAllKeys();
+                    req.onsuccess = () => resolve(new Set(req.result));
+                    req.onerror = () => reject(req.error);
+                });
+            } catch (e) {
+                return new Set();
+            }
+        }
+
+        let lastSoundBlobUrl = null;
+
+        // يشغّل مقطعًا صوتيًا: من النسخة المحفوظة محليًا إن وُجدت، وإلا من الشبكة مباشرة
+        async function playSoundSmart(s) {
+            if (lastSoundBlobUrl) {
+                URL.revokeObjectURL(lastSoundBlobUrl);
+                lastSoundBlobUrl = null;
+            }
+            playbackContext.index = -1; // مقطع مستقل بدون تالي/سابق
+
+            const offlineRecord = await getSoundOffline(s.url).catch(() => null);
+            if (offlineRecord && offlineRecord.blob) {
+                const blobUrl = URL.createObjectURL(offlineRecord.blob);
+                lastSoundBlobUrl = blobUrl;
+                audio.src = blobUrl;
+                audio.play().catch(err => console.log(err));
+                playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                updateNowPlaying(s.title, s.sheikh);
+                showToast(`جاري تشغيل ${s.title} (بدون إنترنت)`);
+                return;
+            }
+
+            if (!navigator.onLine) {
+                showToast('لا يوجد اتصال بالإنترنت، ولم يتم حفظ هذا المقطع مسبقًا للاستماع بدون نت.');
+                return;
+            }
+
+            audio.src = s.url;
+            audio.play().catch(err => console.log(err));
+            playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            updateNowPlaying(s.title, s.sheikh);
+            showToast(`جاري تشغيل ${s.title}`);
+        }
+
+        async function toggleSoundOffline(s, btn) {
+            const existing = await getSoundOffline(s.url).catch(() => null);
+            if (existing) {
+                await deleteSoundOffline(s.url);
+                btn.classList.remove('is-saved');
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
+                btn.title = 'حفظ للاستماع بدون نت';
+                showToast('تم حذف النسخة المحفوظة بدون نت');
+                return;
+            }
+
+            btn.classList.add('is-saving');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            showToast('جاري الحفظ للاستماع بدون إنترنت...');
+            try {
+                const res = await fetch(s.url);
+                if (!res.ok) throw new Error('تعذر جلب الملف');
+                const blob = await res.blob();
+                await saveSoundOffline(s.url, blob, { title: s.title, sheikh: s.sheikh });
+                btn.classList.remove('is-saving');
+                btn.classList.add('is-saved');
+                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                btn.title = 'محفوظ - اضغط للحذف';
+                showToast('تم الحفظ، يمكنك الآن الاستماع إليه بدون إنترنت');
+            } catch (e) {
+                btn.classList.remove('is-saving');
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
+                showToast('تعذر الحفظ، تحقق من اتصالك بالإنترنت وحاول مجددًا');
+            }
+        }
+
+        /* ============================================================
+           الصوتيات: مواعظ ومقاطع صوتية قصيرة ومختصرة
+        ============================================================ */
+        const soundsData = [
+            { title: "أصول الخطايا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/015-.mp3" },
+            { title: "متى تصبح الروح معصومة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/121-.mp3" },
+            { title: "معنى قوله تعالى سائحات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/128-.mp3" },
+            { title: "موعظة رجل مسن ينصح", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/145--.mp3" },
+            { title: "نصيحة لمن يريد حفظ القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/160-.mp3" },
+            { title: "قصة الصليب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/102-.mp3" }
+        ];
+
+        async function loadSounds() {
+            const grid = document.getElementById('sounds-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            const offlineUrls = await listOfflineSoundUrls();
+
+            soundsData.forEach(s => {
+                const isSaved = offlineUrls.has(s.url);
+                const card = document.createElement('div');
+                card.className = 'radio-card glass-panel';
+                card.innerHTML = `
+                    <div>
+                        <strong>${escapeHtml(s.title)}</strong>
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">${escapeHtml(s.sheikh)}</div>
+                        <div class="offline-badge" style="${isSaved ? '' : 'display:none;'}"><i class="fa-solid fa-check-circle"></i> متاح بدون إنترنت</div>
+                    </div>
+                    <div class="sound-card-actions">
+                        <button class="offline-save-btn ${isSaved ? 'is-saved' : ''}" title="${isSaved ? 'محفوظ - اضغط للحذف' : 'حفظ للاستماع بدون نت'}">
+                            <i class="fa-solid ${isSaved ? 'fa-check' : 'fa-cloud-arrow-down'}"></i>
+                        </button>
+                        <button class="btn-primary" style="padding: 8px 15px;"><i class="fa-solid fa-play"></i> استماع</button>
+                    </div>`;
+
+                const offlineBtn = card.querySelector('.offline-save-btn');
+                const offlineBadge = card.querySelector('.offline-badge');
+                offlineBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    await toggleSoundOffline(s, offlineBtn);
+                    offlineBadge.style.display = offlineBtn.classList.contains('is-saved') ? 'flex' : 'none';
+                });
+
+                card.querySelector('.btn-primary').addEventListener('click', () => playSoundSmart(s));
+                grid.appendChild(card);
+            });
+        }
+        loadSounds();
 
         // --- أذكار الصباح المحدثة بالكامل والشاملة مع الفضل ---
         const azkarData = {
@@ -6105,6 +6517,271 @@
                 detail: 'الكذب من كبائر الذنوب المحرمة في كل أحواله، وقد خصّ النبي صلى الله عليه وسلم الكذب من أجل إضحاك الناس بوعيد شديد لأنه أسلوب شائع يُتساهل فيه كثيرًا مع أنه إخبار بخلاف الواقع بقصد التضليل ولو للتسلية، والمزاح المشروع لا يستلزم الكذب بل يمكن أن يكون بأسلوب لطيف أو تورية بكلام صحيح يُفهم منه غير ظاهره دون كذب صريح، وقد كان النبي صلى الله عليه وسلم يمزح ولا يقول إلا حقًا، فهذا هو النموذج المشروع للمزاح لا الكذب المتعمد ولو كان في ظاهره تسلية.',
                 evidences: [
                     { text: 'وَيْلٌ لِلَّذِي يُحَدِّثُ فَيَكْذِبُ لِيُضْحِكَ بِهِ الْقَوْمَ، وَيْلٌ لَهُ، وَيْلٌ لَهُ.', source: 'رواه أبو داود والترمذي' }
+                ]
+            },
+            {
+                id: 61, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم العادة السرية (الاستمناء)؟',
+                shortAnswer: 'العادة السرية محرمة عند جمهور أهل العلم؛ لأن الله تعالى حصر قضاء الشهوة في الزواج أو ملك اليمين، وما سوى ذلك فهو تعدٍّ لحدود الله، ويُستثنى عند بعض الفقهاء حال خشية الوقوع في الزنى فتكون أهون الضررين لا حلالًا مقصودًا لذاته.',
+                detail: 'استدل جمهور الفقهاء من الحنفية والمالكية والشافعية والحنابلة على تحريم الاستمناء بقوله تعالى: {وَالَّذِينَ هُمْ لِفُرُوجِهِمْ حَافِظُونَ إِلَّا عَلَى أَزْوَاجِهِمْ أَوْ مَا مَلَكَتْ أَيْمَانُهُمْ فَإِنَّهُمْ غَيْرُ مَلُومِينَ فَمَنِ ابْتَغَى وَرَاءَ ذَلِكَ فَأُولَئِكَ هُمُ الْعَادُونَ}، فجعلت الآية قضاء الشهوة محصورًا في طريقين مشروعين، وما عداهما اعتداء وتجاوز لحدود الله. كما استدلوا بحديث ابن مسعود رضي الله عنه في توجيه النبي صلى الله عليه وسلم الشباب غير القادرين على الزواج إلى الصيام بديلًا لكسر الشهوة، ولم يُرشدهم إلى الاستمناء، ولو كان مباحًا لدلّهم عليه لأنه أيسر. وذهب بعض فقهاء الحنابلة والحنفية إلى جواز اللجوء إليها للضرورة عند من يخشى الوقوع في الزنى أو يخاف على نفسه ضررًا بيّنًا من كبت الشهوة، على أنها رخصة عند الضرورة لا فعل مستحب، مع بقاء الأصل على التحريم. وينبغي لمن ابتُلي بهذه العادة أن يبادر بالتوبة والإكثار من الصيام وغض البصر والانشغال بالطاعات وتيسير أسباب الزواج، ولا يُقنّط نفسه من رحمة الله فباب التوبة مفتوح.',
+                evidences: [
+                    { text: 'وَالَّذِينَ هُمْ لِفُرُوجِهِمْ حَافِظُونَ إِلَّا عَلَى أَزْوَاجِهِمْ أَوْ مَا مَلَكَتْ أَيْمَانُهُمْ فَإِنَّهُمْ غَيْرُ مَلُومِينَ فَمَنِ ابْتَغَى وَرَاءَ ذَلِكَ فَأُولَئِكَ هُمُ الْعَادُونَ.', source: 'سورة المؤمنون، آيات 5-7' },
+                    { text: 'يَا مَعْشَرَ الشَّبَابِ مَنِ اسْتَطَاعَ مِنْكُمُ الْبَاءَةَ فَلْيَتَزَوَّجْ، وَمَنْ لَمْ يَسْتَطِعْ فَعَلَيْهِ بِالصَّوْمِ فَإِنَّهُ لَهُ وِجَاءٌ.', source: 'رواه البخاري ومسلم عن ابن مسعود' }
+                ]
+            },
+            {
+                id: 62, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم مشاهدة الأفلام والصور الإباحية؟',
+                shortAnswer: 'تحرم مشاهدة الأفلام والصور الإباحية تحريمًا قطعيًا؛ لما فيها من إطلاق البصر في الحرام وإثارة الشهوة بغير طريقها المشروع، وهي من أعظم أسباب فساد القلب وإدمان النظر المحرم، وقد تجرّ إلى الوقوع في المعاصي.',
+                detail: 'أمر الله تعالى المؤمنين والمؤمنات بغض البصر صيانةً للقلب والعرض، ومشاهدة الأفلام والصور الإباحية تناقض هذا الأمر مناقضة تامة لما فيها من النظر المتعمد إلى العورات والمشاهد المحرمة. وقد ثبت عن النبي صلى الله عليه وسلم أن العين قد تزني بالنظر، فكيف بمن يتعمد طلب هذه المشاهد ويديم النظر إليها؟ كما أن هذا الباب من أبواب "سد الذرائع" التي حرّمها الشرع لأنها تفضي غالبًا إلى الوقوع في الفاحشة ولو بالفكر والخيال، فضلًا عما فيها من إعانة على صناعة تقوم على استغلال الناس وانتهاك الأعراض، إلى جانب أضرارها النفسية والزوجية المعروفة كالإدمان وضعف العلاقة الزوجية وقسوة القلب عن ذكر الله. ومن ابتُلي بذلك فطريق الخلاص يبدأ بصدق التوبة والاستعانة بالله، ووضع برامج الحجب على الأجهزة، والابتعاد عن أوقات الفراغ والخلوة المهيئة للمعصية، وتقوية الصلة بالله بالصلاة والذكر، وطلب الإعانة من أهل الثقة أو المختصين إذا صارت إدمانًا يصعب تركه بمفرده.',
+                evidences: [
+                    { text: 'قُلْ لِلْمُؤْمِنِينَ يَغُضُّوا مِنْ أَبْصَارِهِمْ وَيَحْفَظُوا فُرُوجَهُمْ ذَلِكَ أَزْكَى لَهُمْ.', source: 'سورة النور، آية 30' },
+                    { text: 'الْعَيْنَانِ تَزْنِيَانِ وَزِنَاهُمَا النَّظَرُ.', source: 'رواه البخاري ومسلم عن أبي هريرة' }
+                ]
+            },
+            {
+                id: 63, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم المحادثات والدردشة المحرمة مع الجنس الآخر عبر الإنترنت؟',
+                shortAnswer: 'تحرم المحادثات ذات الطابع الغرامي أو المثير للشهوة مع الأجانب عبر الإنترنت، سواء بالكلام أو الصوت أو الصور؛ لما فيها من خضوع بالقول وفتنة وذريعة ظاهرة للوقوع فيما هو أعظم منها.',
+                detail: 'الأصل أن العلاقة بين الرجل والمرأة الأجنبيين عن بعضهما مبناها على العفة والحشمة، ولو كان ذلك عبر وسائل التواصل الحديثة، فالمحادثات التي يقصد بها التودد أو إثارة الشهوة أو تبادل الكلام العاطفي والصور بين رجل وامرأة لا تربطهما علاقة شرعية محرمة، لدخولها في الخضوع بالقول الذي نهى الله عنه حتى نساء النبي صلى الله عليه وسلم مع طهارتهن، فكيف بغيرهن؟ وهذا الباب من أخطر أبواب الفتنة في العصر الحاضر لسهولة الوصول إليه وسريّته الظاهرية، وهو غالبًا ما يكون مقدمة لما هو أعظم منه من الفواحش، ولذلك اعتبره العلماء من الذرائع المحرمة سدًا للباب. والواجب على المسلم والمسلمة الحرص على التواصل بقدر الحاجة المشروعة فقط كالعمل أو التعليم مع مراعاة الأدب والجد في الكلام، والابتعاد عن كل ما يفتح باب الفتنة، والمبادرة بالزواج لمن استطاع لأنه الطريق الشرعي الآمن لسكن النفس.',
+                evidences: [
+                    { text: 'فَلَا تَخْضَعْنَ بِالْقَوْلِ فَيَطْمَعَ الَّذِي فِي قَلْبِهِ مَرَضٌ وَقُلْنَ قَوْلًا مَعْرُوفًا.', source: 'سورة الأحزاب، آية 32' },
+                    { text: 'مَا خَلَا رَجُلٌ بِامْرَأَةٍ إِلَّا كَانَ الشَّيْطَانُ ثَالِثَهُمَا.', source: 'رواه الترمذي' }
+                ]
+            },
+            {
+                id: 64, category: 'akhlaq', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'هل تُقبل توبة من أدمن النظر إلى الحرام أو العادة السرية وتكرر منه الذنب؟',
+                shortAnswer: 'نعم، تُقبل التوبة ولو تكرر الذنب مرات كثيرة، ما دام العبد صادقًا في ندمه وعزمه على عدم العودة، فرحمة الله تعالى واسعة ولا يجوز اليأس منها، والوقوع بعد التوبة ثم التوبة مجددًا خير من ترك التوبة والإصرار.',
+                detail: 'من رحمة الله تعالى بعباده أنه فتح باب التوبة ولم يغلقه ما دامت الروح في الجسد ولم تطلع الشمس من مغربها، وأخبر أنه يفرح بتوبة عبده ويبدّل سيئاته حسنات إذا صدقت توبته. ومن ابتُلي بإدمان النظر إلى الحرام أو العادة السرية وتكرر منه الذنب فلا يجوز له أن يستسلم لليأس أو يظن أن كثرة الذنب تمنع قبول التوبة، بل عليه أن يجدد التوبة كلما وقع، ويجتهد في الأخذ بالأسباب المعينة على الثبات مثل مجاهدة النفس، وشغل الفراغ بالطاعة والعمل النافع، وحجب المواقع المحرمة، والصيام لكسر الشهوة، والإكثار من الدعاء والاستغفار، ومصاحبة الصالحين الذين يعينون على الخير، وتذكر أن الذنب مهما تكرر فهو دون الشرك الذي لا يُغفر إلا بتوبة، وما سواه تحت مشيئة الله إن لم يتب صاحبه، فكيف بمن صدقت توبته منه؟',
+                evidences: [
+                    { text: 'قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَى أَنْفُسِهِمْ لَا تَقْنَطُوا مِنْ رَحْمَةِ اللَّهِ إِنَّ اللَّهَ يَغْفِرُ الذُّنُوبَ جَمِيعًا إِنَّهُ هُوَ الْغَفُورُ الرَّحِيمُ.', source: 'سورة الزمر، آية 53' },
+                    { text: 'كُلُّ بَنِي آدَمَ خَطَّاءٌ، وَخَيْرُ الْخَطَّائِينَ التَّوَّابُونَ.', source: 'رواه الترمذي وابن ماجه' }
+                ]
+            },
+            {
+                id: 65, category: 'salah', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'هل يجوز للمسافر أن يقصر الصلاة إذا طالت إقامته في بلد السفر؟',
+                shortAnswer: 'من نوى إقامة أكثر من أربعة أيام في بلد السفر فالراجح عند جمهور الفقهاء أنه يُتم الصلاة لزوال معنى السفر، أما من كانت إقامته معلّقة بانتهاء حاجة لا يدري متى تنقضي فله أن يقصر ولو طالت المدة.',
+                detail: 'اختلف الفقهاء في ضابط المدة التي يتحول بها المسافر إلى مقيم فيلزمه الإتمام؛ فذهب جمهورهم إلى أن من نوى إقامة أكثر من أربعة أيام في بلد قدم إليه انقطع عنه حكم السفر ولزمه الإتمام، استئناسًا بفعل النبي صلى الله عليه وسلم في غزوة الفتح حين أقام تسعة عشر يومًا يقصر الصلاة دون أن ينوي إقامة محددة. أما من دخل بلدًا لحاجة كعلاج أو دراسة أو عمل مؤقت ولا يدري متى تنتهي حاجته، فالراجح أن له حكم المسافر ويقصر الصلاة ما دام لم يستقر ولم ينوِ التوطن، ولو طالت المدة أشهرًا، لأن العبرة بانقطاع نية الإقامة المحددة لا بمجرد طول الزمن.',
+                evidences: [
+                    { text: 'أَقَامَ رَسُولُ اللَّهِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ بِمَكَّةَ عَامَ الْفَتْحِ تِسْعَةَ عَشَرَ يَوْمًا يَقْصُرُ الصَّلَاةَ.', source: 'رواه البخاري عن ابن عباس' }
+                ]
+            },
+            {
+                id: 66, category: 'tahara', ruling: 'jaiz', rulingLabel: 'جائز',
+                question: 'ما حكم المسح على الجوربين عند الوضوء؟',
+                shortAnswer: 'يجوز المسح على الجوربين عند جمهور المتأخرين من أهل العلم إذا كانا يثبتان بأنفسهما ويمكن متابعة المشي عليهما، قياسًا على المسح على الخفين، وذلك لمدة يوم وليلة للمقيم وثلاثة أيام بلياليها للمسافر.',
+                detail: 'ثبتت السنة بجواز المسح على الخفين للمتوضئ رفعًا للحرج والمشقة في نزعهما كل مرة، والجورب يأخذ حكم الخف عند كثير من الفقهاء المتأخرين إذا كان صفيقًا ثابتًا يمكن متابعة المشي عليه دون أن يتمزق أو ينكشف، وهذا هو الراجح الذي عليه الفتوى في كثير من المجامع الفقهية المعاصرة تيسيرًا على الناس مع تغير طبيعة اللباس. وتبدأ مدة المسح من أول مسح بعد الحدث لا من أول لبس الجورب، وينتقض المسح بخلعه أو انتهاء مدته أو ما ينقض الوضوء أصلًا كالجنابة.',
+                evidences: [
+                    { text: 'رَأَيْتُ النَّبِيَّ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ تَوَضَّأَ وَمَسَحَ عَلَى الْجَوْرَبَيْنِ وَالنَّعْلَيْنِ.', source: 'رواه أبو داود والترمذي عن المغيرة بن شعبة' }
+                ]
+            },
+            {
+                id: 67, category: 'muamalat', ruling: 'jaiz', rulingLabel: 'جائز',
+                question: 'ما حكم البيع بالتقسيط بزيادة عن السعر النقدي؟',
+                shortAnswer: 'يجوز البيع بالتقسيط بسعر أعلى من السعر النقدي عند جمهور الفقهاء المعاصرين إذا اتُّفق على سعر واحد محدد عند العقد ولم يتفرق البائع والمشتري على جهالة في الثمن، لأن هذا بيع لا قرض فلا يدخله ربا.',
+                detail: 'البيع الآجل بثمن أعلى من الثمن الحال معاملة تجارية معروفة، وقد أجازها جمهور الفقهاء المعاصرين لأن الشريعة فرّقت بين البيع والقرض؛ فالبيع تجارة يجوز فيها التفاضل بين الثمنين مراعاة لعنصر الزمن، بخلاف القرض الذي لا يجوز اشتراط زيادة فيه لأنه إرفاق لا تجارة. ويشترط لصحة هذا البيع أن يتفق الطرفان عند العقد على ثمن واحد محدد نهائيًا سواء كان تقسيطًا أو نقدًا، فلا يجوز أن يفترقا وبينهما جهالة في الثمن أو يبقى الثمن معلقًا بين سعرين، لأن ذلك من بيعتين في بيعة المنهي عنهما.',
+                evidences: [
+                    { text: 'وَأَحَلَّ اللَّهُ الْبَيْعَ وَحَرَّمَ الرِّبَا.', source: 'سورة البقرة، آية 275' },
+                    { text: 'مَنْ بَاعَ بَيْعَتَيْنِ فِي بَيْعَةٍ فَلَهُ أَوْكَسُهُمَا أَوِ الرِّبَا.', source: 'رواه أبو داود' }
+                ]
+            },
+            {
+                id: 68, category: 'siyam', ruling: 'makruh', rulingLabel: 'مكروه',
+                question: 'ما حكم صيام يوم الشك احتياطًا لرمضان؟',
+                shortAnswer: 'يُكره صيام يوم الشك بنية الاحتياط لرمضان عند جمهور الفقهاء حتى يثبت دخول الشهر برؤية أو إكمال العدة، ولا حرج فيه لمن كانت له عادة سابقة كصيام الاثنين والخميس أو كان يقضي أيامًا فائتة.',
+                detail: 'يوم الشك هو اليوم الثلاثون من شعبان إذا لم تثبت فيه رؤية هلال رمضان ولم يُغم على الناس، وقد كره جمهور الفقهاء تعمّد صيامه احتياطًا لرمضان قبل ثبوت دخوله شرعًا، لأن ذلك يُدخل في العبادة زيادة لم يشرعها الله، وقد نهى النبي صلى الله عليه وسلم أن يُستقبل الشهر بصيام يوم أو يومين إلا لمن كان له صوم يصومه. أما من وافق هذا اليوم عادة له في الصيام كصيام الاثنين والخميس، أو كان عليه قضاء من رمضان الماضي فصامه بنية القضاء، فلا حرج عليه لأن صيامه حينئذ لم يكن بنية استقبال رمضان احتياطًا بل بسبب آخر مستقل.',
+                evidences: [
+                    { text: 'مَنْ صَامَ يَوْمَ الشَّكِّ فَقَدْ عَصَى أَبَا الْقَاسِمِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ.', source: 'رواه الترمذي وأبو داود عن عمار بن ياسر' }
+                ]
+            },
+            {
+                id: 69, category: 'usra', ruling: 'jaiz', rulingLabel: 'جائز',
+                question: 'ما حكم تعدد الزوجات وما هي شروطه؟',
+                shortAnswer: 'تعدد الزوجات مباح في الإسلام إلى أربع نساء بشرط العدل بينهن في النفقة والمبيت والمعاملة الظاهرة، فإن خشي الرجل عدم قدرته على العدل اقتصر على واحدة، ولا يُكلَّف بالتسوية في الميل القلبي الذي لا يملكه.',
+                detail: 'أباح الله تعالى للرجل أن يجمع بين أكثر من زوجة إلى أربع، وعلّق هذه الإباحة بشرط العدل بين الزوجات فيما يملكه من النفقة والمبيت وحسن العشرة الظاهرة، فإن غلب على ظنه أنه لن يعدل بينهن اقتصر على زوجة واحدة، وهذا هو الأصل الذي راعته الآية. وقد أخبر الله تعالى في موضع آخر أن الرجل لن يستطيع أن يعدل تمامًا بين نسائه في الميل القلبي والمحبة، فلا يُحاسَب على ما لا يملكه من ذلك، وإنما يُحاسَب على ما يقدر عليه من العدل في الأمور الظاهرة، مع النهي عن الجور الكامل بحيث يترك إحداهن كالمعلّقة لا هي مطلقة ولا هي ذات زوج.',
+                evidences: [
+                    { text: 'فَانْكِحُوا مَا طَابَ لَكُمْ مِنَ النِّسَاءِ مَثْنَى وَثُلَاثَ وَرُبَاعَ فَإِنْ خِفْتُمْ أَلَّا تَعْدِلُوا فَوَاحِدَةً.', source: 'سورة النساء، آية 3' },
+                    { text: 'وَلَنْ تَسْتَطِيعُوا أَنْ تَعْدِلُوا بَيْنَ النِّسَاءِ وَلَوْ حَرَصْتُمْ فَلَا تَمِيلُوا كُلَّ الْمَيْلِ فَتَذَرُوهَا كَالْمُعَلَّقَةِ.', source: 'سورة النساء، آية 129' }
+                ]
+            },
+            {
+                id: 70, category: 'zakah', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'هل يجوز إخراج زكاة الفطر نقدًا بدلًا من الطعام؟',
+                shortAnswer: 'ذهب جمهور الفقهاء من المالكية والشافعية والحنابلة إلى وجوب إخراج زكاة الفطر طعامًا اتباعًا للسنة الفعلية، بينما أجاز الحنفية إخراج قيمتها نقدًا مراعاةً لمصلحة الفقير، وهو قول معتبر يجوز الأخذ به خصوصًا في زماننا حيث يكون النقد أنفع للمحتاج غالبًا.',
+                detail: 'الثابت عن النبي صلى الله عليه وسلم أنه فرض زكاة الفطر صاعًا من طعام كالتمر أو الشعير، ولذلك رأى جمهور الفقهاء لزوم إخراجها من جنس الطعام المنصوص عليه أو ما يقوم مقامه من قوت البلد، تعبدًا واتباعًا لفعل النبي صلى الله عليه وسلم. في حين ذهب الإمام أبو حنيفة وأصحابه إلى جواز إخراج قيمتها نقدًا، بناءً على أن المقصود من الزكاة سد حاجة الفقير وإغناؤه عن السؤال يوم العيد، وقد يكون النقد أحيانًا أعظم نفعًا له من الطعام العيني، وهذا الخلاف من مسائل الاجتهاد السائغة التي يسع المسلم الأخذ بأي من القولين، مع مراعاة ما تفتي به الجهات الرسمية في بلده تحقيقًا للمصلحة ورفعًا للحرج.',
+                evidences: [
+                    { text: 'فَرَضَ رَسُولُ اللَّهِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ زَكَاةَ الْفِطْرِ صَاعًا مِنْ تَمْرٍ أَوْ صَاعًا مِنْ شَعِيرٍ.', source: 'رواه البخاري ومسلم عن ابن عمر' }
+                ]
+            },
+            {
+                id: 71, category: 'hajj', ruling: 'jaiz', rulingLabel: 'جائز',
+                question: 'ما حكم الحج عن الميت الذي مات وهو مستطيع ولم يحج؟',
+                shortAnswer: 'يجوز بل يستحب لولي الميت أو من ينيبه أن يحج عنه إذا مات وهو مستطيع ولم يؤدِّ فريضة الحج، ويُجزئ ذلك ويُسقط عنه الفرض إن شاء الله، وكذلك من مات عاجزًا عن الحج ببدنه مع قدرته المالية.',
+                detail: 'ثبت عن النبي صلى الله عليه وسلم إجازته الحج عن الميت الذي وجب عليه الحج ولم يؤده، سواء مات فجأة قبل أن يحج مع استطاعته، أو كان عاجزًا عن الحج ببدنه لكبر أو مرض لا يُرجى برؤه مع قدرته المالية، فأجاز النبي صلى الله عليه وسلم لأقاربه أن يحجوا عنه ويقع ذلك مجزئًا. أما من مات غير مستطيع أصلًا لا ببدنه ولا بماله فلا يجب على أحد الحج عنه، وإن تبرع أحد أقاربه بذلك كان ذلك من البر المستحب لا فرضًا لازمًا، ويُشترط فيمن يحج عن غيره أن يكون قد حج عن نفسه أولًا عند جمهور الفقهاء.',
+                evidences: [
+                    { text: 'إِنَّ أَبِي أَدْرَكَتْهُ فَرِيضَةُ اللَّهِ فِي الْحَجِّ شَيْخًا كَبِيرًا لَا يَسْتَطِيعُ أَنْ يَثْبُتَ عَلَى الرَّاحِلَةِ، أَفَأَحُجُّ عَنْهُ؟ قَالَ: نَعَمْ.', source: 'رواه البخاري ومسلم عن ابن عباس' }
+                ]
+            },
+            {
+                id: 72, category: 'muasira', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'ما حكم العمل في وظيفة إدارية أو فنية بشركة أو بنك يتعامل بالربا؟',
+                shortAnswer: 'يحرم العمل في الوظائف التي تباشر عقد الربا مباشرة كموظفي القروض الربوية وكتابة عقودها والشهادة عليها، أما الوظائف البعيدة عن مباشرة العقد الربوي كالحراسة والصيانة وخدمات الدعم الفني فمحل خلاف، مع ميل كثير من المعاصرين للتضييق فيها احتياطًا ونصح صاحبها بالبحث عن بديل حلال إن استطاع.',
+                detail: 'لعن النبي صلى الله عليه وسلم آكل الربا وموكله وكاتبه وشاهديه وأخبر أنهم سواء في الإثم، وهذا يشمل كل من باشر عقد الربا بنفسه من الموظفين كمسؤولي القروض الربوية والفوائد ومن يوثق عقودها، فهذا لا يجوز العمل فيه بحال. أما الوظائف التي لا صلة لها المباشرة بعقد الربا كموظف الاستقبال أو الحراسة أو صيانة المبنى أو الدعم الفني العام الذي لا يخص قسم القروض، فقد اختلف فيها المعاصرون؛ فمنهم من ضيّق فيها لعموم النهي عن الإعانة على الإثم، ومنهم من رخّص فيها للحاجة ما دام العمل ذاته مباحًا في أصله ولا يتضمن مباشرة للعقد الربوي، والأولى لمن استطاع البحث عن عمل آخر أن يفعل، ومن اضطر لضيق فرص العمل فليجتهد في الانتقال متى تيسر له بديل حلال.',
+                evidences: [
+                    { text: 'لَعَنَ رَسُولُ اللَّهِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ آكِلَ الرِّبَا وَمُوكِلَهُ وَكَاتِبَهُ وَشَاهِدَيْهِ، وَقَالَ: هُمْ سَوَاءٌ.', source: 'رواه مسلم عن جابر' }
+                ]
+            },
+            {
+                id: 73, category: 'digital', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'ما حكم برامج استرداد النقود (الكاش باك) ونقاط المكافآت من البنوك وبطاقات الائتمان؟',
+                shortAnswer: 'يجوز الانتفاع ببرامج الكاش باك ونقاط المكافآت إذا كانت مقابل استخدام الخدمة كهدية تسويقية لا فائدة على قرض أو دين مؤجل، أما إن كانت البطاقة ربوية تُحصَّل عليها فوائد عند تأخر السداد، فالواجب سداد كامل المديونية في موعدها تجنبًا للربا، وحينئذ يجوز أخذ المكافأة الترويجية المصاحبة.',
+                detail: 'الأصل في المعاملات المالية المستحدثة الإباحة ما لم يقم دليل على تحريمها، وبرامج الكاش باك ونقاط المكافآت التي تقدمها البنوك وشركات البطاقات هي في حقيقتها هدايا وحوافز تسويقية تُمنح مقابل حجم الاستخدام لا مقابل تأجيل دين بزيادة، فلا مانع شرعًا من قبولها والانتفاع بها. لكن الإشكال الحقيقي يكمن في طبيعة بطاقة الائتمان ذاتها، فإن كانت من النوع الذي يفرض فائدة ربوية عند عدم سداد الرصيد كاملًا في الموعد المحدد، فالواجب على المسلم الحرص التام على السداد الكامل في موعده حتى لا يقع في الربا المحرم، وحينئذ لا حرج في الاستفادة من المكافآت المصاحبة للاستخدام لأنها منفصلة عن أصل التعامل الربوي المحتمل.',
+                evidences: [
+                    { text: 'الْمُسْلِمُونَ عَلَى شُرُوطِهِمْ إِلَّا شَرْطًا حَرَّمَ حَلَالًا أَوْ أَحَلَّ حَرَامًا.', source: 'رواه أبو داود والترمذي' },
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ إِلَّا أَنْ تَكُونَ تِجَارَةً عَنْ تَرَاضٍ مِنْكُمْ.', source: 'سورة النساء، آية 29' }
+                ]
+            },
+            {
+                id: 74, category: 'aqidah', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم التبرك بقبور الأولياء والصالحين والطواف حولها أو دعاء أصحابها؟',
+                shortAnswer: 'يحرم التبرك بالقبور بالطواف حولها أو الذبح عندها أو دعاء أصحابها من دون الله فيما لا يقدر عليه إلا الله، وهذا من الشرك الأكبر إن تضمن استغاثة بالميت واعتقاد نفعه أو ضره استقلالًا، أما مجرد زيارة القبر للدعاء للميت والاتعاظ بالموت فمشروعة.',
+                detail: 'شُرعت زيارة القبور للاتعاظ والدعاء للأموات، لكن بعض الناس تجاوز هذا المقصود المشروع إلى تعظيم القبور بما لا يجوز، كالطواف حولها تعبدًا أو الذبح عندها تقربًا لصاحبها أو دعائه من دون الله يطلب منه الشفاء أو الرزق أو كشف الضر، وهذا عين الشرك الأكبر الذي حذّر منه القرآن، لأن الدعاء عبادة لا تُصرف إلا لله وحده. وقد حذّر النبي صلى الله عليه وسلم أمته من مغبة الأمم السابقة الذين غلوا في قبور صالحيهم حتى عبدوها من دون الله، ونهى عن اتخاذ القبور مساجد أو أعيادًا يُقصد إليها للاحتفال والتعظيم، فالواجب على المسلم أن يفرد الله وحده بالدعاء والاستغاثة، وأن يقتصر في زيارة القبور على ما شُرع من الدعاء والترحم دون غلو أو ابتداع.',
+                evidences: [
+                    { text: 'لَعَنَ اللَّهُ الْيَهُودَ وَالنَّصَارَى اتَّخَذُوا قُبُورَ أَنْبِيَائِهِمْ مَسَاجِدَ.', source: 'رواه البخاري ومسلم عن عائشة' },
+                    { text: 'لَا تَتَّخِذُوا قَبْرِي عِيدًا.', source: 'رواه أبو داود' }
+                ]
+            },
+            {
+                id: 75, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الغيبة، وهل لها حالات مستثناة؟',
+                shortAnswer: 'الغيبة محرمة تحريمًا شديدًا، وهي ذكر أخيك المسلم في غيبته بما يكره ولو كان صادقًا فيما قاله، ويُستثنى منها حالات محددة كالتظلم للقاضي، والاستنصاح والاستفتاء، وتحذير المسلمين من شر، والجهر بالفسق ممن يجاهر بمعصيته.',
+                detail: 'شبّه الله تعالى الغيبة بأكل لحم الأخ الميت تنفيرًا منها وتقبيحًا لها في النفوس، وهي أن يذكر المسلم أخاه بما يكرهه لو سمعه ولو كان صادقًا فيما قال، فإن كان كاذبًا فهو البهتان وهو أشد إثمًا. إلا أن أهل العلم استثنوا من عموم تحريم الغيبة حالات تدعو إليها مصلحة شرعية معتبرة، منها: التظلم عند القاضي أو من له سلطة إنصاف المظلوم، واستشارة أهل الخبرة في تزويج أو معاملة أو نحوهما بذكر العيب الحقيقي بقدر الحاجة، وتحذير المسلمين من شر شخص أو بدعته كنقد الرواة والمصنفين لحفظ الدين، والتعريف بمن اشتهر بلقب معين لا يقصد به الإهانة، وذكر من يجاهر بفسقه علنًا فيما جاهر به دون تتبع لعوراته الأخرى الخفية.',
+                evidences: [
+                    { text: 'وَلَا يَغْتَبْ بَعْضُكُمْ بَعْضًا أَيُحِبُّ أَحَدُكُمْ أَنْ يَأْكُلَ لَحْمَ أَخِيهِ مَيْتًا فَكَرِهْتُمُوهُ.', source: 'سورة الحجرات، آية 12' },
+                    { text: 'أَتَدْرُونَ مَا الْغِيبَةُ؟ قَالُوا: اللَّهُ وَرَسُولُهُ أَعْلَمُ. قَالَ: ذِكْرُكَ أَخَاكَ بِمَا يَكْرَهُ.', source: 'رواه مسلم عن أبي هريرة' }
+                ]
+            },
+            {
+                id: 76, category: 'other', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'ما حكم تهنئة غير المسلمين بأعيادهم الدينية؟',
+                shortAnswer: 'ذهب جمهور أهل العلم إلى منع تهنئة غير المسلمين بأعيادهم الدينية الخاصة بمعتقدهم لما فيها من إقرار لشعائر مخالفة للإسلام، بينما أجاز بعض المعاصرين مجاملة اجتماعية عامة لا تتضمن إقرارًا بالشعيرة الدينية مع الجيران والأقارب من غير المسلمين، مراعاة لمقصد البر والإحسان إليهم.',
+                detail: 'أمر الله تعالى ببر غير المسلمين الذين لا يقاتلون المسلمين في دينهم والإقساط إليهم، إلا أن جمهور الفقهاء فرّقوا بين البر والإحسان العام وبين المشاركة في تعظيم شعائرهم الدينية الخاصة كتهنئتهم بأعيادهم التي تتضمن معتقدات مخالفة للتوحيد، لأن ذلك فيه نوع من الرضا بشعائرهم أو موافقتهم عليها. وذهب بعض العلماء المعاصرين إلى جواز تهنئة عامة مجردة من أي مضمون ديني، كقول "أسعد الله أيامكم" لجار أو قريب من غير المسلمين بمناسبة اجتماعية، دون التعرض لصلب المعتقد، اعتبارًا بمقاصد حسن الجوار والمعاملة، والأحوط لمن أراد السلامة أن يقتصر على البر والإحسان العام دون الدخول في تفاصيل التهنئة بالشعائر الدينية ذاتها.',
+                evidences: [
+                    { text: 'لَا يَنْهَاكُمُ اللَّهُ عَنِ الَّذِينَ لَمْ يُقَاتِلُوكُمْ فِي الدِّينِ وَلَمْ يُخْرِجُوكُمْ مِنْ دِيَارِكُمْ أَنْ تَبَرُّوهُمْ وَتُقْسِطُوا إِلَيْهِمْ.', source: 'سورة الممتحنة، آية 8' },
+                    { text: 'مَنْ تَشَبَّهَ بِقَوْمٍ فَهُوَ مِنْهُمْ.', source: 'رواه أبو داود' }
+                ]
+            },
+            {
+                id: 77, category: 'salah', ruling: 'jaiz', rulingLabel: 'جائز',
+                question: 'هل تجب صلاة الجمعة على المسافر؟',
+                shortAnswer: 'لا تجب الجمعة على المسافر عند جمهور الفقهاء لأنه ليس من أهل الإقامة الذين خوطبوا بوجوبها، فإن حضرها مع الناس أجزأته عن الظهر ولم يلزمه إعادتها.',
+                detail: 'دلّت السنة على أن الجمعة واجبة على المقيمين القادرين المستوطنين، واستثنى منها الفقهاء من كان له عذر كالمريض والمسافر، لأن السفر فيه مشقة تتعارض مع لزوم مكان الجمعة في وقتها. فإذا كان المسافر نازلاً في بلد لا جمعة فيه أو كان في طريقه فلا يلزمه السعي إليها، وإن تيسر له حضورها مع أهل بلد نزل فيه فصلاها معهم أجزأته عن فرض الظهر ولا يلزمه إعادتها ظهرًا بعد ذلك، لأنها إذا صحت منه سقط عنه الفرض بأي منهما.',
+                evidences: [
+                    { text: 'الْجُمُعَةُ حَقٌّ وَاجِبٌ عَلَى كُلِّ مُسْلِمٍ فِي جَمَاعَةٍ إِلَّا أَرْبَعَةً: عَبْدٌ مَمْلُوكٌ، أَوِ امْرَأَةٌ، أَوْ صَبِيٌّ، أَوْ مَرِيضٌ.', source: 'رواه أبو داود عن طارق بن شهاب' }
+                ]
+            },
+            {
+                id: 78, category: 'tahara', ruling: 'jaiz', rulingLabel: 'جائز',
+                question: 'هل يجب على المرأة نقض ضفائرها عند الغسل من الجنابة؟',
+                shortAnswer: 'لا يجب على المرأة نقض ضفائرها عند الغسل من الجنابة إذا أوصلت الماء إلى أصول شعرها وعمّ الغسل جميع الرأس، ويكفيها أن تحثي على رأسها الماء ثلاث مرات ثم تفيضه على سائر جسدها.',
+                detail: 'سألت أم سلمة رضي الله عنها النبي صلى الله عليه وسلم عن حكم نقض شعرها المضفور عند الاغتسال من الجنابة، فأخبرها أنه لا يلزمها ذلك، وأن الواجب هو إيصال الماء إلى أصول الشعر وتعميم الرأس والجسد بالغسل، ولو كان الشعر متماسكًا بضفيرة، وهذا رفعًا للحرج والمشقة عن المرأة في كل مرة تغتسل فيها من الجنابة. ويختلف هذا عن غسل الحيض عند بعض الفقهاء الذين استحبوا فيه نقض الضفائر احتياطًا لطول مدة الحيض وتراكم ما قد يعلق بالشعر، وإن كان الراجح عند كثير من المحققين أن الحكم واحد في الجنابة والحيض ما دام الماء يصل إلى أصول الشعر.',
+                evidences: [
+                    { text: 'قُلْتُ: يَا رَسُولَ اللَّهِ، إِنِّي امْرَأَةٌ أَشُدُّ ضَفْرَ رَأْسِي، أَفَأَنْقُضُهُ لِغُسْلِ الْجَنَابَةِ؟ قَالَ: لَا، إِنَّمَا يَكْفِيكِ أَنْ تَحْثِي عَلَى رَأْسِكِ ثَلَاثَ حَثَيَاتٍ.', source: 'رواه مسلم عن أم سلمة' }
+                ]
+            },
+            {
+                id: 79, category: 'muamalat', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'ما حكم عقد الإجارة المنتهية بالتمليك؟',
+                shortAnswer: 'يجوز هذا العقد بضوابط شرعية عند كثير من المجامع الفقهية المعاصرة، بشرط الفصل بين عقد الإجارة وعقد التمليك اللاحق بحيث لا يُلزم المستأجر بالشراء ابتداءً، وأن تكون الأقساط أجرة حقيقية لا قسط ثمن مقنّع باسم آخر.',
+                detail: 'الإجارة المنتهية بالتمليك صيغة تمويلية معاصرة يستأجر فيها الشخص عينًا معينة مدة محددة، ثم تنتقل إليه ملكيتها في نهاية المدة إما بعقد بيع منفصل أو هبة، وقد أجازتها كثير من المجامع الفقهية بضوابط تمنع الجمع بين عقدين متناقضين في عقد واحد، أهمها أن يكون عقد الإجارة في بداية المدة إجارة حقيقية تترتب عليها أحكام الإجارة من ضمان وصيانة على المالك، ثم يُبرم عقد تمليك منفصل مستقل في نهاية المدة، ولا يجوز أن يُشترط على المستأجر ابتداءً إلزامه بالشراء لأن ذلك يجمع بين عقدين متنافيين في عقد واحد وهو ما نهى عنه الشرع.',
+                evidences: [
+                    { text: 'لَا يَحِلُّ سَلَفٌ وَبَيْعٌ، وَلَا شَرْطَانِ فِي بَيْعٍ.', source: 'رواه أبو داود والترمذي والنسائي عن عمرو بن شعيب' }
+                ]
+            },
+            {
+                id: 80, category: 'siyam', ruling: 'haram', rulingLabel: 'مفسد للصوم',
+                question: 'ما حكم من تعمّد القيء وهو صائم؟',
+                shortAnswer: 'من استقاء عمدًا وهو صائم فسد صومه ووجب عليه قضاء ذلك اليوم، أما من غلبه القيء دون قصد منه فلا شيء عليه ويتم صيامه ولا يلزمه القضاء.',
+                detail: 'فرّق النبي صلى الله عليه وسلم بين من غلبه القيء دون تعمد منه فهذا معذور لا يفسد صومه لأنه خارج عن إرادته، وبين من تعمد استدعاء القيء وإخراجه بفعله كوضع إصبعه في حلقه أو شم ما يثير القيء عمدًا، فهذا يفسد صومه لأنه أفرغ معدته باختياره وهو ما يشبه معنى الأكل والشرب المتعمد الذي يفطر الصائم. والحكمة في ذلك أن الصوم إمساك عن المفطرات، وإخراج ما في المعدة عمدًا يخالف مقصود الإمساك، فوجب عليه قضاء ذلك اليوم دون كفارة، لأن الكفارة خاصة بالجماع دون سائر المفطرات عند جمهور الفقهاء.',
+                evidences: [
+                    { text: 'مَنْ ذَرَعَهُ الْقَيْءُ فَلَيْسَ عَلَيْهِ قَضَاءٌ، وَمَنِ اسْتَقَاءَ عَمْدًا فَلْيَقْضِ.', source: 'رواه أبو داود والترمذي وابن ماجه عن أبي هريرة' }
+                ]
+            },
+            {
+                id: 81, category: 'usra', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'هل تجب نفقة الزوجة العاملة على زوجها؟',
+                shortAnswer: 'نعم، تجب نفقة الزوجة على زوجها ولو كانت عاملة ذات دخل خاص بها، لأن النفقة حق ثابت لها بعقد الزواج لا يسقط بغناها أو عملها، ولا يجوز إلزامها بالإنفاق على بيت الزوجية من راتبها إلا برضاها.',
+                detail: 'أوجب الشرع النفقة على الزوج تجاه زوجته مقابل احتباسها له وقيامها بحقوق الزوجية، وهذا الوجوب لا يتعلق بحاجة الزوجة الفعلية للمال بل هو حق مستقل يثبت بمجرد عقد النكاح الصحيح، فلا يسقط ولو كانت الزوجة غنية بمالها الخاص أو راتبها من عمل مباح. ومال المرأة المكتسب من عملها ملك خالص لها تتصرف فيه كيف شاءت، ولا يجوز للزوج إجبارها على الإنفاق منه على بيت الزوجية أو أولادها، وإن تبرعت بشيء من ذلك طواعية واختيارًا فهو من حسن معاشرتها وتعاونها لا واجب عليها شرعًا.',
+                evidences: [
+                    { text: 'لِيُنْفِقْ ذُو سَعَةٍ مِنْ سَعَتِهِ وَمَنْ قُدِرَ عَلَيْهِ رِزْقُهُ فَلْيُنْفِقْ مِمَّا آتَاهُ اللَّهُ.', source: 'سورة الطلاق، آية 7' }
+                ]
+            },
+            {
+                id: 82, category: 'zakah', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'هل تجب الزكاة في الذهب والفضة المستعملين كحلي للمرأة؟',
+                shortAnswer: 'ذهب جمهور الفقهاء إلى عدم وجوب الزكاة في الحلي المعد للاستعمال المعتاد المباح، بينما ذهب الحنفية وبعض المعاصرين إلى وجوبها إذا بلغت نصابًا وحال عليها الحول، وهو قول قوي يُحتاط بالأخذ به خاصة مع كثرة ما تملكه بعض النساء من الذهب اليوم.',
+                detail: 'استدل الجمهور القائلون بعدم وجوب زكاة الحلي المعتاد بأن الأصل في الزكاة تعلقها بالمال النامي المُعَد للاستثمار أو الادخار، والحلي المستعمل ليس كذلك بل هو من حاجات المرأة المعتادة كثيابها، فأشبه سائر الأمتعة المعفاة من الزكاة. في حين استدل الحنفية بعموم الأدلة الموجبة للزكاة في كل ذهب وفضة بلغا نصابًا دون تفريق بين المستعمل وغيره، واستدلوا بحديث المرأة التي أتت النبي صلى الله عليه وسلم ومعها ابنتها وفي يد ابنتها سواران غليظان من ذهب، فسألها النبي صلى الله عليه وسلم: أتؤدين زكاة هذا؟ فقالت: لا، فقال: أيسرك أن يسورك الله بهما يوم القيامة سوارين من نار؟ ففهم منه وجوب الزكاة فيهما وإن كانا حليًا مستعملاً. والاحتياط لمن ملكت حليًا يبلغ النصاب أن تُخرج زكاته خروجًا من الخلاف.',
+                evidences: [
+                    { text: 'أَتُؤَدِّينَ زَكَاةَ هَذَا؟ قَالَتْ: لَا. قَالَ: أَيَسُرُّكِ أَنْ يُسَوِّرَكِ اللَّهُ بِهِمَا يَوْمَ الْقِيَامَةِ سِوَارَيْنِ مِنْ نَارٍ؟', source: 'رواه أبو داود والنسائي' }
+                ]
+            },
+            {
+                id: 83, category: 'hajj', ruling: 'jaiz', rulingLabel: 'جائز',
+                question: 'ما هي أنساك الحج الثلاثة (التمتع والقران والإفراد) وأيها أفضل؟',
+                shortAnswer: 'للحاج أن يُحرم بأحد ثلاثة أنساك جائزة صحيحة: التمتع بأن يحرم بعمرة في أشهر الحج ثم يتحلل ويحرم بالحج مستقلاً، أو القران بأن يجمع نية العمرة والحج معًا، أو الإفراد بأن يحرم بالحج وحده، وأفضلها عند جمهور الفقهاء التمتع لحث النبي صلى الله عليه وسلم أصحابه عليه.',
+                detail: 'اتفق الفقهاء على صحة الإحرام بأي من الأنساك الثلاثة، واختلفوا في أيها أفضل؛ فذهب جمهورهم إلى تفضيل التمتع لأن النبي صلى الله عليه وسلم أمر من لم يسق الهدي من أصحابه أن يجعلوا إحرامهم عمرة يتحللون منها ثم يحرمون بالحج من جديد، وتمنى لو أنه فعل ذلك لولا أنه ساق الهدي فلزمه البقاء على إحرامه. ويجب على المتمتع والقارن هدي شكران لجمعهما بين النسكين في سفرة واحدة، فمن لم يجد الهدي صام عشرة أيام؛ ثلاثة في الحج وسبعة إذا رجع إلى أهله، بخلاف المفرد الذي لا هدي عليه لأنه أحرم بنسك واحد فقط.',
+                evidences: [
+                    { text: 'مَا شَأْنُ النَّاسِ حَلُّوا وَلَمْ تَحْلِلْ أَنْتَ مِنْ عُمْرَتِكَ؟ قَالَ: إِنِّي لَبَّدْتُ رَأْسِي وَقَلَّدْتُ هَدْيِي فَلَا أَحِلُّ حَتَّى أَنْحَرَ.', source: 'رواه البخاري ومسلم عن حفصة' }
+                ]
+            },
+            {
+                id: 84, category: 'muasira', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'ما حكم التبرع بالأعضاء بعد الموت لإنقاذ حياة مريض؟',
+                shortAnswer: 'يجوز التبرع بالأعضاء بعد الموت بضوابط شرعية عند كثير من المجامع الفقهية المعاصرة، إذا كان بوصية من المتبرع أو إذن وليه، ولم يكن فيه بيع أو تجارة، وكانت الحاجة إليه ملحّة لإنقاذ حياة معصومة، مراعاة لقاعدة الضرورات، خلافًا لمن منعه صيانة لحرمة جسد الميت مطلقًا.',
+                detail: 'الأصل عند الفقهاء أن جسد الميت له حرمة كحرمته حيًا، فلا يجوز التمثيل به أو انتهاك حرمته، لكن أجاز كثير من المجامع الفقهية المعاصرة نقل الأعضاء بعد الموت للضرورة الملحّة المتمثلة في إنقاذ حياة إنسان معصوم، بناءً على قاعدة "الضرورات تبيح المحظورات" وتقديم حفظ النفس الحية على حرمة الجسد الميت التي هي حرمة أقل رتبة، بشرط ألا يكون ذلك محل تجارة أو بيع، وأن يكون بإذن الميت في حياته أو إذن ورثته بعد وفاته، وأن يتحقق الموت الحقيقي بضوابطه الطبية والشرعية المعتبرة قبل الإقدام على النقل.',
+                evidences: [
+                    { text: 'مَنْ أَحْيَاهَا فَكَأَنَّمَا أَحْيَا النَّاسَ جَمِيعًا.', source: 'سورة المائدة، آية 32' },
+                    { text: 'كَسْرُ عَظْمِ الْمَيِّتِ كَكَسْرِهِ حَيًّا.', source: 'رواه أبو داود وابن ماجه عن عائشة' }
+                ]
+            },
+            {
+                id: 85, category: 'digital', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'ما حكم التداول في أسهم الشركات المساهمة في سوق البورصة؟',
+                shortAnswer: 'يجوز الاستثمار في أسهم الشركات التي نشاطها الأساسي مباح خالٍ من الربا والمحرمات، مع مراعاة ضوابط نسبة الديون الربوية والإيرادات المحرمة في ميزانية الشركة وتطهير ما ينتج عنها من دخل محرم يسير بالتصدق به، أما أسهم الشركات المحرم نشاطها أصلًا كالبنوك الربوية وشركات الخمور فلا يجوز شراؤها.',
+                detail: 'المساهمة في الشركات في أصلها شركة عقد مباح يقوم على المشاركة في رأس المال والربح والخسارة، فإن كان نشاط الشركة الأساسي مباحًا جاز الاستثمار في أسهمها، أما إن كان نشاطها الأساسي محرمًا كالربا أو الخمور أو القمار فلا يجوز المساهمة فيها ولو بحصة يسيرة لأنها إعانة مباشرة على الحرام. وقد وضعت الهيئات الشرعية المعاصرة ضوابط دقيقة لفرز الأسهم المباحة من غيرها، منها ألا تتجاوز نسبة الديون الربوية للشركة أو الإيرادات المحرمة العرضية حدًا معينًا متفقًا عليه بين المجامع، ومن استثمر في شركة ثم تبين له دخل محرم يسير فيها وجب عليه تطهير ما يخصه من ذلك الدخل بالتصدق به دون نية التقرب.',
+                evidences: [
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ إِلَّا أَنْ تَكُونَ تِجَارَةً عَنْ تَرَاضٍ مِنْكُمْ.', source: 'سورة النساء، آية 29' }
+                ]
+            },
+            {
+                id: 86, category: 'aqidah', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الذهاب إلى السحرة والمشعوذين وتصديقهم فيما يخبرون به؟',
+                shortAnswer: 'يحرم الذهاب إلى السحرة والمشعوذين وسؤالهم، ومجرد سؤالهم يمنع قبول الصلاة أربعين يومًا، أما تصديقهم فيما يخبرون به من الغيب فهو كفر بما أُنزل على محمد صلى الله عليه وسلم، وتعلم السحر وتعليمه من كبائر الذنوب.',
+                detail: 'حرّم الإسلام تحريمًا قاطعًا إتيان الكهان والعرافين والمشعوذين وسؤالهم عما يدّعون علمه من الغيب، لأن علم الغيب مما استأثر الله به، وقد رتّب النبي صلى الله عليه وسلم على مجرد السؤال عقوبة دينية بأن لا تُقبل صلاة السائل أربعين يومًا، فكيف بمن صدّقهم فيما يقولون؟ فإن التصديق بذلك تكذيب لله ورسوله فيما أخبر به من اختصاص الله بعلم الغيب، وهو كفر بما أُنزل على محمد صلى الله عليه وسلم كما أخبر الحديث. والواجب على المسلم إذا مرض أو أصابه ضر أن يلجأ إلى الأسباب المشروعة من طب ودعاء ورقية شرعية، وأن يتوكل على الله وحده، والحذر كل الحذر من هذا الباب الذي هو من أعظم أبواب الشرك في هذا الزمان.',
+                evidences: [
+                    { text: 'مَنْ أَتَى عَرَّافًا فَسَأَلَهُ عَنْ شَيْءٍ لَمْ تُقْبَلْ لَهُ صَلَاةٌ أَرْبَعِينَ لَيْلَةً.', source: 'رواه مسلم عن بعض أزواج النبي صلى الله عليه وسلم' },
+                    { text: 'مَنْ أَتَى كَاهِنًا أَوْ عَرَّافًا فَصَدَّقَهُ بِمَا يَقُولُ فَقَدْ كَفَرَ بِمَا أُنْزِلَ عَلَى مُحَمَّدٍ.', source: 'رواه أبو داود والترمذي وأحمد' }
+                ]
+            },
+            {
+                id: 87, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الكبر والعجب بالنفس؟',
+                shortAnswer: 'الكبر من كبائر الذنوب المهلكة، وهو بَطَر الحق أي رده ودفعه، وازدراء الناس واحتقارهم، وقد توعد النبي صلى الله عليه وسلم من كان في قلبه مثقال ذرة منه بعدم دخول الجنة، ويجب على المسلم التواضع لله ولعباده.',
+                detail: 'بيّن النبي صلى الله عليه وسلم حقيقة الكبر بأنه ركنان: رد الحق وعدم قبوله عند ظهوره تعاليًا واستكبارًا، واحتقار الناس والنظر إليهم بعين الاستصغار، وهذا خلق ذميم توعد الله صاحبه بالحرمان من دخول الجنة إن مات عليه دون توبة، لأن الكبر منازعة لله في صفة الكبرياء التي لا تليق إلا به سبحانه. ويختلف هذا عن حب الجمال والتزين الذي رخّص فيه الشرع كما في الحديث الذي قال فيه النبي صلى الله عليه وسلم: إن الله جميل يحب الجمال، فذلك لا يُعد كبرًا، وإنما الكبر هو ما تعلق بالقلب من استعلاء على الحق وعلى الخلق. وعلاج الكبر يكون بمعرفة العبد أصل خلقته من نطفة ثم علقة، وتذكر أن الكمال لله وحده، والإكثار من التواضع في المجالس واللباس والمعاملة مع الناس.',
+                evidences: [
+                    { text: 'لَا يَدْخُلُ الْجَنَّةَ مَنْ كَانَ فِي قَلْبِهِ مِثْقَالُ ذَرَّةٍ مِنْ كِبْرٍ. قِيلَ: إِنَّ الرَّجُلَ يُحِبُّ أَنْ يَكُونَ ثَوْبُهُ حَسَنًا وَنَعْلُهُ حَسَنَةً. قَالَ: إِنَّ اللَّهَ جَمِيلٌ يُحِبُّ الْجَمَالَ، الْكِبْرُ بَطَرُ الْحَقِّ وَغَمْطُ النَّاسِ.', source: 'رواه مسلم عن ابن مسعود' }
+                ]
+            },
+            {
+                id: 88, category: 'other', ruling: 'khilaf', rulingLabel: 'محل خلاف',
+                question: 'ما حكم الاحتفال بالمولد النبوي الشريف؟',
+                shortAnswer: 'ذهب جمهور المتقدمين إلى منع الاحتفال بالمولد النبوي باعتباره أمرًا محدثًا لم يفعله النبي صلى الله عليه وسلم ولا الصحابة ولا القرون المفضلة، بينما أجازه بعض العلماء المتأخرين إذا خلا من المخالفات الشرعية واقتصر على ذكر سيرته صلى الله عليه وسلم والصلاة عليه دون غلو أو اختلاط محرم.',
+                detail: 'استدل من منع الاحتفال بالمولد بأن الدين قد اكتمل في حياة النبي صلى الله عليه وسلم، ولم يفعل هذا الاحتفال هو ولا صحابته ولا التابعون مع توفر دواعيه ومحبتهم الشديدة له صلى الله عليه وسلم، ولو كان خيرًا مشروعًا لسبقونا إليه، فيُعد إحداثًا في الدين داخلاً تحت عموم النهي عن البدع. بينما رأى بعض العلماء المتأخرين أن أصل الاحتفال بذكرى مولده صلى الله عليه وسلم بتذكر سيرته والصلاة عليه وإطعام الطعام لا محذور فيه من حيث الأصل، ما لم يقترن بمخالفات كالغلو فيه صلى الله عليه وسلم بما يخرج عن حده البشري، أو الاختلاط المحرم، أو اعتقاد أن لليلة بعينها فضلاً خاصًا لم يرد به دليل. وهذه المسألة من مسائل الاجتهاد التي وقع فيها الخلاف قديمًا وحديثًا، فينبغي التعامل معها بسعة صدر دون تبديع من خالف أو تعنيف من احتفل ما لم يقترن بمخالفة بيّنة.',
+                evidences: [
+                    { text: 'مَنْ أَحْدَثَ فِي أَمْرِنَا هَذَا مَا لَيْسَ مِنْهُ فَهُوَ رَدٌّ.', source: 'رواه البخاري ومسلم عن عائشة' },
+                    { text: 'الْيَوْمَ أَكْمَلْتُ لَكُمْ دِينَكُمْ وَأَتْمَمْتُ عَلَيْكُمْ نِعْمَتِي وَرَضِيتُ لَكُمُ الْإِسْلَامَ دِينًا.', source: 'سورة المائدة، آية 3' }
                 ]
             }
         ];
