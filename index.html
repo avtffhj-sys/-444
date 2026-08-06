@@ -48,13 +48,34 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=">
-    <!-- Google Fonts: Cairo & Amiri & Scheherazade New & Noto Naskh Arabic -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Cairo & Amiri & Scheherazade New & Noto Naskh Arabic
+         تسريع بدء التشغيل: نجلب هذين الملفين بأسلوب "غير معطّل للعرض" (preload ثم
+         تفعيل كـ stylesheet بعد التحميل) بدل تحميلهما بشكل يوقف رسم الصفحة الأولى،
+         مع الإبقاء على noscript كبديل كامل لأي متصفح لا يدعم onload على link. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap"></noscript>
+
+    <!-- FontAwesome Icons: نفس أسلوب التحميل غير المعطّل للعرض، دون حذف أي أيقونة من المكتبة -->
+    <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <!-- تسريع تشغيل الصوت: فتح اتصال مبكر بخوادم القرآن الصوتية قبل الحاجة إليها فعليًا،
+         حتى لا يبطئ الاتصال الأول (DNS + TLS) بداية تشغيل أي سورة -->
+    <link rel="preconnect" href="https://mp3quran.net" crossorigin>
+    <link rel="dns-prefetch" href="https://mp3quran.net">
+    <link rel="preconnect" href="https://server8.mp3quran.net" crossorigin>
+    <link rel="dns-prefetch" href="https://server8.mp3quran.net">
+    <link rel="preconnect" href="https://archive.org" crossorigin>
+    <link rel="dns-prefetch" href="https://archive.org">
     <!-- PWA: تطبيق ويب تقدمي يدعم التصفح بلا إنترنت -->
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.svg">
+    <!-- ملاحظة: Safari على آيفون/آيباد لا يدعم SVG إطلاقًا لأيقونة الشاشة
+         الرئيسية (apple-touch-icon)، لذا أضفنا نسخة PNG مخصصة بحجم 180×180
+         بجانب أيقونة SVG الأصلية (تبقى مستخدمة في كل شيء آخر كما هي). -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="القرآن والسنة">
     <meta name="theme-color" content="#10b981">
 
     <!-- ============================================================
@@ -75,8 +96,8 @@
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
         font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:;
         img-src 'self' data: blob:;
-        media-src 'self' https:;
-        connect-src 'self' http://localhost:5000 https://fatwa-api-p9op.onrender.com https://api.alquran.cloud https://mp3quran.net https://*.mp3quran.net https://api.aladhan.com https://cdn.jsdelivr.net https://stream.radiojar.com https://backup.qurango.net;
+        media-src 'self' https: blob:;
+        connect-src 'self' http://localhost:5000 https://fatwa-api-p9op.onrender.com https://api.alquran.cloud https://mp3quran.net https://*.mp3quran.net https://api.aladhan.com https://cdn.jsdelivr.net https://stream.radiojar.com https://backup.qurango.net https://archive.org https://*.archive.org;
         object-src 'none';
         base-uri 'self';
         form-action 'self';
@@ -1592,6 +1613,13 @@
         .pwa-banner-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .pwa-banner-dismiss { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; width: 28px; height: 28px; }
         @media (max-width: 640px) { .pwa-install-banner { flex-direction: column; align-items: stretch; text-align: center; } }
+        /* بانر إرشادي مخصص لأجهزة آيفون/آيباد (Safari لا يدعم إشعار التثبيت
+           التلقائي beforeinstallprompt إطلاقًا، فنعرض تعليمات التثبيت اليدوي) */
+        #ios-install-banner .pwa-banner-text { line-height: 1.7; }
+        #ios-install-banner .pwa-banner-text i.fa-arrow-up-from-bracket {
+            background: var(--glow); color: var(--primary); width: 30px; height: 30px; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+        }
 
         /* ===== الرفيق الروحي التكيفي: تتبع العبادات والاقتراح الذكي ===== */
         .rafiq-suggestion-card {
@@ -2000,7 +2028,8 @@
             <a href="#" onclick="switchPage('rafiq', event)" class="nav-item" data-target="rafiq"><i class="fa-solid fa-seedling"></i><span data-i18n="nav_rafiq">الرفيق الروحي</span></a>
             <a href="#" onclick="switchPage('murshid', event)" class="nav-item" data-target="murshid"><i class="fa-solid fa-comment-dots"></i><span data-i18n="nav_murshid">مرشد</span></a>
             <a href="#" onclick="switchPage('radio', event)" class="nav-item" data-target="radio"><i class="fa-solid fa-tower-broadcast"></i><span data-i18n="nav_radio">الإذاعات</span></a>
-            <a href="#" onclick="switchPage('sounds', event)" class="nav-item" data-target="sounds"><i class="fa-solid fa-microphone-lines"></i><span data-i18n="nav_sounds">الصوتيات</span></a>
+            <a href="#" onclick="switchPage('sounds', event)" class="nav-item" data-target="sounds"><i class="fa-solid fa-microphone-lines"></i><span data-i18n="nav_sounds">مواعظ</span></a>
+            <a href="#" onclick="switchPage('alerts', event)" class="nav-item" data-target="alerts"><i class="fa-solid fa-bell"></i><span>التنبيهات</span></a>
             <a href="#" onclick="switchPage('about', event)" class="nav-item" data-target="about"><i class="fa-solid fa-circle-info"></i><span data-i18n="nav_about">من نحن</span></a>
         </nav>
         <span class="scroll-hint-fade" aria-hidden="true"></span>
@@ -2518,8 +2547,100 @@
 
         <!-- الصوتيات: مواعظ ومقاطع صوتية قصيرة -->
         <section id="page-sounds" class="page-view">
-            <div class="section-header"><div class="section-title"><i class="fa-solid fa-microphone-lines"></i><span data-i18n="title_sounds">صوتيات ومواعظ قصيرة</span></div></div>
+            <div class="section-header"><div class="section-title"><i class="fa-solid fa-microphone-lines"></i><span data-i18n="title_sounds">مواعظ</span></div></div>
+
+            <!-- بطاقة البحث عن موعظة (نصيًا أو صوتيًا) -->
+            <div class="fatwa-search-card glass-panel" style="margin-bottom: 20px;">
+                <div class="fatwa-search-top">
+                    <div>
+                        <h3><i class="fa-solid fa-magnifying-glass" style="color: var(--primary);"></i> البحث عن موعظة</h3>
+                        <p>اكتب اسم الموعظة أو موضوعها، أو اضغط على الميكروفون وابحث بصوتك</p>
+                    </div>
+                    <span class="fatwa-ai-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> بحث صوتي وذكي</span>
+                </div>
+
+                <div class="fatwa-search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="sounds-search-input" placeholder="مثال: التوبة، نصيحة، الجنة..." />
+                    <button class="fatwa-mic-btn" id="sounds-mic-btn" title="البحث الصوتي" onclick="startSoundsVoiceSearch()"><i class="fa-solid fa-microphone"></i></button>
+                    <button class="fatwa-search-submit-btn" onclick="searchSounds()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
+                </div>
+            </div>
+
             <div class="radio-grid" id="sounds-grid"></div>
+        </section>
+
+        <!-- التنبيهات: أبرز مزايا وخدمات المنصة -->
+        <section id="page-alerts" class="page-view">
+            <div class="section-header"><div class="section-title"><i class="fa-solid fa-bell"></i><span>التنبيهات</span></div></div>
+
+            <div class="glass-panel" style="padding: 30px; display:flex; flex-direction:column; gap:0;">
+
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0; border-bottom:1px solid var(--border-color);">
+                    <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">1</div>
+                    <div>
+                        <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-wifi"></i> التصفح دون اتصال بالإنترنت</h3>
+                        <p style="line-height:2; color:var(--text-main);">هذه المنصة تدعم خاصية عدم الاتصال بالإنترنت في أغلب خدماتها، بحيث يمكنك قراءة القرآن الكريم والاستماع لما قمت بحفظه مسبقًا من التلاوات والمواعظ، والاطّلاع على الأذكار والأدعية، حتى في حال انقطاع الشبكة أو ضعفها.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0; border-bottom:1px solid var(--border-color);">
+                    <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">2</div>
+                    <div>
+                        <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-mobile-screen-button"></i> تثبيت سريع وحجم صغير جدًا</h3>
+                        <p style="line-height:2; color:var(--text-main);">يمكنك تثبيت المنصة على جهازك (جوال أو حاسوب) بضغطة واحدة، فهي عبارة عن تطبيق ويب تقدّمي (PWA) خفيف الحجم جدًا، لا يستهلك مساحة تُذكر من ذاكرة جهازك، ويمنحك تجربة استخدام سلسة أقرب إلى التطبيقات المثبّتة من متاجر التطبيقات.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0; border-bottom:1px solid var(--border-color);">
+                    <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">3</div>
+                    <div>
+                        <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-book-quran"></i> القرآن الكريم بأشهر الروايات</h3>
+                        <p style="line-height:2; color:var(--text-main);">توفّر المنصة تلاوة القرآن الكريم كاملًا بأصوات نخبة من كبار القرّاء، وبأشهر الروايات المعتمدة كرواية حفص عن عاصم، وورش عن نافع، وقالون عن نافع، مع إمكانية اختيار القارئ والرواية التي تناسبك بكل سهولة.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0; border-bottom:1px solid var(--border-color);">
+                    <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">4</div>
+                    <div>
+                        <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-book-open"></i> تفسير ميسّر وموسوعة حديثية</h3>
+                        <p style="line-height:2; color:var(--text-main);">تجد في المنصة تفسيرًا ميسّرًا لآيات القرآن الكريم بجانب كل آية، إلى جانب موسوعة جامعة لأحاديث النبي ﷺ موثّقة من مصادرها، لتكون مرجعًا سهلًا وموثوقًا في متناول يدك.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0; border-bottom:1px solid var(--border-color);">
+                    <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">5</div>
+                    <div>
+                        <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-hands-praying"></i> أذكار وأدعية تفاعلية</h3>
+                        <p style="line-height:2; color:var(--text-main);">تتضمن المنصة أذكار الصباح والمساء وسائر الأدعية المأثورة بصورة تفاعلية سهلة المتابعة، تساعدك على المداومة عليها في كل وقت.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0; border-bottom:1px solid var(--border-color);">
+                    <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">6</div>
+                    <div>
+                        <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-scale-balanced"></i> فتاوى شرعية موثوقة و"مرشد" الذكي</h3>
+                        <p style="line-height:2; color:var(--text-main);">توفر المنصة قسمًا للفتاوى الشرعية الموثوقة، إضافة إلى ميزة "مرشد" التي تعتمد على تقنيات الذكاء الاصطناعي للإجابة عن استفساراتك الشرعية، مستندةً دائمًا إلى القرآن الكريم والسنة النبوية.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0; border-bottom:1px solid var(--border-color);">
+                    <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">7</div>
+                    <div>
+                        <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-tower-broadcast"></i> إذاعات قرآنية مباشرة</h3>
+                        <p style="line-height:2; color:var(--text-main);">استمع إلى إذاعات القرآن الكريم المباشرة من عدة قنوات في أي وقت تشاء، لتبقى مرافقًا للقرآن الكريم في يومك بشكل مستمر.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0;">
+                    <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">8</div>
+                    <div>
+                        <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-microphone-lines"></i> مواعظ ومقاطع صوتية مختارة</h3>
+                        <p style="line-height:2; color:var(--text-main);">تضم المنصة مكتبة من المواعظ والمقاطع الصوتية القصيرة لعدد من المشايخ، مع خاصية البحث النصي والصوتي عن الموعظة التي تريدها، وإمكانية حفظها للاستماع إليها لاحقًا دون إنترنت.</p>
+                    </div>
+                </div>
+
+            </div>
         </section>
 
         <!-- من نحن -->
@@ -2587,12 +2708,21 @@
         <div class="app-modal-box glass-panel" id="app-modal-box" onclick="event.stopPropagation()"></div>
     </div>
 
-    <!-- بانر تثبيت التطبيق PWA -->
+    <!-- بانر تثبيت التطبيق PWA (يظهر تلقائيًا في متصفحات Chromium: أندرويد وويندوز...) -->
     <div class="pwa-install-banner" id="pwa-install-banner">
         <div class="pwa-banner-text"><i class="fa-solid fa-mobile-screen-button"></i> ثبّت التطبيق على جهازك لتصفح أسرع حتى بدون إنترنت</div>
         <div class="pwa-banner-actions">
             <button class="btn-primary" onclick="installPwaApp()">تثبيت</button>
             <button class="pwa-banner-dismiss" onclick="dismissPwaBanner()" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+
+    <!-- بانر إرشادي لتثبيت التطبيق على آيفون/آيباد (Safari لا يطلق إشعار
+         التثبيت التلقائي إطلاقًا، فنعرض للمستخدم خطوات الإضافة اليدوية) -->
+    <div class="pwa-install-banner" id="ios-install-banner">
+        <div class="pwa-banner-text"><i class="fa-solid fa-arrow-up-from-bracket"></i> لتثبيت التطبيق على آيفون/آيباد: افتح الموقع عبر Safari، ثم اضغط زر المشاركة، واختر "إضافة إلى الشاشة الرئيسية"</div>
+        <div class="pwa-banner-actions">
+            <button class="pwa-banner-dismiss" onclick="dismissIosBanner()" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
         </div>
     </div>
 
@@ -2718,7 +2848,11 @@
                 console.log("استخدام القائمة الأولية للآيات");
             }
         }
-        loadAllQuranQuotes();
+        // تسريع بدء التشغيل: بطاقة "آية وخاطرة اليوم" تعمل فورًا بالقائمة الأساسية
+        // الجاهزة أعلاه، فنؤجل تحميل القرآن الكريم كاملاً مع تفسيره (طلبان شبكيان
+        // كبيران) بضع ثوانٍ بعد ظهور الصفحة، بدل تحميلهما فور فتح الموقع مباشرة.
+        // الميزة نفسها لا تزال تعمل بكامل نطاقها، فقط يتأخر تحميلها الموسّع قليلًا.
+        setTimeout(() => loadAllQuranQuotes(), 2000);
 
         document.getElementById('next-quote-btn').addEventListener('click', () => {
             currentQuoteIndex = (currentQuoteIndex + 1) % quotesList.length;
@@ -3410,6 +3544,21 @@
                 }, 60);
             } else {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // عند فتح قسم "المواعظ": نبدأ اتصالًا خفيفًا بخادم الصوتيات مبكرًا (قبل
+            // ضغط المستخدم على تشغيل أي مقطع فعليًا) حتى لا يبطئ إنشاء الاتصال أول تشغيل
+            if (pageId === 'sounds' && typeof warmupSoundsConnection === 'function') {
+                warmupSoundsConnection();
+            }
+
+            // تحميل قائمة القرّاء والإذاعات فقط عند فتح صفحتيهما فعليًا (وليس فور
+            // فتح الموقع) لتسريع بدء التشغيل دون حذف أي من الخدمتين
+            if (pageId === 'quran' && typeof ensureRecitersLoaded === 'function') {
+                ensureRecitersLoaded();
+            }
+            if (pageId === 'radio' && typeof ensureRadiosLoaded === 'function') {
+                ensureRadiosLoaded();
             }
 
             // إعادة حساب مؤشرات "يوجد المزيد" بعد ظهور القسم الجديد فعليًا في الصفحة
@@ -4488,7 +4637,15 @@
             }
         }
 
-        loadReciters();
+        // تسريع بدء التشغيل: لا نجلب قائمة القرّاء (طلب شبكي خارجي) إلا عند فتح صفحة
+        // "القرآن الكريم" فعليًا، بدل تحميلها فور فتح الموقع حتى لو كان المستخدم
+        // في صفحة أخرى؛ الخدمة نفسها لم تُحذف، فقط يتأخر جلبها لحين الحاجة الفعلية.
+        let recitersLoadStarted = false;
+        function ensureRecitersLoaded() {
+            if (recitersLoadStarted) return;
+            recitersLoadStarted = true;
+            loadReciters();
+        }
 
         // قائمة موحّدة بكل أسماء الروايات الموجودة لدى جميع القراء مجتمعين،
         // بحيث تكون متاحة للاختيار بغض النظر عن القارئ المحدد حاليًا
@@ -4664,33 +4821,70 @@
         // حتى تعمل أزرار "التالي/السابق" من شاشة القفل عبر Media Session API.
         const playbackContext = { server: null, reciter: null, moshaf: null, index: -1 };
 
-        function playSurahAtIndex(server, index, reciter, moshaf) {
+        // خادم احتياطي موثوق (حفص عن عاصم) يُستخدم فقط إذا تعذّر تشغيل السورة
+        // من القارئ/الرواية المختارة، حتى تبقى كل سورة قابلة للتشغيل دائمًا
+        const DEFAULT_FALLBACK_SERVER = 'https://server8.mp3quran.net/afs/';
+
+        // يحاول تشغيل رابط صوتي واحد، ويُخبر عبر Promise هل نجح البدء بالتشغيل أم لا
+        function tryPlayUrl(url) {
+            return new Promise((resolve) => {
+                let settled = false;
+                const onCanPlay = () => { cleanup(); resolve(true); };
+                const onError = () => { cleanup(); resolve(false); };
+                function cleanup() {
+                    if (settled) return;
+                    settled = true;
+                    audio.removeEventListener('canplay', onCanPlay);
+                    audio.removeEventListener('error', onError);
+                }
+                audio.addEventListener('canplay', onCanPlay, { once: true });
+                audio.addEventListener('error', onError, { once: true });
+                audio.src = url;
+                audio.load();
+                audio.play().catch(() => { /* سيُلتقط الخطأ الفعلي عبر حدث error إن وُجد */ });
+            });
+        }
+
+        async function playSurahAtIndex(server, index, reciter, moshaf) {
             if (index < 0 || index >= staticSurahNames.length) return;
             const name = staticSurahNames[index];
             const surahNumberInt = index + 1;
             const surahNum3 = surahNumberInt.toString().padStart(3, '0');
             const surahNum2 = surahNumberInt.toString().padStart(2, '0');
             const surahNum1 = surahNumberInt.toString();
-            const audioUrl = `${server}${surahNum3}.mp3`;
 
             playbackContext.server = server;
             playbackContext.reciter = reciter;
             playbackContext.moshaf = moshaf;
             playbackContext.index = index;
 
-            audio.src = audioUrl;
-            audio.onerror = function() {
-                audio.src = `${server}${surahNum2}.mp3`;
-                audio.onerror = function() {
-                    audio.src = `${server}${surahNum1}.mp3`;
-                    audio.play().catch(err => console.log(err));
-                };
-                audio.play().catch(err => console.log(err));
-            };
-            audio.play().catch(err => console.log(err));
-
             playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
             updateNowPlaying(`سورة ${name}`, `${reciter.name} (${moshaf.name || ''})`);
+            showToast(`جاري تحميل سورة ${name}...`);
+
+            // نجرّب صيغ الترقيم الشائعة تباعًا (001 ثم 01 ثم 1) على خادم القارئ نفسه أولًا
+            const candidateUrls = [
+                `${server}${surahNum3}.mp3`,
+                `${server}${surahNum2}.mp3`,
+                `${server}${surahNum1}.mp3`
+            ];
+
+            for (const url of candidateUrls) {
+                if (playbackContext.index !== index) return; // المستخدم بدّل السورة أثناء المحاولة
+                const ok = await tryPlayUrl(url);
+                if (ok) return;
+            }
+
+            // إن تعذّر تشغيل السورة من هذا القارئ/الرواية تمامًا، نشغّلها من خادم
+            // احتياطي موثوق حتى لا تبقى السورة معطّلة، مع توضيح ذلك للمستخدم
+            if (playbackContext.index !== index) return;
+            const fallbackUrl = `${DEFAULT_FALLBACK_SERVER}${surahNum3}.mp3`;
+            const fallbackOk = await tryPlayUrl(fallbackUrl);
+            if (fallbackOk) {
+                showToast(`تعذّر تشغيل سورة ${name} من "${reciter.name}"، تم تشغيلها من قارئ آخر بدلًا منها.`);
+            } else {
+                showToast(`تعذّر تشغيل سورة ${name} حاليًا، تحقق من اتصال الإنترنت.`);
+            }
         }
 
         function renderSurahsGrid(reciter, moshaf) {
@@ -4793,7 +4987,16 @@
                 grid.appendChild(card);
             });
         }
-        loadRadios();
+
+        // تسريع بدء التشغيل: نؤجل جلب قائمة الإذاعات (طلب شبكي خارجي) إلى حين فتح
+        // صفحة "الإذاعات" فعليًا بدل تحميلها فور فتح الموقع؛ الخدمة تبقى كما هي
+        // تمامًا، فقط يتأخر تنفيذها لحين الحاجة الفعلية.
+        let radiosLoadStarted = false;
+        function ensureRadiosLoaded() {
+            if (radiosLoadStarted) return;
+            radiosLoadStarted = true;
+            loadRadios();
+        }
 
         /* ============================================================
            تخزين "الصوتيات/المواعظ" محليًا عبر IndexedDB لتعمل بدون إنترنت
@@ -4889,11 +5092,15 @@
                 return;
             }
 
-            audio.src = s.url;
-            audio.play().catch(err => console.log(err));
             playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
             updateNowPlaying(s.title, s.sheikh);
-            showToast(`جاري تشغيل ${s.title}`);
+            showToast(`جاري تحميل ${s.title}...`);
+            const ok = await tryPlayUrl(s.url);
+            if (ok) {
+                showToast(`جاري تشغيل ${s.title}`);
+            } else {
+                showToast(`تعذر تشغيل "${s.title}" حاليًا، تحقق من اتصال الإنترنت.`);
+            }
         }
 
         async function toggleSoundOffline(s, btn) {
@@ -4936,16 +5143,497 @@
             { title: "معنى قوله تعالى سائحات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/128-.mp3" },
             { title: "موعظة رجل مسن ينصح", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/145--.mp3" },
             { title: "نصيحة لمن يريد حفظ القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/160-.mp3" },
-            { title: "قصة الصليب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/102-.mp3" }
+            { title: "قصة الصليب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/102-.mp3" },
+            { title: "أجر قرض المؤمن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/010-.mp3" },
+            { title: "أحداث معجزة الإسراء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/012-.mp3" },
+            { title: "أعظم المنجيات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/017--.mp3" },
+            { title: "الإخلاص أعظم ما يرتفع إلى السماء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/019--.mp3" },
+            { title: "الزهد في العلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/025--.mp3" },
+            { title: "الزوجة الصالحة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/026--.mp3" },
+            { title: "المشروع فعله عند من حضرته الوفاة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/034-.mp3" },
+            { title: "بعثة نبينا صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/062-.mp3" },
+            { title: "بما خوف الله عباده؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/063-.mp3" },
+            { title: "تصفية السرائر لرب البصائر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/066-.mp3" },
+            { title: "تعظيم الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/068-.mp3" },
+            { title: "تلقين الميت بعد الدفن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/071-.mp3" },
+            { title: "دعاء مجرب لمن لم يرزقه الله الولد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/079--.mp3" },
+            { title: "كم عدد الجنان؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/109-.mp3" },
+            { title: "متى تنفعك جوارحك؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/122-.mp3" },
+            { title: "أسباب البعد عن الدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/138-.mp3" },
+            { title: "أعظم العبادة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/139--.mp3" },
+            { title: "من أوائل ما يفقد من العلوم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/152-.mp3" },
+            { title: "توقير من يسبح الله عز وجل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/159--.mp3" },
+            { title: "وصية لكل مذنب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/165-.mp3" },
+            { title: "نصيحة مؤثرة لكل حزين ومهموم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/168-.mp3" },
+            { title: "هل الدعاء يرد القضاء؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/173-.mp3" },
+            { title: "أعظم العدل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/016-.mp3" },
+            { title: "ألا يستحي العبد أن يبارز الله بالمعاصي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/018--.mp3" },
+            { title: "الأيام النضرة والسيرة العطرة لنبينا - المولد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/020-.mp3" },
+            { title: "الرسول في الطائف وتأثر الجن بالقرآن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/023-.mp3" },
+            { title: "الطريق إلى حسن الخاتمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/029-.mp3" },
+            { title: "الفرق بين سدرة المنتهى وشجرة الزقوم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/031-.mp3" },
+            { title: "إلى من ترك الصلاة في المسجد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/036-...mp3" },
+            { title: "إن لموتانا حق علينا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/038--.mp3" },
+            { title: "إنها تطلع بين قرني شيطان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/039-.mp3" },
+            { title: "أين همة الشباب من همة الصحابة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/061-.mp3" },
+            { title: "بين موسى وهارون", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/064-.mp3" },
+            { title: "تعامل النبي صلى الله عليه وسلم مع اليهود", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/067--.mp3" },
+            { title: "إنها شجرة تخرج في أصل الجحيم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/070-..-.mp3" },
+            { title: "ثلاث وصايا هامة في ليلة القدر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/073-_.mp3" },
+            { title: "حال الأمة قبل ظهور المهدي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/075--.mp3" },
+            { title: "حديث باب الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/077-.mp3" },
+            { title: "حكم الترحم على من مات من غير المسلمين؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/078-.mp3" },
+            { title: "رؤية الله جل جلاله في الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/084-.mp3" },
+            { title: "صيام رسول الله صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/088--.mp3" },
+            { title: "علامات خروج المهدي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/091--.mp3" },
+            { title: "عيد القيامة عند النصارى وعيد الفصح عند اليهود", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/092-.mp3" },
+            { title: "فائدتان جليلتان من سيرة نبينا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/094-.mp3" },
+            { title: "فضل سورة الكهف يوم الجمعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/095--.mp3" },
+            { title: "فوائد من هجرة نبينا وبركة القصواء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/099-.mp3" },
+            { title: "قصة أبو لبابة مع بني قريظة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/100--.mp3" },
+            { title: "كلمة إلى تارك الصلاة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/107--.mp3" },
+            { title: "كيف الخشوع في الصلاة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/110-.mp3" },
+            { title: "لفظ الكوثر في القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/116--.mp3" },
+            { title: "ليلة النصف من شعبان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/117-.mp3" },
+            { title: "ما هي آية الكلالة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/119-.mp3" },
+            { title: "ما يستنبط من خبر موسى مع الخضر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/120--.mp3" },
+            { title: "محبة النبي صلى الله عليه وسلم: آثار وعبر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/124-.mp3" },
+            { title: "معنى الفعل مرد في القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/127--.mp3" },
+            { title: "مفردتي زهق والشطط", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/130--.mp3" },
+            { title: "مقام النبوة يحتاج إلى مقامات حسان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/132-.mp3" },
+            { title: "هل اشتقت للرسول صلى الله عليه وسلم؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/001-.....mp3" },
+            { title: "رؤية الله في الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/002-allahGodWillBeSeenInParadise-chikhAlmaghamissi.mp3" },
+            { title: "أعظم الغبن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/004-youtube.mp3" },
+            { title: "بريق المواعظ المنبرية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/005-youtube.mp3" },
+            { title: "كلمات مؤثرة جدًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/006-youtube.mp3" },
+            { title: "كيف نتوب؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/007-youtubeFlv.mp3" },
+            { title: "كيف يثبت الله عباده المؤمنين؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/008-youtube.mp3" },
+            { title: "يوم تأتي كل نفس تجادل عن نفسها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/009-youtube.mp3" },
+            { title: "إجلال الله تعالى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/011-.mp3" },
+            { title: "أسباب الرحمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/013--.mp3" },
+            { title: "أسباب توجب الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/014--.mp3" },
+            { title: "الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/022-.mp3" },
+            { title: "الرمان في القرآن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/024-.mp3" },
+            { title: "الشوق لرؤية وجه أرحم الراحمين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/027-.mp3" },
+            { title: "الظبي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/030-.mp3" },
+            { title: "الفرق بين كيد النساء وكيد الشيطان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/032--.mp3" },
+            { title: "الكرم والبخل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/033--.mp3" },
+            { title: "المنهج الصحيح في الدعوة إلى الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/035-_.mp3" },
+            { title: "اليمين تنعقد على ثلاثة أضرب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/037-.mp3" },
+            { title: "أهلنا في الشام يُمحّصون", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/040--.mp3" },
+            { title: "أيام الحج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/041-.mp3" },
+            { title: "آية وتفسير: ألم تر كيف فعل ربك بعاد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/042---.mp3" },
+            { title: "آية وتفسير: أُحِلّ لكم صيد البحر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/043---.mp3" },
+            { title: "آية وتفسير: إمّا تعرضن عنهم ابتغاء رحمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/044--.mp3" },
+            { title: "آية وتفسير: إن الله عنده علم الساعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/045--.mp3" },
+            { title: "آية وتفسير: إنما حرّم عليكم الميتة والدم ولحم الخنزير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/046--.mp3" },
+            { title: "آية وتفسير: إنه لقول رسول كريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/047--.mp3" },
+            { title: "آية وتفسير: تلك أمة قد خلت", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/048---.mp3" },
+            { title: "آية وتفسير: زُيّن للناس حب الشهوات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/049---.mp3" },
+            { title: "آية وتفسير: ص والقرآن ذي الذكر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/050--.mp3" },
+            { title: "آية وتفسير: صبغة الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/051--.mp3" },
+            { title: "آية وتفسير: قال أرأيت إذ أوينا إلى الصخرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/052--.mp3" },
+            { title: "آية وتفسير: وآخرين منهم لما يلحقوا بهم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/053--.mp3" },
+            { title: "آية وتفسير: وإذ قال موسى لفتاه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/054--.mp3" },
+            { title: "آية وتفسير: وإذا العشار عطلت", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/055--.mp3" },
+            { title: "آية وتفسير: والله بصير بالعباد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/056--.mp3" },
+            { title: "آية وتفسير: وثمود الذين جابوا الصخر بالوادِ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/057--.mp3" },
+            { title: "آية وتفسير: وقضى ربك ألا تعبدوا إلا إياه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/058---.mp3" },
+            { title: "آية وتفسير: وهديناه النجدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/059--.mp3" },
+            { title: "آية وتفسير: وإن يمسسك الله بضرّ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/060---.mp3" },
+            { title: "تعليق على أحداث القصير بسوريا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/069-.mp3" },
+            { title: "ثبات أهلنا في سوريا على الدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/072--.mp3" },
+            { title: "ثمانية من خلق الله لا يلحقها العدم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/074-1.mp3" },
+            { title: "حديث الجساسة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/076--.mp3" },
+            { title: "دواء العشق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/080---.mp3" },
+            { title: "ذكر الله حياة السرائر وأنس الضمائر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/081-...mp3" },
+            { title: "رأي الشيخ المغامسي في مسلسل عمر بن الخطاب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/082-.mp3" },
+            { title: "سبب عذاب الله لأهل الشمال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/085--.mp3" },
+            { title: "طرائق تظهر فيها القدرة الإلهية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/089-.mp3" },
+            { title: "عبر وعظات من قصة أصحاب الأخدود", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/090-.mp3" },
+            { title: "غزوة أحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/093--.mp3" },
+            { title: "فضل صيام يوم عرفة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/096-.mp3" },
+            { title: "فوائد جليلة من سيرة نبينا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/097-.mp3" },
+            { title: "فوائد جليلة من غزوة بدر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/098-.mp3" },
+            { title: "قصة الشيخ المغامسي مع ولده هاشم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/101--.mp3" },
+            { title: "قصة مرض الشيخ المغامسي والممرضة اللبنانية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/104-.mp3" },
+            { title: "قصيدة في وفاة طالب يحبه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/105-.mp3" },
+            { title: "قيام الليل من هدي النبوة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/106--.mp3" },
+            { title: "كلمة حول إيذاء الأطفال في سوريا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/108--.mp3" },
+            { title: "كيف تتشبه بالملائكة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/111-.mp3" },
+            { title: "كيف تعظ نفسك وترقق قلبك؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/112-...mp3" },
+            { title: "كيف تنال الخاتمة الحسنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/113-.mp3" },
+            { title: "كيف خانت امرأة نوح وامرأة لوط أزواجهما؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/114-.mp3" },
+            { title: "لا تقترب من خصوصيات أبنائك", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/115--.mp3" },
+            { title: "ما صحة ما ورد في فضل سورة الملك والواقعة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/118-.mp3" },
+            { title: "محبة الله عز وجل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/123--.mp3" },
+            { title: "مصير الملائكة يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/125-_.mp3" },
+            { title: "معصية نهى الله عنها ولم يفعلها أحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/126--.mp3" },
+            { title: "معنى كلمة وجيف في القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/129--.mp3" },
+            { title: "مفردتي مستطيرًا وقمطريرًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/131--.mp3" },
+            { title: "من ينام وقد أوتر ليس كمن ينام ولم يوتر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/133---.mp3" },
+            { title: "هَاؤُمُ اقْرَؤُوا كِتَابِيهْ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/134---.mp3" },
+            { title: "أما آن أن نستحيي من الخالق؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/135-...mp3" },
+            { title: "رحمة الله عز وجل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/136-..-.mp3" },
+            { title: "فضل الإنفاق في رمضان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/137-..-.mp3" },
+            { title: "الصدق مع الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/140--.mp3" },
+            { title: "الوقوف أمام الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/141-.mp3" },
+            { title: "إن رحمة الله قريب من المحسنين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/142-_.mp3" },
+            { title: "تعليق على مقطع دفن سوري حي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/143-.mp3" },
+            { title: "حسرات تقع يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/144-.mp3" },
+            { title: "قد جاءكم رسول من أنفسكم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/146--.mp3" },
+            { title: "كم رُفع لك من عمل لا ترضاه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/147-.mp3" },
+            { title: "لن تُنال المنح والعطايا إلا بفضل الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/148---.mp3" },
+            { title: "نصيحة إلى كل مبتلى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/149-...mp3" },
+            { title: "هجر الناس للقرآن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/150-..-.mp3" },
+            { title: "هل لك عمل صالح ترجو الله به؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/151-.mp3" },
+            { title: "من هدي النبي في سنة الفجر والظهر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/153--.mp3" },
+            { title: "منزلة الأم في الإسلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/154--.mp3" },
+            { title: "اللحظات الأولى في الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/156-.mp3" },
+            { title: "موعظة بليغة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/157-.mp3" },
+            { title: "موعظة جد مؤثرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/158--.mp3" },
+            { title: "كيف نتأثر بالقرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/161---.mp3" },
+            { title: "كيف نصل إلى حسن الخاتمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/162-.mp3" },
+            { title: "مسؤولية الكلمة لدى المسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/163--.mp3" },
+            { title: "نصيحة غالية بترك المعصية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/164-.mp3" },
+            { title: "نصيحة لمن يصر على المعاصي في العشر من ذي الحجة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/166-.mp3" },
+            { title: "اجعل لك طاعة لا يعلمها إلا الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/167--.mp3" },
+            { title: "أسباب الوصول إلى الخير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/169-..-.mp3" },
+            { title: "كيف نستقبل رمضان؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/170-...mp3" },
+            { title: "نصيحة لمن يتكاسل عن قيام الليل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/171--.mp3" },
+            { title: "نفائس العلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/172-.mp3" },
+            { title: "هل العذاب يقع على الروح والجسد معًا في القبر؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/175-.mp3" },
+            { title: "هل ثناء الناس علامة على رضا الله؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/176-.mp3" },
+            { title: "هل رأى النبي صلى الله عليه وسلم البحر؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/177-.mp3" },
+            { title: "هل هناك أحد له حجة على الله؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/178--.mp3" },
+            { title: "وهو الذي أنشأ جنّات معروشات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/179-...-.mp3" },
+            { title: "وحشي قاتل حمزة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/180-.mp3" },
+            { title: "وصف حملة العرش", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/181--.mp3" },
+            { title: "وصية للمبتعثين في الخارج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/182-.mp3" },
+            { title: "وصية عامة مؤثرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/183--.mp3" },
+            { title: "وفاة نبينا محمد صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/184-.mp3" },
+            { title: "وقدمنا إلى ما عملوا من عمل فجعلناه هباءً منثورا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/185-.mp3" },
+            { title: "وقفة مع آية من سورة الجمعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/186--.mp3" },
+            { title: "وقفة مع سيدنا زكريا عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/187--.mp3" },
+            { title: "وقفة مع قيام الليل في رمضان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/188--.mp3" },
+            { title: "ولا تخزني يوم يُبعثون", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/189--.mp3" },
+            { title: "يا ابن آدم سوف تنسى بعد موتك", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/190-..-.mp3" },
+            { title: "يوم عرفة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/191-.mp3" },
+            { title: "التوبة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/021-.mp3" },
+            { title: "وجل القلوب من علام الغيوب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/028---.mp3" },
+            { title: "تاريخ السنة الميلادية وحكم التهنئة بها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/065--.mp3" },
+            { title: "رحلة الإسراء والمعراج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/083--.mp3" },
+            { title: "سبحان الله ذي الوجه الأكرم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/086-.mp3" },
+            { title: "مواعظ جليلة وفوائد نفيسة من رحلة الإسراء والمعراج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/155-.mp3" },
+            { title: "هل الدعاء يرد القضاء؟ (2)", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/174-.mp3" },
+            { title: "( إِنَّمَا يَتَقَبَّلُ اللَّهُ مِنَ الْمُتَّقِينَ ) كلمات رائعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/001-.mp3" },
+            { title: "وأحسن كما أحسن الله إليك ولا تبغِ الفساد في الأرض", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/002-__-.mp3" },
+            { title: "{ بَلْ هُوَ آيَاتٌ بَيِّنَاتٌ فِي صُدُورِ الَّذِينَ أُوتُوا الْعِلْمَ}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/003--.mp3" },
+            { title: "{اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/004-.mp3" },
+            { title: "{لا يُغَادِرُ صَغِيرَةً وَلا كَبِيرَةً إِلاَّ أَحْصَاهَا}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/005--.mp3" },
+            { title: "{لَقَدْ خَلَقْنَا الْإِنسَانَ فِي كَبَدٍ}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/006--.mp3" },
+            { title: "{وكفى بالله عليمًا}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/007-.mp3" },
+            { title: "ابن مسعود_خمس آيات في سورة النساء كم أنا فَرِحٌ بها ولا يعرفها العلماء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/008-_-.mp3" },
+            { title: "إحسانك على العباد يظهر يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/009--.mp3" },
+            { title: "آخر هذه الأمة عهدًا بنبينا ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/010-.mp3" },
+            { title: "اسم الله الأعظم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/011-.mp3" },
+            { title: "إطعام الطعام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/012--.mp3" },
+            { title: "أعظم أحوال المؤمن أن يكون إمامًا في الخير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/013--.mp3" },
+            { title: "أعظم أدعية القرآن التي يرجى إجابتها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/014-.mp3" },
+            { title: "اعظم الخذلان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/015-.mp3" },
+            { title: "أعظم الشرف أن تنضوي تحت لواء الصالحين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/016--.mp3" },
+            { title: "أعظم باعث لإتيان الطاعة والإحجام عن المعصية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/018--.mp3" },
+            { title: "أعظم رابط هو رابط العقيدة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/019--.mp3" },
+            { title: "أعظم غايات القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/020-.mp3" },
+            { title: "أعظم ما ترجح به كفة العبد يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/021-_.mp3" },
+            { title: "أعظم وصية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/022-.mp3" },
+            { title: "أفضل الصدقة سقيا الماء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/023--.mp3" },
+            { title: "أكرم العباد على الله من لم يغمض عينيه إلا وقد بيّت نية صالحة لربه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/024--.mp3" },
+            { title: "الالتجاء الى الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/025-.mp3" },
+            { title: "الأيادي ثلاث", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/026--.mp3" },
+            { title: "البيعة وجمع الكلمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/027-.mp3" },
+            { title: "التَّحْجِيل من خصائص هذه الأمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/028--.mp3" },
+            { title: "التراحم بين الخلق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/029--.mp3" },
+            { title: "التصديق من أعظم التوفيق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/030--.mp3" },
+            { title: "الجنة ومرافقة الأنبياء فيها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/031-.mp3" },
+            { title: "الحياء من الله في تقصير العبد في حق الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/032--.mp3" },
+            { title: "الحياة الحقَّة أن تُسَدِّدَ وتُقارب ما استطعت", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/033--.mp3" },
+            { title: "الرد على من ينكر الصدقة في الخارج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/034-.mp3" },
+            { title: "الركن والمقام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/035-.mp3" },
+            { title: "الرمان في السنة النبوية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/036-.mp3" },
+            { title: "الرمان في القرآن ( 1 ) سورة الأنعام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/037-1.mp3" },
+            { title: "السؤدد يجمع في أمرين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/038--.mp3" },
+            { title: "الشيخ صالح المغامسي ــ يلقن الشهادة لمجموعة من المسلمين الجدد ـ في ربوة الرياض", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/039-.mp3" },
+            { title: "الصالحون إذا فقدوا آمالهم تفقَّدوا أعمالهم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/041--.mp3" },
+            { title: "العبادة والعباد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/043--.mp3" },
+            { title: "العباس بن عبد المطلب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/044--.mp3" },
+            { title: "العبرة بكمال النهايات لا بنقص البدايات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/045--.mp3" },
+            { title: "العقوبة على قدر الذنب لا على قدر الجسد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/046--.mp3" },
+            { title: "العيد معناه ومشروعيته", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/047--.mp3" },
+            { title: "الفرحة في العيد وضوابطها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/048--.mp3" },
+            { title: "القلوب بيد الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/049--.mp3" },
+            { title: "المراد بأهل الأعراف ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/050-.mp3" },
+            { title: "المكان الوحيد الذي لو دخلته لا تندم إن قبضت فيه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/051-.mp3" },
+            { title: "الملحمة ليس هذا زمانها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/052-.mp3" },
+            { title: "المواطن التي تحفها الملائكة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/053--.mp3" },
+            { title: "المؤمن لابد أن يكون بين الرجاء والخوف", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/054-.mp3" },
+            { title: "المؤمن يُوطِّن نفسه على ألَّا يدخل جوفه شيء حرمه الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/055--.mp3" },
+            { title: "النبي ﷺ أكمل الخلق خلقًا وخُلقًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/056-.mp3" },
+            { title: "الوليد بن المغيرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/057--.mp3" },
+            { title: "إن الله لا يريد منا إلا قلوبنا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/058--.mp3" },
+            { title: "إن الله لاطف بهذه الآية أصحاب رسول الله ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/059--.mp3" },
+            { title: "انكسار إبراهيم عليه السلام لربه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/060--.mp3" },
+            { title: "أهل الجنة يحمدون الله في أمور شتى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/061-.mp3" },
+            { title: "أول الطرائق الى سلم العبودية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/062--.mp3" },
+            { title: "أين الشاكرون ؟!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/063--.mp3" },
+            { title: "بعض من النعيم الذي أعده الله لعباده", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/064-.mp3" },
+            { title: "تعظيم الإسلام شأن الجار", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/065--.mp3" },
+            { title: "تعظيم يوم الجمعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/066--.mp3" },
+            { title: "تفسير آية (ولم يجعلني جبارا شقيا)", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/068--.mp3" },
+            { title: "تفسير قوله تعالى ــ هَذَانِ خَصْمَانِ اخْتَصَمُوا فِي رَبِّهِمْ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/069-.mp3" },
+            { title: "جعل الله هذه الدنيا ممرًا ومعبرًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/070--.mp3" },
+            { title: "جملة من الوصايا بالبر بالوالدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/071--.mp3" },
+            { title: "حاجة المرء للنور في الدنيا والآخرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/072-.mp3" },
+            { title: "حتى تعلم الأمة شرف نبيها ﷺ وكرامته عند ربه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/073--.mp3" },
+            { title: "حتى تكون قريبًا من رحمة الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/074--.mp3" },
+            { title: "حتى تنال شرف السقيا من حوض نبينا ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/075--.mp3" },
+            { title: "حديث القصاص", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/076-.mp3" },
+            { title: "حق المساكين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/077--.mp3" },
+            { title: "حق الوالدين أن يُدعَى لهما بعد كل تشهد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/078--.mp3" },
+            { title: "حكمة علي رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/080-.mp3" },
+            { title: "حكمة من حكم علي رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/081-_.mp3" },
+            { title: "خروج الدابــة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/082--.mp3" },
+            { title: "خيمتا أم معبد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/083-_.mp3" },
+            { title: "دعاة الفتنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/088-.mp3" },
+            { title: "ذكر الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/089--.mp3" },
+            { title: "رحمة للعالمين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/090--.mp3" },
+            { title: "رسالة للمتهاونين عن أداء الصلاة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/091-_.mp3" },
+            { title: "سنة الابتلاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/092--.mp3" },
+            { title: "صدقة السر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/093--.mp3" },
+            { title: "صلاة العصر والعشاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/094-.mp3" },
+            { title: "صلاة الفجر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/095-_.mp3" },
+            { title: "ضعف الإنسان وحاجته إلى نصير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/096--.mp3" },
+            { title: "ضمَّة القبر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/097--.mp3" },
+            { title: "طريقة تعلم تفسير القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/099--.mp3" },
+            { title: "طمع أهل النار في طلب الماء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/100--.mp3" },
+            { title: "عملك إما أن يزين عنقك أو يشينه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/101--.mp3" },
+            { title: "فضل صلاتي العشاء والفجر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/102-.mp3" },
+            { title: "فوائد في الرزق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/103--.mp3" },
+            { title: "قد تقلُّ المعصية لكنها تفجر وتعظم من النِّـيَّة السَّيِّئة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/104--.mp3" },
+            { title: "قد يُزَيَّنُ للإنسان سوءُ عمله فيراه حسنًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/105--.mp3" },
+            { title: "قد يُورِث الله بعض عباده ودًّا لهم في قلوب الناس", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/106--.mp3" },
+            { title: "قصة جريج العبد الصالح من بني اسرائيل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/107--.mp3" },
+            { title: "كلمه للمربين بمناسبة عام دراسي جديد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/109-.mp3" },
+            { title: "كيف تجد قلبك في رمضان ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/110-.mp3" },
+            { title: "كيف نصل إلى حسن الخاتمة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/111-.mp3" },
+            { title: "لا تعلق قلبك بأحد غير الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/112--.mp3" },
+            { title: "لا رزق في الآخرة إلا لمن دخل الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/113--.mp3" },
+            { title: "لا يجوز مدح النبي ﷺ بمثل هذه الطرائق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/114--.mp3" },
+            { title: "لا ينبغي للمؤمن أن يشمت بصاحب معصية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/115-.mp3" },
+            { title: "لا يوجد في الدنيا خيرٌ محض ولا شرٌّ محض", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/116--.mp3" },
+            { title: "لطف الله بعباده", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/117--.mp3" },
+            { title: "لن ينصرك الله بشيء أعظم من طاعتك له", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/119--.mp3" },
+            { title: "لهذا نشأ النبي ﷺ يتيمًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/120--.mp3" },
+            { title: "ما يشرع في ليلة ويوم العيد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/121--.mp3" },
+            { title: "متى يرزق العبد الخير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/122-_.mp3" },
+            { title: "متى يعظم الشوق للقيا الله ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/123-.mp3" },
+            { title: "مجاهدة النفس", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/124--.mp3" },
+            { title: "محبة النبي ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/125-_.mp3" },
+            { title: "محبته صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/126-_.mp3" },
+            { title: "معاداة النبي ﷺ مذمّة ينال بها الإنسان العداء من الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/130--.mp3" },
+            { title: "معنى قوله {أَلَمْ تَرَ أَنَّ اللَّهَ يَسْجُدُ لَهُ مَنْ فِي السَّمَاوَاتِ }", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/131-.mp3" },
+            { title: "مقام إبراهيم عليه السلام في الملأ الأعلى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/132--.mp3" },
+            { title: "مقام الحمد أعظم مقامات الصالحين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/133-.mp3" },
+            { title: "من أسباب النجاة يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/134-.mp3" },
+            { title: "من أظهر لله الصبر أظهر الله له الكرامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/135--.mp3" },
+            { title: "من أعظم الخيانة خيانة الوطن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/136--.mp3" },
+            { title: "من أعظم القربات إلى الله أن تحب أن يُعَظَّم الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/137--.mp3" },
+            { title: "من أعظم مناقب أبي بكر الصديق رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/138--.mp3" },
+            { title: "من الأكمل أن تحافظ على صلاة الضُّحى في هذه الحالة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/139--.mp3" },
+            { title: "من الخذلان أن يرزق الله عبدًا جبروتًا يطغى به على الخلق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/140--.mp3" },
+            { title: "من الذي يفعل ما يشاء؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/141-.mp3" },
+            { title: "من بركات النبي ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/142--.mp3" },
+            { title: "مِن حُسْنِ الأدب عند حضور صلاة الجمعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/143--.mp3" },
+            { title: "من خبر إبراهيم عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/144-.mp3" },
+            { title: "من عجز في الدنيا عن أن يعتبر فهو في الآخرة أعجز عن أن يعتذر !!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/145-.mp3" },
+            { title: "من فضائل _لا إله إلا الله_ في الدنيا والآخرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/146-__-.mp3" },
+            { title: "من كمال رحمة الله بعباده", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/147--.mp3" },
+            { title: "من هديه صلى الله عليه وسلم في سنة الفجر والظهر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/148-.mp3" },
+            { title: "من وصايا خطبة الوداع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/149--.mp3" },
+            { title: "نصائح في زمن الفتن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/151-_.mp3" },
+            { title: "نصيحة لكل مسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/154-.mp3" },
+            { title: "هذا مما تنعقد عليه أنامل الصالحين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/155--.mp3" },
+            { title: "هذه الأمة مرحومة منصورة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/156-.mp3" },
+            { title: "والله لا يستغني عن رحمة الله أحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/157-.mp3" },
+            { title: "وطننا ليس كسائر الأوطان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/159--.mp3" },
+            { title: "وقديمًا كان في الناس الحسد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/160--.mp3" },
+            { title: "وَلاَ تَقْرَبُوا الزِّنَى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/161-_.mp3" },
+            { title: "ولهذا عظمت كلمة _ لا إله إلا الله _ !!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/162-__.mp3" },
+            { title: "يختلف المراد بالتقوى باختلاف المخاطَب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/163--.mp3" },
+            { title: "يد النبي ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/164-_.mp3" },
+            { title: "أبشر بطول سلامة يا مربع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/001-.mp3" },
+            { title: "ابن تيمية وسيبويه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/002-.mp3" },
+            { title: "احرص على الخوف من مقام الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/004-.mp3" },
+            { title: "أدب سحرة فرعون", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/005-.mp3" },
+            { title: "ادعاء المهدي وأثر ذلك على الأمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/006--.mp3" },
+            { title: "أدلة نزول عيسى عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/007-.mp3" },
+            { title: "أسباب الوقاية من فتنة الدجال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/009-.mp3" },
+            { title: "استعن على من ظلمك بأمرين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/010--.mp3" },
+            { title: "اسماء المدينه المنوره وفضلها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/011-.mp3" },
+            { title: "أعظم ما يدخر من العمل لحظة سؤال الملائكة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/012--.mp3" },
+            { title: "أقسام أهل الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/013--.mp3" },
+            { title: "أكثر الناس تبعاً للدجال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/014-.mp3" },
+            { title: "الإجازة راحة من أعمال الدنيا لا من أعمال الآخرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/015--.mp3" },
+            { title: "الأحاديث الواردة في المهدي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/016-.mp3" },
+            { title: "الإنصاف عزيز", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/019--.mp3" },
+            { title: "التأصيل الفقهي لمسألة اعفاء اللحية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/021-.mp3" },
+            { title: "التفاضل بين الأقاليم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/022--.mp3" },
+            { title: "الحجاب الإسلامي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/025-.mp3" },
+            { title: "الحكمة من خروج الدابة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/027-.mp3" },
+            { title: "الخوف من مقام الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/029--.mp3" },
+            { title: "الخوف والاطمئنان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/030-.mp3" },
+            { title: "الدابه علامة من علامات الساعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/031-.mp3" },
+            { title: "الدجال أعظم فتنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/032-.mp3" },
+            { title: "الربط بين القلب والسمع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/034-.mp3" },
+            { title: "الرجال المغيبون الموعودة بهم الأمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/035-.mp3" },
+            { title: "السعيد من أعد لنفسه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/043-.mp3" },
+            { title: "الصحابي الجليل ذو البجادين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/047-.mp3" },
+            { title: "الفتن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/050-.mp3" },
+            { title: "القدس لا يعيدها إلا شيء واحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/054--.mp3" },
+            { title: "القسم فيه عبودية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/056-.mp3" },
+            { title: "الكلمة الطيبة لاإله إلا الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/057-.mp3" },
+            { title: "المجادلة والحوار في القرآن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/059--.mp3" },
+            { title: "الهدية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/065-.mp3" },
+            { title: "الهمة في طلب العلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/066-.mp3" },
+            { title: "الهمه العالية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/067-.mp3" },
+            { title: "إن الرسول لنور يستضاء به", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/068--.mp3" },
+            { title: "إن الله لا يخذل أولياءه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/069--.mp3" },
+            { title: "بر الوالدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/073-.mp3" },
+            { title: "تحريم الزنا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/077-.mp3" },
+            { title: "تدبر القرآن وقدم من قدمه الله وأحتكم اليه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/078-.mp3" },
+            { title: "تفسير {لَّا يَكَادُونَ يَفْقَهُونَ قَوْلاً }", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/082-.mp3" },
+            { title: "تفسير رَّبُّكُمْ أَعْلَمُ بِكُمْ إِن يَشَأْ يَرْحَمْكُمْ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/083-.mp3" },
+            { title: "تفسير لَيْسُواْ سَوَاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/087-.mp3" },
+            { title: "تفسير مَّا جَعَلَ اللَّهُ لِرَجُلٍ مِّن قَلْبَيْنِ فِي جَوْفِهِ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/088-.mp3" },
+            { title: "تفسير وَجَاهِدُوا فِي اللَّهِ حَقَّ جِهَادِهِ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/089-.mp3" },
+            { title: "حال الأمة قبل خروج المهدي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/093-.mp3" },
+            { title: "حالتان لا تقبل بعدهما التوبة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/096--.mp3" },
+            { title: "حتى تكون شكواك للاستجابة أقرب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/097-.mp3" },
+            { title: "خروج الدجال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/101-.mp3" },
+            { title: "دعاء لمن ابتلي بالسحر او المرض", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/103-.mp3" },
+            { title: "دقات قلب المرء قائلة له إن الحياة دقائق وثوان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/104-.mp3" },
+            { title: "رحلة الاسراء لنبينا محمد عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/108-.mp3" },
+            { title: "رقية جبرائيل للنبي صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/109-.mp3" },
+            { title: "سجود التلاوة وسجود الشكر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/114-.mp3" },
+            { title: "شرح الاية انما الصدقات للفقراء والمساكين الاقسام الثمانية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/115-.mp3" },
+            { title: "شرح آية _ {وَيُطْعِمُونَ الطَّعَامَ عَلَى حُبِّهِ}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/116-_-.mp3" },
+            { title: "شرح اية إِنَّ الْأَبْرَارَ يَشْرَبُونَ مِن كَأْسٍ كَانَ مِزَاجُهَا كَافُوراً", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/117-.mp3" },
+            { title: "شرح اية يُوفُونَ بِالنَّذْرِ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/119-.mp3" },
+            { title: "صفات الدجال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/122-.mp3" },
+            { title: "عطايا الله غالباً تُعطى لمن لا يطلبها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/128-.mp3" },
+            { title: "عيد القيامة للنصارى وعيد الفصح لليهود", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/131-.mp3" },
+            { title: "عيسى عليه السلام ومعجزاته مع قومه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/132-.mp3" },
+            { title: "كن جزء من الأمة وأنفعها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/143-.mp3" },
+            { title: "كيف وسوس إبليس لآدم عليه السلام بعد خروجه من الجنة ؟!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/145-.mp3" },
+            { title: "كيفية الرد على من آذاء الرسول صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/146-.mp3" },
+            { title: "لم يرد سائله نبي الله محمد ولم يقل كلمة لا لسائل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/148-.mp3" },
+            { title: "ما الذي يجعل الإيمان يزيد في القلب؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/154-.mp3" },
+            { title: "ما هي فتنة الدجال؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/158-.mp3" },
+            { title: "ماذا تفعل أيام الفتن؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/159-.mp3" },
+            { title: "متى يعزي الإنسان نفسه ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/161-.mp3" },
+            { title: "معنى الحديث يصلحه الله في ليلة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/164-.mp3" },
+            { title: "من صور قيام الليل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/168--.mp3" },
+            { title: "من قال هذا لا سبيل للدجال عليه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/169-.mp3" },
+            { title: "من لا يعرف الله احقر من البهيمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/170-.mp3" },
+            { title: "من منا يستطيع أن يقول معاذ الله ؟!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/171-.mp3" },
+            { title: "من هم يأجوج ومأجوج ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/172-.mp3" },
+            { title: "من يشعر بوحشه او غربه يقول هذا الدعاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/176-.mp3" },
+            { title: "من يفعل الخير لا يعدم جوازيه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/177-.mp3" },
+            { title: "من يقبل على الله يعرف أن الله عظيم وسنة الله في المسجد النبوي نهاية العالم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/178-.mp3" },
+            { title: "منزلة الصديقية كيف نصل إليها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/179-.mp3" },
+            { title: "منزلة علامة خروج الدجال من علامات الساعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/180-.mp3" },
+            { title: "منهج للدعاة إلى الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/181-.mp3" },
+            { title: "مؤثر - متى تنفعك جوارحك ؟!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/183---.mp3" },
+            { title: "نزول عيسى عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/184-.mp3" },
+            { title: "هجرة المعاصي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/186--.mp3" },
+            { title: "هل ابن الصياد هو المسيح الدجال ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/188-.mp3" },
+            { title: "هل الدجال موجود الآن ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/189-.mp3" },
+            { title: "هل المؤمن يركع ويصلي بعد خروج الدابة ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/190-.mp3" },
+            { title: "هل يحدث زمن المهدي قتال؟ وأقوال العلماء فيه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/192-.mp3" },
+            { title: "هلاك الدجال على يد عيسى ابن مريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/193-.mp3" },
+            { title: "وفاة النبي عليه السلام وادب زيارة النبي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/194-.mp3" },
+            { title: "يأجوج ومأجوج وذو القرنين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/195-.mp3" },
+            { title: "ينبغي في العقيدة أن يعرف قصد المتكلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/197--.mp3" },
+            { title: "يوسف وإخوته", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/198-.mp3" },
+            { title: "أدب حوار رسول الله عليه الصلاة والسلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/001-.mp3" },
+            { title: "أرجى آية في كتاب الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/002--.mp3" },
+            { title: "استشعر هذه الأسئلة عند طواف الوداع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/003--.mp3" },
+            { title: "البيعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/007--.mp3" },
+            { title: "الجميع له إله حتى الملحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/009--.mp3" },
+            { title: "الحاج بعد الحج يسأل الله أمرين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/010--.mp3" },
+            { title: "السبيل إلى محو الشهوات من القلب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/015-.mp3" },
+            { title: "السفر في طلب العلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/016-.mp3" },
+            { title: "السؤدد في الاستغفار", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/019--.mp3" },
+            { title: "الشيخ صالح المغامسي - لا يدخل الجنة قاطع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/023--.mp3" },
+            { title: "الصبر على البلاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/027-.mp3" },
+            { title: "الصراط والأيام الأولى بالجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/028--.mp3" },
+            { title: "الفاروق عمر رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/030-.mp3" },
+            { title: "الفروق بين الجنة والنار", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/031-.avi.mp3" },
+            { title: "القلوب المغلقة متى تفتح ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/034-.mp3" },
+            { title: "الله خالق الأسباب والمسببات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/035-.mp3" },
+            { title: "المال في الإسلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/036-.mp3" },
+            { title: "تربية القلب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/051--.mp3" },
+            { title: "تغير النوايا بعد حضور مجالس الذكر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/055-.mp3" },
+            { title: "جميعنا نستحق النار لولا رحمة الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/079-.mp3" },
+            { title: "خلافة عمر رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/084-.mp3" },
+            { title: "عمر رضي الله عنه و المال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/097-.mp3" },
+            { title: "فتنة هاروت وماروت", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/098-.mp3" },
+            { title: "كلمة من الشيخ صالح المغامسي إلى أهل غزة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/104-.mp3" },
+            { title: "كم عدد الجنان؟ ونصيحة قيمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/105-.mp3" },
+            { title: "كيف رأى النبي عليه الصلاة والسلام من يعذب في النار ليلة المعراج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/108-.mp3" },
+            { title: "كيف يتعامل العبد مع الهموم والغموم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/109-.mp3" },
+            { title: "لشبابنا تقوى الله في استخدام التقنية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/111-.mp3" },
+            { title: "مسئولية الكلمة لدى المسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/121-.mp3" },
+            { title: "مكفرات ذنوب عصاة بني آدم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/125-.mp3" },
+            { title: "نصائح وتوجيهات هامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/128-.mp3" },
+            { title: "نصيحة لكل مبتلى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/129--.mp3" },
+            { title: "هل الأذكار تكفر الكبائر والصغائر ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/130-.mp3" },
+            { title: "هل أول ليلة في القبر فيها متاعب ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/131-.mp3" },
+            { title: "هل قاتل النفس عمدا مخلد في النار ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/132-.mp3" },
+            { title: "هل هناك أحد عليه حجة على الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/134-.mp3" },
+            { title: "هل وجه الله لا يسأل به إلا الجنة ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/135-.mp3" },
+            { title: "هل يجوز الدعاء بالموت بالمدينة ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/136-.mp3" },
+            { title: "يذكر بالقرآن من يخاف وعيد الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/138-.mp3" }
         ];
 
-        async function loadSounds() {
+        // تسخين مبكر للاتصال بخادم الصوتيات (archive.org) عند فتح قسم "المواعظ":
+        // نفتح اتصالًا شبكيًا خفيفًا فور دخول المستخدم للقسم بدل انتظار ضغطه على
+        // "تشغيل"، فتكتمل خطوات DNS/TLS مسبقًا ويبدأ الصوت فورًا عند الضغط الفعلي.
+        // نستخدم mode: 'no-cors' لأن الهدف فتح الاتصال فقط دون الحاجة لقراءة المحتوى،
+        // ونكتفي بمحاولة واحدة لكل جلسة تصفح حتى لا نستهلك بيانات المستخدم دون داع.
+        let soundsWarmupDone = false;
+        function warmupSoundsConnection() {
+            if (soundsWarmupDone || !soundsData.length) return;
+            soundsWarmupDone = true;
+            try {
+                fetch(soundsData[0].url, { mode: 'no-cors' }).catch(() => {});
+            } catch (e) { /* التسخين اختياري وليس حرجًا، يمكن تجاهل أي خطأ هنا بأمان */ }
+        }
+
+        let soundsOfflineUrlsCache = null;
+
+        function renderSoundsGrid(list) {
             const grid = document.getElementById('sounds-grid');
             if (!grid) return;
             grid.innerHTML = '';
-            const offlineUrls = await listOfflineSoundUrls();
+            const offlineUrls = soundsOfflineUrlsCache || new Set();
 
-            soundsData.forEach(s => {
+            if (!list.length) {
+                grid.innerHTML = `<p style="color:var(--text-muted); padding: 20px;">لا توجد نتائج مطابقة لبحثك.</p>`;
+                return;
+            }
+
+            list.forEach(s => {
                 const isSaved = offlineUrls.has(s.url);
                 const card = document.createElement('div');
                 card.className = 'radio-card glass-panel';
@@ -4970,11 +5658,63 @@
                     offlineBadge.style.display = offlineBtn.classList.contains('is-saved') ? 'flex' : 'none';
                 });
 
-                card.querySelector('.btn-primary').addEventListener('click', () => playSoundSmart(s));
+                card.querySelector('.btn-primary').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    playSoundSmart(s);
+                });
+
+                // النقر في أي مكان على بطاقة الموعظة يشغّلها مباشرة دون الحاجة للضغط على الزر بدقة
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', () => playSoundSmart(s));
                 grid.appendChild(card);
             });
         }
+
+        async function loadSounds() {
+            soundsOfflineUrlsCache = await listOfflineSoundUrls();
+            renderSoundsGrid(soundsData);
+        }
         loadSounds();
+
+        // البحث عن موعظة بالعنوان أو الشيخ (نصيًا أو صوتيًا) داخل قسم المواعظ
+        function searchSounds() {
+            const input = document.getElementById('sounds-search-input');
+            const query = sanitizeTextInput(input ? input.value : '', 200).trim();
+            if (!query) { renderSoundsGrid(soundsData); return; }
+
+            const results = soundsData.filter(s =>
+                s.title.includes(query) || s.sheikh.includes(query)
+            );
+            renderSoundsGrid(results);
+            if (!results.length) showFatwaToast(`لا توجد موعظة مطابقة لـ "${query}"`);
+        }
+
+        function startSoundsVoiceSearch() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const btn = document.getElementById('sounds-mic-btn');
+            if (!SpeechRecognition) {
+                showFatwaToast('البحث الصوتي غير مدعوم في هذا المتصفح');
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'ar-SA';
+            recognition.interimResults = false;
+
+            btn.classList.add('listening');
+            recognition.start();
+
+            recognition.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                document.getElementById('sounds-search-input').value = text;
+                searchSounds();
+            };
+            recognition.onend = () => btn.classList.remove('listening');
+            recognition.onerror = () => btn.classList.remove('listening');
+        }
+
+        document.getElementById('sounds-search-input')?.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') searchSounds();
+        });
 
         // --- أذكار الصباح المحدثة بالكامل والشاملة مع الفضل ---
         const azkarData = {
@@ -7753,8 +8493,35 @@
 
         /* ---------- دعم PWA (تطبيق ويب تقدمي) ---------- */
         if ('serviceWorker' in navigator) {
+            // نُسجّل هل كان هناك Service Worker متحكّم بالصفحة أصلًا *قبل*
+            // التسجيل، لنميّز بين: (أ) أول زيارة على الإطلاق [لا حاجة لإعادة
+            // تحميل، فالمحتوى المعروض فعلاً هو الأحدث]، و(ب) تفعيل نسخة
+            // محدَّثة أثناء وجود المستخدم على الصفحة [هنا نُعيد التحميل تلقائيًا
+            // مرة واحدة حتى لا يبقى عالقًا على واجهة قديمة].
+            let hadControllerBefore = !!navigator.serviceWorker.controller;
+            let swReloadTriggered = false;
+
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!hadControllerBefore) {
+                    hadControllerBefore = true;
+                    return;
+                }
+                if (swReloadTriggered) return;
+                swReloadTriggered = true;
+                window.location.reload();
+            });
+
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(() => {});
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => {
+                        // نتحقق يدويًا من وجود نسخة أحدث كلما عاد المستخدم إلى
+                        // التبويب، حتى تُكتشف التحديثات بسرعة أكبر بدل انتظار
+                        // فحص المتصفح التلقائي (الذي قد يتأخر حتى 24 ساعة أحيانًا)
+                        document.addEventListener('visibilitychange', () => {
+                            if (document.visibilityState === 'visible') reg.update().catch(() => {});
+                        });
+                    })
+                    .catch(() => {});
             });
         }
 
@@ -7774,6 +8541,38 @@
 
         function dismissPwaBanner() {
             document.getElementById('pwa-install-banner').classList.remove('show');
+        }
+
+        /* ---------- بانر إرشادي لتثبيت التطبيق على آيفون/آيباد ----------
+           متصفح Safari على iOS لا يطلق حدث beforeinstallprompt إطلاقًا (قيد
+           من أبل نفسها)، فلا يمكن إظهار إشعار تثبيت تلقائي حقيقي هناك مهما
+           كتبنا من كود. البديل المتاح الوحيد هو توضيح خطوات الإضافة اليدوية
+           عبر "المشاركة ← إضافة إلى الشاشة الرئيسية" لمن يستخدم جهاز آيفون/آيباد. */
+        function isIosDevice() {
+            const ua = window.navigator.userAgent;
+            const isAppleMobile = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+            // آيباد بنظام iPadOS 13 فأحدث يُعرّف نفسه كـ Mac، لذا نميّزه بدعم اللمس
+            const isIpadOS13Plus = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+            return isAppleMobile || isIpadOS13Plus;
+        }
+
+        function isRunningAsInstalledApp() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        }
+
+        window.addEventListener('load', () => {
+            try {
+                if (isIosDevice() && !isRunningAsInstalledApp() && !localStorage.getItem('ios-install-banner-dismissed')) {
+                    setTimeout(() => {
+                        document.getElementById('ios-install-banner')?.classList.add('show');
+                    }, 1800);
+                }
+            } catch (e) {}
+        });
+
+        function dismissIosBanner() {
+            document.getElementById('ios-install-banner').classList.remove('show');
+            try { localStorage.setItem('ios-install-banner-dismissed', '1'); } catch (e) {}
         }
 
         /* ---------- الخدمات الإسلامية الحديثة ---------- */

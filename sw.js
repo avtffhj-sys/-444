@@ -19,7 +19,7 @@
       الخاصة بالوسائط.
 ============================================================ */
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v8';
 const APP_SHELL_CACHE = `quran-sunnah-shell-${CACHE_VERSION}`;
 const API_CACHE = `quran-sunnah-api-${CACHE_VERSION}`;
 const MAX_API_CACHE_ENTRIES = 60;
@@ -30,6 +30,9 @@ const APP_SHELL_URLS = [
     './index.html',
     './manifest.json',
     './icon.svg',
+    './apple-touch-icon.png',
+    './icon-192.png',
+    './icon-512.png',
     'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
@@ -47,17 +50,17 @@ function isAudioOrStreamRequest(request) {
     );
 }
 
-// الأصول التي تُعامل كنطاقات "app shell" ثابتة (Cache-First)
+// الأصول التي تُعامل كنطاقات "app shell" ثابتة (Cache-First مع تحديث خلفي).
+// ملاحظة: طلبات التنقّل (فتح الصفحة نفسها) لم تعد ضمن هذه المجموعة — انظر
+// دالة networkFirstShell أدناه ومعالج fetch لسبب فصلها.
 function isStaticShellRequest(request) {
     const url = request.url;
     return (
-        request.mode === 'navigate' ||
         url.includes('fonts.googleapis.com') ||
         url.includes('fonts.gstatic.com') ||
         url.includes('cdnjs.cloudflare.com') ||
         url.endsWith('/manifest.json') ||
-        url.endsWith('/icon.svg') ||
-        url.endsWith('/index.html')
+        url.endsWith('/icon.svg')
     );
 }
 
@@ -106,6 +109,27 @@ async function staleWhileRevalidate(request) {
     return cachedResponse || networkFetch;
 }
 
+// تحديث فوري للصفحة نفسها (index.html): على عكس بقية ملفات الهيكل الأساسي،
+// نستخدم هنا Network-First بدل Stale-While-Revalidate — أي نحاول الشبكة أولًا
+// دائمًا عند توفر إنترنت، حتى تصل أي تعديلات جديدة تُنشر على الموقع فورًا
+// دون أن يعلق الزائر على نسخة قديمة مخزّنة من الصفحة. تبقى النسخة المخزّنة
+// (المحدَّثة تلقائيًا من آخر زيارة ناجحة) هي الخيار الاحتياطي فقط عند انقطاع
+// الإنترنت، فلا تتأثر تجربة العمل بلا اتصال إطلاقًا.
+async function networkFirstShell(request) {
+    const cache = await caches.open(APP_SHELL_CACHE);
+    try {
+        const networkResponse = await fetch(request);
+        if (networkResponse && networkResponse.ok) {
+            cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+    } catch (err) {
+        const cached = (await cache.match(request)) || (await cache.match('./index.html'));
+        if (cached) return cached;
+        throw err;
+    }
+}
+
 async function networkFirst(request) {
     try {
         const networkResponse = await fetch(request);
@@ -141,6 +165,13 @@ self.addEventListener('fetch', (event) => {
     // دون اتصال. نتعرّف عليها عبر مسار الـ API المميز بدل الاعتماد على
     // نطاق ثابت، حتى تعمل تلقائيًا بعد النشر بدون تعديل هذا الملف.
     if (request.url.includes('localhost:5000') || request.url.includes('/api/fatwa') || request.url.includes('/api/murshid')) return;
+
+    // طلب فتح/تنقّل الصفحة نفسها (بما فيه إعادة تحميلها): نتحقق من الشبكة
+    // أولًا دائمًا، وليس من الكاش، حتى تظهر أي تحديثات جديدة فور نشرها.
+    if (request.mode === 'navigate' || request.url.endsWith('/index.html')) {
+        event.respondWith(networkFirstShell(request));
+        return;
+    }
 
     if (isStaticShellRequest(request)) {
         event.respondWith(staleWhileRevalidate(request));
