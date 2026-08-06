@@ -19,7 +19,7 @@
       الخاصة بالوسائط.
 ============================================================ */
 
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v10';
 const APP_SHELL_CACHE = `quran-sunnah-shell-${CACHE_VERSION}`;
 const API_CACHE = `quran-sunnah-api-${CACHE_VERSION}`;
 const MAX_API_CACHE_ENTRIES = 60;
@@ -182,4 +182,49 @@ self.addEventListener('fetch', (event) => {
     if (request.url.startsWith('http')) {
         event.respondWith(networkFirst(request));
     }
+});
+
+/* ============================================================
+   استقبال إشعارات الدفع (Web Push) — تصل حتى لو كان المتصفح/التطبيق
+   مغلقًا تمامًا، لأن الـ Service Worker يبقى يعمل في الخلفية. يُرسل
+   الخادم الخلفي هذه الرسائل عند نشر تحديث أو إضافة محتوى جديد،
+   عبر خدمة Push الخاصة بمتصفح كل مستخدم مشترك.
+============================================================ */
+self.addEventListener('push', (event) => {
+    let data = {};
+    try {
+        data = event.data ? event.data.json() : {};
+    } catch (err) {
+        data = { title: 'منصة القرآن والسنة', body: event.data ? event.data.text() : '' };
+    }
+
+    const title = data.title || 'منصة القرآن والسنة';
+    const options = {
+        body: data.body || '',
+        icon: data.icon || './icon-192.png',
+        badge: './icon-192.png',
+        dir: 'rtl',
+        lang: 'ar',
+        vibrate: [100, 50, 100],
+        data: { url: data.url || './' }
+    };
+
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// عند الضغط على الإشعار: التركيز على تبويب مفتوح للموقع إن وُجد، وإلا فتح تبويب جديد
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const targetUrl = (event.notification.data && event.notification.data.url) || './';
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            for (const client of clientList) {
+                if (client.url.includes(self.registration.scope) && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+        })
+    );
 });

@@ -670,7 +670,51 @@
         }
 
         .page-view { display: none; }
-        .page-view.active-page { display: flex; flex-direction: column; gap: 40px; }
+        .page-view.active-page {
+            display: flex; flex-direction: column; gap: 40px;
+            animation: pageFadeIn 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: opacity, transform;
+        }
+        /* انتقال سلس وخفيف عند تبديل الصفحات (بدل الظهور الفجائي الذي يسبب إحساسًا
+           بالتقطّع عند التنقل السريع بين الأقسام) — يعتمد على opacity/transform
+           فقط حتى يبقى مُسرَّعًا بواسطة كرت الرسوميات ولا يثقل المعالج. */
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .page-view.active-page { animation: none; }
+        }
+
+        /* مؤشر "اسحب للتحديث" — يظهر أعلى الصفحة أثناء السحب من الأعلى للأسفل */
+        #pull-refresh-indicator {
+            position: fixed;
+            top: 0; left: 50%;
+            transform: translate(-50%, -70px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 30px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 700;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        #pull-refresh-indicator.visible { opacity: 1; }
+        #pull-refresh-indicator i { font-size: 1rem; transition: transform 0.15s ease; }
+        #pull-refresh-indicator.ready i { transform: rotate(180deg); }
+        #pull-refresh-indicator.refreshing i { animation: pullSpin 0.7s linear infinite; }
+        @keyframes pullSpin { to { transform: rotate(360deg); } }
 
         .section-header {
             display: flex;
@@ -1511,6 +1555,7 @@
         }
         .occasion-icon-btn:hover { color: var(--primary); border-color: var(--primary); }
         .occasion-icon-btn.active-reminder { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: #fff; border-color: transparent; }
+        #push-subscribe-btn.active-reminder { opacity: 0.75; cursor: default; box-shadow: none; }
 
         .upcoming-occasions-wrap { border-top: 1px solid var(--border-color); padding-top: 22px; margin-top: 22px; position: relative; z-index: 1; }
         .upcoming-occasions-wrap h4 { font-size: 1.08rem; font-weight: 900; margin-bottom: 16px; }
@@ -1955,9 +2000,178 @@
         .zikr-card { padding: 6px; }
         .zikr-text { font-size: calc(0.56rem * var(--zikr-font-scale)); }
     }
+
+    /* ============================================================
+       ✨ إضافات تصميمية جديدة: ألوان جذابة واحترافية
+       -----------------------------------------------------------
+       ملاحظة: هذه الكتلة "إضافة" فقط ولا تحذف أو تستبدل أي تنسيق
+       سابق في الملف؛ هدفها تلوين الأقسام العلوية (شريط التنقل
+       وبطاقات الخدمات في الرئيسية) وقسم الأذكار بألوان متعددة
+       ومتناسقة بروح حديثة، مع الحفاظ الكامل على الوضعين الفاتح
+       والداكن وكل الثيمات الموجودة (emerald / cyan / gold / purple
+       / sunset) دون أي تعديل على البنية أو الوظائف (JS) البتة.
+    ============================================================ */
+
+    /* --- 1) شريط التنقل العلوي (nav-links): تدرّج لوني مميز لكل قسم --- */
+    .nav-links a { position: relative; overflow: hidden; }
+    .nav-links a i { transition: transform 0.3s ease, color 0.3s ease; }
+
+    .nav-links a:nth-child(1)  i { color: #10b981; }
+    .nav-links a:nth-child(2)  i { color: #0ea5e9; }
+    .nav-links a:nth-child(3)  i { color: #8b5cf6; }
+    .nav-links a:nth-child(4)  i { color: #f59e0b; }
+    .nav-links a:nth-child(5)  i { color: #ec4899; }
+    .nav-links a:nth-child(6)  i { color: #14b8a6; }
+    .nav-links a:nth-child(7)  i { color: #22c55e; }
+    .nav-links a:nth-child(8)  i { color: #6366f1; }
+    .nav-links a:nth-child(9)  i { color: #f97316; }
+    .nav-links a:nth-child(10) i { color: #06b6d4; }
+    .nav-links a:nth-child(11) i { color: #ef4444; }
+    .nav-links a:nth-child(12) i { color: #a855f7; }
+
+    .nav-links a:hover i, .nav-links a.active i { color: #fff !important; transform: scale(1.18) rotate(-4deg); text-shadow: 0 0 12px rgba(255,255,255,0.55); }
+
+    .nav-links a:nth-child(1):hover,  .nav-links a:nth-child(1).active  { background: linear-gradient(135deg,#10b981,#059669) !important; box-shadow: 0 6px 16px rgba(16,185,129,0.4) !important; }
+    .nav-links a:nth-child(2):hover,  .nav-links a:nth-child(2).active  { background: linear-gradient(135deg,#0ea5e9,#0369a1) !important; box-shadow: 0 6px 16px rgba(14,165,233,0.4) !important; }
+    .nav-links a:nth-child(3):hover,  .nav-links a:nth-child(3).active  { background: linear-gradient(135deg,#8b5cf6,#6d28d9) !important; box-shadow: 0 6px 16px rgba(139,92,246,0.4) !important; }
+    .nav-links a:nth-child(4):hover,  .nav-links a:nth-child(4).active  { background: linear-gradient(135deg,#f59e0b,#b45309) !important; box-shadow: 0 6px 16px rgba(245,158,11,0.4) !important; }
+    .nav-links a:nth-child(5):hover,  .nav-links a:nth-child(5).active  { background: linear-gradient(135deg,#ec4899,#be185d) !important; box-shadow: 0 6px 16px rgba(236,72,153,0.4) !important; }
+    .nav-links a:nth-child(6):hover,  .nav-links a:nth-child(6).active  { background: linear-gradient(135deg,#14b8a6,#0f766e) !important; box-shadow: 0 6px 16px rgba(20,184,166,0.4) !important; }
+    .nav-links a:nth-child(7):hover,  .nav-links a:nth-child(7).active  { background: linear-gradient(135deg,#22c55e,#15803d) !important; box-shadow: 0 6px 16px rgba(34,197,94,0.4) !important; }
+    .nav-links a:nth-child(8):hover,  .nav-links a:nth-child(8).active  { background: linear-gradient(135deg,#6366f1,#4338ca) !important; box-shadow: 0 6px 16px rgba(99,102,241,0.4) !important; }
+    .nav-links a:nth-child(9):hover,  .nav-links a:nth-child(9).active  { background: linear-gradient(135deg,#f97316,#c2410c) !important; box-shadow: 0 6px 16px rgba(249,115,22,0.4) !important; }
+    .nav-links a:nth-child(10):hover, .nav-links a:nth-child(10).active { background: linear-gradient(135deg,#06b6d4,#0e7490) !important; box-shadow: 0 6px 16px rgba(6,182,212,0.4) !important; }
+    .nav-links a:nth-child(11):hover, .nav-links a:nth-child(11).active { background: linear-gradient(135deg,#ef4444,#b91c1c) !important; box-shadow: 0 6px 16px rgba(239,68,68,0.4) !important; }
+    .nav-links a:nth-child(12):hover, .nav-links a:nth-child(12).active { background: linear-gradient(135deg,#a855f7,#7e22ce) !important; box-shadow: 0 6px 16px rgba(168,85,247,0.4) !important; }
+
+    /* --- 2) بطاقات الخدمات الحديثة في الرئيسية (زكاة / قبلة / تسبيح) --- */
+    .modern-service-card { border: 1.5px solid transparent; position: relative; }
+    .modern-service-card::before {
+        content: "";
+        position: absolute; inset: 0; border-radius: 20px; padding: 1.5px;
+        opacity: 0; transition: opacity 0.3s ease;
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        pointer-events: none;
+    }
+    .modern-service-card:hover::before { opacity: 1; }
+
+    .modern-service-card[data-service="zakat"] .service-icon { background: linear-gradient(135deg, rgba(217,119,6,0.18), rgba(251,191,36,0.28)); color: #d97706; }
+    .modern-service-card[data-service="zakat"]::before { background: linear-gradient(135deg,#d97706,#fbbf24); }
+    .modern-service-card[data-service="zakat"]:hover { box-shadow: 0 10px 28px rgba(217,119,6,0.28) !important; }
+
+    .modern-service-card[data-service="qibla"] .service-icon { background: linear-gradient(135deg, rgba(6,182,212,0.18), rgba(34,211,238,0.28)); color: #0891b2; }
+    .modern-service-card[data-service="qibla"]::before { background: linear-gradient(135deg,#0891b2,#22d3ee); }
+    .modern-service-card[data-service="qibla"]:hover { box-shadow: 0 10px 28px rgba(6,182,212,0.28) !important; }
+
+    .modern-service-card[data-service="tasbih"] .service-icon { background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(217,70,239,0.28)); color: #8b5cf6; }
+    .modern-service-card[data-service="tasbih"]::before { background: linear-gradient(135deg,#8b5cf6,#e879f9); }
+    .modern-service-card[data-service="tasbih"]:hover { box-shadow: 0 10px 28px rgba(139,92,246,0.28) !important; }
+
+    /* --- 3) قسم الأذكار: تشكيلة ألوان احترافية لكل تصنيف (21 تصنيف) --- */
+    .azkar-tabs .azkar-tab-btn:nth-child(1)  i { color: #f59e0b; }
+    .azkar-tabs .azkar-tab-btn:nth-child(2)  i { color: #6366f1; }
+    .azkar-tabs .azkar-tab-btn:nth-child(3)  i { color: #7c3aed; }
+    .azkar-tabs .azkar-tab-btn:nth-child(4)  i { color: #10b981; }
+    .azkar-tabs .azkar-tab-btn:nth-child(5)  i { color: #14b8a6; }
+    .azkar-tabs .azkar-tab-btn:nth-child(6)  i { color: #f43f5e; }
+    .azkar-tabs .azkar-tab-btn:nth-child(7)  i { color: #06b6d4; }
+    .azkar-tabs .azkar-tab-btn:nth-child(8)  i { color: #059669; }
+    .azkar-tabs .azkar-tab-btn:nth-child(9)  i { color: #f97316; }
+    .azkar-tabs .azkar-tab-btn:nth-child(10) i { color: #3b82f6; }
+    .azkar-tabs .azkar-tab-btn:nth-child(11) i { color: #92400e; }
+    .azkar-tabs .azkar-tab-btn:nth-child(12) i { color: #65a30d; }
+    .azkar-tabs .azkar-tab-btn:nth-child(13) i { color: #d97706; }
+    .azkar-tabs .azkar-tab-btn:nth-child(14) i { color: #ec4899; }
+    .azkar-tabs .azkar-tab-btn:nth-child(15) i { color: #ef4444; }
+    .azkar-tabs .azkar-tab-btn:nth-child(16) i { color: #e11d48; }
+    .azkar-tabs .azkar-tab-btn:nth-child(17) i { color: #4f46e5; }
+    .azkar-tabs .azkar-tab-btn:nth-child(18) i { color: #0d9488; }
+    .azkar-tabs .azkar-tab-btn:nth-child(19) i { color: #eab308; }
+    .azkar-tabs .azkar-tab-btn:nth-child(20) i { color: #475569; }
+    .azkar-tabs .azkar-tab-btn:nth-child(21) i { color: #8b5cf6; }
+
+    .azkar-tabs .azkar-tab-btn:nth-child(1):hover  { border-color: #f59e0b !important; box-shadow: 0 10px 24px rgba(245,158,11,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(2):hover  { border-color: #6366f1 !important; box-shadow: 0 10px 24px rgba(99,102,241,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(3):hover  { border-color: #7c3aed !important; box-shadow: 0 10px 24px rgba(124,58,237,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(4):hover  { border-color: #10b981 !important; box-shadow: 0 10px 24px rgba(16,185,129,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(5):hover  { border-color: #14b8a6 !important; box-shadow: 0 10px 24px rgba(20,184,166,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(6):hover  { border-color: #f43f5e !important; box-shadow: 0 10px 24px rgba(244,63,94,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(7):hover  { border-color: #06b6d4 !important; box-shadow: 0 10px 24px rgba(6,182,212,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(8):hover  { border-color: #059669 !important; box-shadow: 0 10px 24px rgba(5,150,105,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(9):hover  { border-color: #f97316 !important; box-shadow: 0 10px 24px rgba(249,115,22,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(10):hover { border-color: #3b82f6 !important; box-shadow: 0 10px 24px rgba(59,130,246,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(11):hover { border-color: #92400e !important; box-shadow: 0 10px 24px rgba(146,64,14,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(12):hover { border-color: #65a30d !important; box-shadow: 0 10px 24px rgba(101,163,13,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(13):hover { border-color: #d97706 !important; box-shadow: 0 10px 24px rgba(217,119,6,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(14):hover { border-color: #ec4899 !important; box-shadow: 0 10px 24px rgba(236,72,153,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(15):hover { border-color: #ef4444 !important; box-shadow: 0 10px 24px rgba(239,68,68,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(16):hover { border-color: #e11d48 !important; box-shadow: 0 10px 24px rgba(225,29,72,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(17):hover { border-color: #4f46e5 !important; box-shadow: 0 10px 24px rgba(79,70,229,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(18):hover { border-color: #0d9488 !important; box-shadow: 0 10px 24px rgba(13,148,136,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(19):hover { border-color: #eab308 !important; box-shadow: 0 10px 24px rgba(234,179,8,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(20):hover { border-color: #475569 !important; box-shadow: 0 10px 24px rgba(71,85,105,0.25) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(21):hover { border-color: #8b5cf6 !important; box-shadow: 0 10px 24px rgba(139,92,246,0.25) !important; }
+
+    .azkar-tabs .azkar-tab-btn:nth-child(1).active  { background: linear-gradient(135deg,#f59e0b,#d97706) !important; border-color:#fbbf24 !important; box-shadow: 0 10px 28px rgba(245,158,11,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(2).active  { background: linear-gradient(135deg,#6366f1,#4338ca) !important; border-color:#818cf8 !important; box-shadow: 0 10px 28px rgba(99,102,241,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(3).active  { background: linear-gradient(135deg,#7c3aed,#5b21b6) !important; border-color:#a78bfa !important; box-shadow: 0 10px 28px rgba(124,58,237,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(4).active  { background: linear-gradient(135deg,#10b981,#047857) !important; border-color:#34d399 !important; box-shadow: 0 10px 28px rgba(16,185,129,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(5).active  { background: linear-gradient(135deg,#14b8a6,#0f766e) !important; border-color:#2dd4bf !important; box-shadow: 0 10px 28px rgba(20,184,166,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(6).active  { background: linear-gradient(135deg,#f43f5e,#be123c) !important; border-color:#fb7185 !important; box-shadow: 0 10px 28px rgba(244,63,94,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(7).active  { background: linear-gradient(135deg,#06b6d4,#0e7490) !important; border-color:#22d3ee !important; box-shadow: 0 10px 28px rgba(6,182,212,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(8).active  { background: linear-gradient(135deg,#059669,#065f46) !important; border-color:#34d399 !important; box-shadow: 0 10px 28px rgba(5,150,105,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(9).active  { background: linear-gradient(135deg,#f97316,#c2410c) !important; border-color:#fb923c !important; box-shadow: 0 10px 28px rgba(249,115,22,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(10).active { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; border-color:#60a5fa !important; box-shadow: 0 10px 28px rgba(59,130,246,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(11).active { background: linear-gradient(135deg,#92400e,#78350f) !important; border-color:#d97706 !important; box-shadow: 0 10px 28px rgba(146,64,14,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(12).active { background: linear-gradient(135deg,#65a30d,#4d7c0f) !important; border-color:#a3e635 !important; box-shadow: 0 10px 28px rgba(101,163,13,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(13).active { background: linear-gradient(135deg,#d97706,#b45309) !important; border-color:#fbbf24 !important; box-shadow: 0 10px 28px rgba(217,119,6,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(14).active { background: linear-gradient(135deg,#ec4899,#be185d) !important; border-color:#f472b6 !important; box-shadow: 0 10px 28px rgba(236,72,153,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(15).active { background: linear-gradient(135deg,#ef4444,#b91c1c) !important; border-color:#f87171 !important; box-shadow: 0 10px 28px rgba(239,68,68,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(16).active { background: linear-gradient(135deg,#e11d48,#9f1239) !important; border-color:#fb7185 !important; box-shadow: 0 10px 28px rgba(225,29,72,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(17).active { background: linear-gradient(135deg,#4f46e5,#3730a3) !important; border-color:#818cf8 !important; box-shadow: 0 10px 28px rgba(79,70,229,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(18).active { background: linear-gradient(135deg,#0d9488,#115e59) !important; border-color:#2dd4bf !important; box-shadow: 0 10px 28px rgba(13,148,136,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(19).active { background: linear-gradient(135deg,#eab308,#a16207) !important; border-color:#facc15 !important; box-shadow: 0 10px 28px rgba(234,179,8,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(20).active { background: linear-gradient(135deg,#475569,#1e293b) !important; border-color:#94a3b8 !important; box-shadow: 0 10px 28px rgba(71,85,105,0.4) !important; }
+    .azkar-tabs .azkar-tab-btn:nth-child(21).active { background: linear-gradient(135deg,#8b5cf6,#6d28d9) !important; border-color:#a78bfa !important; box-shadow: 0 10px 28px rgba(139,92,246,0.4) !important; }
+
+    .azkar-tab-btn.active i { text-shadow: 0 0 10px rgba(255,255,255,0.6) !important; }
+
+    /* --- 4) بطاقة الذكر (zikr-card): شريط علوي مزخرف وتحسين بصري --- */
+    .zikr-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-card) 100%);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .zikr-card::before {
+        content: "";
+        position: absolute; top: 0; right: 0; left: 0; height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+        background-size: 200% 100%;
+        animation: zikrShimmer 4s linear infinite;
+    }
+    @keyframes zikrShimmer { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
+    .zikr-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px var(--glow); }
+    @media (prefers-reduced-motion: reduce) { .zikr-card::before { animation: none; } }
+
+    .zikr-desc { background: linear-gradient(135deg, var(--glow), transparent); border: 1px solid var(--glow); }
+
+    /* --- 5) أدوات التحكم بحجم خط الأذكار وشعار الهيدر: لمسة تدرّج لونية أنيقة --- */
+    .azkar-font-controls { border-image: linear-gradient(135deg, var(--primary), var(--accent)) 1; }
+    .azkar-font-btn:hover { background: linear-gradient(135deg, var(--primary), var(--accent)) !important; }
+
+    .logo-icon-box { background: linear-gradient(135deg, var(--primary), var(--accent)) !important; }
+    .tool-btn:hover { background: linear-gradient(135deg, var(--primary), var(--accent)) !important; }
     </style>
 </head>
 <body>
+
+    <!-- مؤشر السحب للتحديث (Pull to Refresh) -->
+    <div id="pull-refresh-indicator">
+        <i class="fa-solid fa-arrow-down"></i>
+        <span id="pull-refresh-text">اسحب للتحديث</span>
+    </div>
 
     <!-- Global Floating Audio Player[cite: 4] -->
     <div class="global-audio-player glass-panel glass-header">
@@ -2574,6 +2788,14 @@
         <section id="page-alerts" class="page-view">
             <div class="section-header"><div class="section-title"><i class="fa-solid fa-bell"></i><span>التنبيهات</span></div></div>
 
+            <div class="glass-panel" style="padding: 26px 30px; display:flex; flex-direction:column; gap:14px; align-items:flex-start;">
+                <div>
+                    <h3 style="margin-bottom:6px; color:var(--primary); font-size:1.05rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-bell-concierge"></i> إشعارات الإضافات والتحديثات</h3>
+                    <p style="line-height:2; color:var(--text-main); margin-bottom:14px;" id="push-status-desc">فعّل الإشعارات لتصلك رسالة فورية على جهازك عند إضافة محتوى جديد أو تحديث للمنصة، حتى لو كان التطبيق مغلقًا.</p>
+                </div>
+                <button class="btn-primary" id="push-subscribe-btn" onclick="subscribeToPushNotifications()"><i class="fa-solid fa-bell"></i> <span id="push-subscribe-btn-text">تفعيل إشعارات التحديثات</span></button>
+            </div>
+
             <div class="glass-panel" style="padding: 30px; display:flex; flex-direction:column; gap:0;">
 
                 <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0; border-bottom:1px solid var(--border-color);">
@@ -2632,11 +2854,19 @@
                     </div>
                 </div>
 
-                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0;">
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0; border-bottom:1px solid var(--border-color);">
                     <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">8</div>
                     <div>
                         <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-microphone-lines"></i> مواعظ ومقاطع صوتية مختارة</h3>
                         <p style="line-height:2; color:var(--text-main);">تضم المنصة مكتبة من المواعظ والمقاطع الصوتية القصيرة لعدد من المشايخ، مع خاصية البحث النصي والصوتي عن الموعظة التي تريدها، وإمكانية حفظها للاستماع إليها لاحقًا دون إنترنت.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:18px; align-items:flex-start; padding:18px 0;">
+                    <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px; background:var(--glow); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">9</div>
+                    <div>
+                        <h3 style="margin-bottom:8px; color:var(--primary); font-size:1.1rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-arrow-down"></i> تحديث الموقع أو التطبيق للحصول على أحدث الإضافات</h3>
+                        <p style="line-height:2; color:var(--text-main);">للحصول دائمًا على أحدث الإضافات والتحديثات، يجب تحديث الموقع أو التطبيق بالسحب من أعلى الصفحة إلى أسفل (Pull to Refresh) وأنت في الصفحة الرئيسية، حتى تظهر أيقونة التحديث ثم تُحرّرها؛ ليُعاد تحميل المنصة تلقائيًا وتصلك آخر الإصدارات والمحتوى المُضاف فور توفره.</p>
                     </div>
                 </div>
 
@@ -3524,8 +3754,23 @@
             fetchHadithFromApi(randomNum);
         }
 
+        // تُجمَّع هنا كل المؤقتات المؤجَّلة (setTimeout) الناتجة عن تبديل الصفحة، حتى
+        // يتم إلغاء أي مؤقت سابق لم يُنفَّذ بعد كلما ضغط المستخدم على قسم جديد بسرعة.
+        // هذا يمنع تراكم عشرات النداءات (إعادة حساب مؤشرات التمرير، تمرير الصفحة...)
+        // فوق بعضها عند التنقّل السريع بين الأقسام، وهو السبب الرئيسي للإحساس
+        // بالتقطّع/التهنيج أثناء الانتقال المتلاحق.
+        let __pageSwitchTimers = [];
+        function __clearPageSwitchTimers() {
+            __pageSwitchTimers.forEach(id => clearTimeout(id));
+            __pageSwitchTimers = [];
+        }
+
         function switchPage(pageId, event) {
             if (event) event.preventDefault();
+
+            // إلغاء أي عمل مؤجَّل من عملية تبديل صفحة سابقة لم يكتمل بعد
+            __clearPageSwitchTimers();
+
             document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active-page'));
             const targetPage = document.getElementById(`page-${pageId}`);
             if (targetPage) targetPage.classList.add('active-page');
@@ -3539,9 +3784,9 @@
             }
 
             if (pageId === 'fatwa') {
-                setTimeout(() => {
+                __pageSwitchTimers.push(setTimeout(() => {
                     document.getElementById('fatwa-categories')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 60);
+                }, 60));
             } else {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -3562,7 +3807,7 @@
             }
 
             // إعادة حساب مؤشرات "يوجد المزيد" بعد ظهور القسم الجديد فعليًا في الصفحة
-            setTimeout(() => { if (typeof refreshAllScrollHints === 'function') refreshAllScrollHints(); }, 80);
+            __pageSwitchTimers.push(setTimeout(() => { if (typeof refreshAllScrollHints === 'function') refreshAllScrollHints(); }, 80));
 
             // إظهار/إخفاء شريط الصوت المصغّر حسب الصفحة الحالية: يظهر داخل قسم
             // "القرآن الكريم" فقط، ويختفي تلقائيًا في بقية الصفحات دون إيقاف الصوت
@@ -5067,6 +5312,72 @@
 
         let lastSoundBlobUrl = null;
 
+        // نسخة محسّنة ومخصّصة لتشغيل روابط المواعظ فقط (لا تؤثر على تشغيل القرآن):
+        // - تستمع لأحداث canplay و loadeddata و playing معًا، فتبدأ التشغيل بمجرد توفر
+        //   أول جزء قابل للتشغيل فعليًا بدل انتظار تخزين مؤقت أطول، فيبدأ الصوت فورًا
+        //   بمجرد أن يصبح جاهزًا دون أي تأخير إضافي من الكود نفسه.
+        // - تضع مهلة أطول وأكثر واقعية (35 ثانية) لأن أغلب "فشل" المواعظ سابقًا لم يكن
+        //   تعطّلًا فعليًا في الرابط، بل بطئًا مؤقتًا في تجهيز الملف من الخادم (يحدث كثيرًا
+        //   مع أرشيف archive.org عند أول طلب لملف)، وكانت المهلة القصيرة (12 ثانية) تقطع
+        //   التحميل الجاري وتُعيد ضبطه من الصفر بدل إعطائه فرصة لإكمال ما بدأه فعلاً،
+        //   وهذا بالتحديد ما كان يجعل معظم المواعظ تبدو "لا تعمل" رغم أنها كانت ستعمل
+        //   لو أُتيح لها وقت كافٍ لإكمال التحميل الذي بدأ بالفعل.
+        // - عند بلوغ المهلة نتحقق أولاً إن كان الملف قد أصبح جاهزًا فعليًا (readyState)
+        //   قبل اعتباره فاشلاً، فلا نقطع تحميلاً كان على وشك النجاح.
+        // - لا تُعاد المحاولة (بإعادة ضبط المصدر من الصفر) إلا عند فشل حقيقي فعلي
+        //   (حدث error أو استمرار التعثر التام بعد انتهاء المهلة الطويلة).
+        function trySoundUrl(url, options) {
+            const timeoutMs = (options && options.timeoutMs) || 35000;
+            const isRetry = !!(options && options.isRetry);
+            return new Promise((resolve) => {
+                let settled = false;
+                let timer = null;
+
+                function cleanup() {
+                    if (settled) return;
+                    settled = true;
+                    if (timer) clearTimeout(timer);
+                    audio.removeEventListener('canplay', onReady);
+                    audio.removeEventListener('loadeddata', onReady);
+                    audio.removeEventListener('playing', onReady);
+                    audio.removeEventListener('error', onError);
+                }
+
+                function onReady() { cleanup(); resolve(true); }
+
+                function onError() {
+                    cleanup();
+                    if (!isRetry) {
+                        trySoundUrl(url, { timeoutMs: timeoutMs, isRetry: true }).then(resolve);
+                    } else {
+                        resolve(false);
+                    }
+                }
+
+                function onTimeout() {
+                    if (settled) return;
+                    // إن كان الملف أصبح جاهزًا فعليًا (أو بدأ التشغيل) رغم انتهاء المهلة،
+                    // فهذا نجاح حقيقي ولا داعي لاعتباره فشلاً وإعادة ضبط التحميل من الصفر.
+                    if (audio.src === url && (audio.readyState >= 2 || !audio.paused)) {
+                        onReady();
+                        return;
+                    }
+                    onError();
+                }
+
+                audio.addEventListener('canplay', onReady, { once: true });
+                audio.addEventListener('loadeddata', onReady, { once: true });
+                audio.addEventListener('playing', onReady, { once: true });
+                audio.addEventListener('error', onError, { once: true });
+
+                timer = setTimeout(onTimeout, timeoutMs);
+
+                audio.src = url;
+                audio.load();
+                audio.play().catch(() => { /* سيُلتقط الخطأ الفعلي عبر حدث error أو المهلة إن استمر الفشل */ });
+            });
+        }
+
         // يشغّل مقطعًا صوتيًا: من النسخة المحفوظة محليًا إن وُجدت، وإلا من الشبكة مباشرة
         async function playSoundSmart(s) {
             if (lastSoundBlobUrl) {
@@ -5095,7 +5406,7 @@
             playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
             updateNowPlaying(s.title, s.sheikh);
             showToast(`جاري تحميل ${s.title}...`);
-            const ok = await tryPlayUrl(s.url);
+            const ok = await trySoundUrl(s.url);
             if (ok) {
                 showToast(`جاري تشغيل ${s.title}`);
             } else {
@@ -5138,472 +5449,67 @@
            الصوتيات: مواعظ ومقاطع صوتية قصيرة ومختصرة
         ============================================================ */
         const soundsData = [
-            { title: "أصول الخطايا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/015-.mp3" },
-            { title: "متى تصبح الروح معصومة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/121-.mp3" },
-            { title: "معنى قوله تعالى سائحات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/128-.mp3" },
-            { title: "موعظة رجل مسن ينصح", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/145--.mp3" },
-            { title: "نصيحة لمن يريد حفظ القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/160-.mp3" },
-            { title: "قصة الصليب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/102-.mp3" },
-            { title: "أجر قرض المؤمن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/010-.mp3" },
-            { title: "أحداث معجزة الإسراء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/012-.mp3" },
-            { title: "أعظم المنجيات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/017--.mp3" },
-            { title: "الإخلاص أعظم ما يرتفع إلى السماء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/019--.mp3" },
-            { title: "الزهد في العلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/025--.mp3" },
-            { title: "الزوجة الصالحة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/026--.mp3" },
-            { title: "المشروع فعله عند من حضرته الوفاة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/034-.mp3" },
-            { title: "بعثة نبينا صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/062-.mp3" },
-            { title: "بما خوف الله عباده؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/063-.mp3" },
-            { title: "تصفية السرائر لرب البصائر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/066-.mp3" },
-            { title: "تعظيم الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/068-.mp3" },
-            { title: "تلقين الميت بعد الدفن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/071-.mp3" },
-            { title: "دعاء مجرب لمن لم يرزقه الله الولد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/079--.mp3" },
-            { title: "كم عدد الجنان؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/109-.mp3" },
-            { title: "متى تنفعك جوارحك؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/122-.mp3" },
-            { title: "أسباب البعد عن الدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/138-.mp3" },
-            { title: "أعظم العبادة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/139--.mp3" },
-            { title: "من أوائل ما يفقد من العلوم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/152-.mp3" },
-            { title: "توقير من يسبح الله عز وجل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/159--.mp3" },
-            { title: "وصية لكل مذنب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/165-.mp3" },
-            { title: "نصيحة مؤثرة لكل حزين ومهموم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/168-.mp3" },
-            { title: "هل الدعاء يرد القضاء؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/173-.mp3" },
-            { title: "أعظم العدل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/016-.mp3" },
-            { title: "ألا يستحي العبد أن يبارز الله بالمعاصي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/018--.mp3" },
-            { title: "الأيام النضرة والسيرة العطرة لنبينا - المولد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/020-.mp3" },
-            { title: "الرسول في الطائف وتأثر الجن بالقرآن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/023-.mp3" },
-            { title: "الطريق إلى حسن الخاتمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/029-.mp3" },
-            { title: "الفرق بين سدرة المنتهى وشجرة الزقوم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/031-.mp3" },
-            { title: "إلى من ترك الصلاة في المسجد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/036-...mp3" },
-            { title: "إن لموتانا حق علينا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/038--.mp3" },
-            { title: "إنها تطلع بين قرني شيطان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/039-.mp3" },
-            { title: "أين همة الشباب من همة الصحابة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/061-.mp3" },
-            { title: "بين موسى وهارون", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/064-.mp3" },
-            { title: "تعامل النبي صلى الله عليه وسلم مع اليهود", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/067--.mp3" },
-            { title: "إنها شجرة تخرج في أصل الجحيم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/070-..-.mp3" },
-            { title: "ثلاث وصايا هامة في ليلة القدر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/073-_.mp3" },
-            { title: "حال الأمة قبل ظهور المهدي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/075--.mp3" },
-            { title: "حديث باب الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/077-.mp3" },
-            { title: "حكم الترحم على من مات من غير المسلمين؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/078-.mp3" },
-            { title: "رؤية الله جل جلاله في الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/084-.mp3" },
-            { title: "صيام رسول الله صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/088--.mp3" },
-            { title: "علامات خروج المهدي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/091--.mp3" },
-            { title: "عيد القيامة عند النصارى وعيد الفصح عند اليهود", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/092-.mp3" },
-            { title: "فائدتان جليلتان من سيرة نبينا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/094-.mp3" },
-            { title: "فضل سورة الكهف يوم الجمعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/095--.mp3" },
-            { title: "فوائد من هجرة نبينا وبركة القصواء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/099-.mp3" },
-            { title: "قصة أبو لبابة مع بني قريظة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/100--.mp3" },
-            { title: "كلمة إلى تارك الصلاة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/107--.mp3" },
-            { title: "كيف الخشوع في الصلاة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/110-.mp3" },
-            { title: "لفظ الكوثر في القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/116--.mp3" },
-            { title: "ليلة النصف من شعبان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/117-.mp3" },
-            { title: "ما هي آية الكلالة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/119-.mp3" },
-            { title: "ما يستنبط من خبر موسى مع الخضر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/120--.mp3" },
-            { title: "محبة النبي صلى الله عليه وسلم: آثار وعبر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/124-.mp3" },
-            { title: "معنى الفعل مرد في القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/127--.mp3" },
-            { title: "مفردتي زهق والشطط", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/130--.mp3" },
-            { title: "مقام النبوة يحتاج إلى مقامات حسان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/132-.mp3" },
-            { title: "هل اشتقت للرسول صلى الله عليه وسلم؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/001-.....mp3" },
-            { title: "رؤية الله في الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/002-allahGodWillBeSeenInParadise-chikhAlmaghamissi.mp3" },
-            { title: "أعظم الغبن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/004-youtube.mp3" },
-            { title: "بريق المواعظ المنبرية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/005-youtube.mp3" },
-            { title: "كلمات مؤثرة جدًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/006-youtube.mp3" },
-            { title: "كيف نتوب؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/007-youtubeFlv.mp3" },
-            { title: "كيف يثبت الله عباده المؤمنين؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/008-youtube.mp3" },
-            { title: "يوم تأتي كل نفس تجادل عن نفسها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/009-youtube.mp3" },
-            { title: "إجلال الله تعالى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/011-.mp3" },
-            { title: "أسباب الرحمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/013--.mp3" },
-            { title: "أسباب توجب الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/014--.mp3" },
-            { title: "الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/022-.mp3" },
-            { title: "الرمان في القرآن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/024-.mp3" },
-            { title: "الشوق لرؤية وجه أرحم الراحمين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/027-.mp3" },
-            { title: "الظبي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/030-.mp3" },
-            { title: "الفرق بين كيد النساء وكيد الشيطان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/032--.mp3" },
-            { title: "الكرم والبخل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/033--.mp3" },
-            { title: "المنهج الصحيح في الدعوة إلى الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/035-_.mp3" },
-            { title: "اليمين تنعقد على ثلاثة أضرب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/037-.mp3" },
-            { title: "أهلنا في الشام يُمحّصون", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/040--.mp3" },
-            { title: "أيام الحج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/041-.mp3" },
-            { title: "آية وتفسير: ألم تر كيف فعل ربك بعاد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/042---.mp3" },
-            { title: "آية وتفسير: أُحِلّ لكم صيد البحر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/043---.mp3" },
-            { title: "آية وتفسير: إمّا تعرضن عنهم ابتغاء رحمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/044--.mp3" },
-            { title: "آية وتفسير: إن الله عنده علم الساعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/045--.mp3" },
-            { title: "آية وتفسير: إنما حرّم عليكم الميتة والدم ولحم الخنزير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/046--.mp3" },
-            { title: "آية وتفسير: إنه لقول رسول كريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/047--.mp3" },
-            { title: "آية وتفسير: تلك أمة قد خلت", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/048---.mp3" },
-            { title: "آية وتفسير: زُيّن للناس حب الشهوات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/049---.mp3" },
-            { title: "آية وتفسير: ص والقرآن ذي الذكر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/050--.mp3" },
-            { title: "آية وتفسير: صبغة الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/051--.mp3" },
-            { title: "آية وتفسير: قال أرأيت إذ أوينا إلى الصخرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/052--.mp3" },
-            { title: "آية وتفسير: وآخرين منهم لما يلحقوا بهم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/053--.mp3" },
-            { title: "آية وتفسير: وإذ قال موسى لفتاه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/054--.mp3" },
-            { title: "آية وتفسير: وإذا العشار عطلت", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/055--.mp3" },
-            { title: "آية وتفسير: والله بصير بالعباد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/056--.mp3" },
-            { title: "آية وتفسير: وثمود الذين جابوا الصخر بالوادِ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/057--.mp3" },
-            { title: "آية وتفسير: وقضى ربك ألا تعبدوا إلا إياه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/058---.mp3" },
-            { title: "آية وتفسير: وهديناه النجدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/059--.mp3" },
-            { title: "آية وتفسير: وإن يمسسك الله بضرّ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/060---.mp3" },
-            { title: "تعليق على أحداث القصير بسوريا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/069-.mp3" },
-            { title: "ثبات أهلنا في سوريا على الدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/072--.mp3" },
-            { title: "ثمانية من خلق الله لا يلحقها العدم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/074-1.mp3" },
-            { title: "حديث الجساسة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/076--.mp3" },
-            { title: "دواء العشق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/080---.mp3" },
-            { title: "ذكر الله حياة السرائر وأنس الضمائر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/081-...mp3" },
-            { title: "رأي الشيخ المغامسي في مسلسل عمر بن الخطاب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/082-.mp3" },
-            { title: "سبب عذاب الله لأهل الشمال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/085--.mp3" },
-            { title: "طرائق تظهر فيها القدرة الإلهية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/089-.mp3" },
-            { title: "عبر وعظات من قصة أصحاب الأخدود", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/090-.mp3" },
-            { title: "غزوة أحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/093--.mp3" },
-            { title: "فضل صيام يوم عرفة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/096-.mp3" },
-            { title: "فوائد جليلة من سيرة نبينا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/097-.mp3" },
-            { title: "فوائد جليلة من غزوة بدر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/098-.mp3" },
-            { title: "قصة الشيخ المغامسي مع ولده هاشم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/101--.mp3" },
-            { title: "قصة مرض الشيخ المغامسي والممرضة اللبنانية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/104-.mp3" },
-            { title: "قصيدة في وفاة طالب يحبه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/105-.mp3" },
-            { title: "قيام الليل من هدي النبوة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/106--.mp3" },
-            { title: "كلمة حول إيذاء الأطفال في سوريا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/108--.mp3" },
-            { title: "كيف تتشبه بالملائكة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/111-.mp3" },
-            { title: "كيف تعظ نفسك وترقق قلبك؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/112-...mp3" },
-            { title: "كيف تنال الخاتمة الحسنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/113-.mp3" },
-            { title: "كيف خانت امرأة نوح وامرأة لوط أزواجهما؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/114-.mp3" },
-            { title: "لا تقترب من خصوصيات أبنائك", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/115--.mp3" },
-            { title: "ما صحة ما ورد في فضل سورة الملك والواقعة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/118-.mp3" },
-            { title: "محبة الله عز وجل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/123--.mp3" },
-            { title: "مصير الملائكة يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/125-_.mp3" },
-            { title: "معصية نهى الله عنها ولم يفعلها أحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/126--.mp3" },
-            { title: "معنى كلمة وجيف في القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/129--.mp3" },
-            { title: "مفردتي مستطيرًا وقمطريرًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/131--.mp3" },
-            { title: "من ينام وقد أوتر ليس كمن ينام ولم يوتر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/133---.mp3" },
-            { title: "هَاؤُمُ اقْرَؤُوا كِتَابِيهْ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/134---.mp3" },
-            { title: "أما آن أن نستحيي من الخالق؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/135-...mp3" },
-            { title: "رحمة الله عز وجل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/136-..-.mp3" },
-            { title: "فضل الإنفاق في رمضان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/137-..-.mp3" },
-            { title: "الصدق مع الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/140--.mp3" },
-            { title: "الوقوف أمام الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/141-.mp3" },
-            { title: "إن رحمة الله قريب من المحسنين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/142-_.mp3" },
-            { title: "تعليق على مقطع دفن سوري حي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/143-.mp3" },
-            { title: "حسرات تقع يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/144-.mp3" },
-            { title: "قد جاءكم رسول من أنفسكم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/146--.mp3" },
-            { title: "كم رُفع لك من عمل لا ترضاه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/147-.mp3" },
-            { title: "لن تُنال المنح والعطايا إلا بفضل الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/148---.mp3" },
-            { title: "نصيحة إلى كل مبتلى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/149-...mp3" },
-            { title: "هجر الناس للقرآن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/150-..-.mp3" },
-            { title: "هل لك عمل صالح ترجو الله به؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/151-.mp3" },
-            { title: "من هدي النبي في سنة الفجر والظهر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/153--.mp3" },
-            { title: "منزلة الأم في الإسلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/154--.mp3" },
-            { title: "اللحظات الأولى في الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/156-.mp3" },
-            { title: "موعظة بليغة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/157-.mp3" },
-            { title: "موعظة جد مؤثرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/158--.mp3" },
-            { title: "كيف نتأثر بالقرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/161---.mp3" },
-            { title: "كيف نصل إلى حسن الخاتمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/162-.mp3" },
-            { title: "مسؤولية الكلمة لدى المسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/163--.mp3" },
-            { title: "نصيحة غالية بترك المعصية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/164-.mp3" },
-            { title: "نصيحة لمن يصر على المعاصي في العشر من ذي الحجة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/166-.mp3" },
-            { title: "اجعل لك طاعة لا يعلمها إلا الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/167--.mp3" },
-            { title: "أسباب الوصول إلى الخير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/169-..-.mp3" },
-            { title: "كيف نستقبل رمضان؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/170-...mp3" },
-            { title: "نصيحة لمن يتكاسل عن قيام الليل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/171--.mp3" },
-            { title: "نفائس العلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/172-.mp3" },
-            { title: "هل العذاب يقع على الروح والجسد معًا في القبر؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/175-.mp3" },
-            { title: "هل ثناء الناس علامة على رضا الله؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/176-.mp3" },
-            { title: "هل رأى النبي صلى الله عليه وسلم البحر؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/177-.mp3" },
-            { title: "هل هناك أحد له حجة على الله؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/178--.mp3" },
-            { title: "وهو الذي أنشأ جنّات معروشات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/179-...-.mp3" },
-            { title: "وحشي قاتل حمزة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/180-.mp3" },
-            { title: "وصف حملة العرش", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/181--.mp3" },
-            { title: "وصية للمبتعثين في الخارج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/182-.mp3" },
-            { title: "وصية عامة مؤثرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/183--.mp3" },
-            { title: "وفاة نبينا محمد صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/184-.mp3" },
-            { title: "وقدمنا إلى ما عملوا من عمل فجعلناه هباءً منثورا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/185-.mp3" },
-            { title: "وقفة مع آية من سورة الجمعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/186--.mp3" },
-            { title: "وقفة مع سيدنا زكريا عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/187--.mp3" },
-            { title: "وقفة مع قيام الليل في رمضان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/188--.mp3" },
-            { title: "ولا تخزني يوم يُبعثون", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/189--.mp3" },
-            { title: "يا ابن آدم سوف تنسى بعد موتك", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/190-..-.mp3" },
-            { title: "يوم عرفة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/191-.mp3" },
-            { title: "التوبة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/021-.mp3" },
-            { title: "وجل القلوب من علام الغيوب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/028---.mp3" },
-            { title: "تاريخ السنة الميلادية وحكم التهنئة بها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/065--.mp3" },
-            { title: "رحلة الإسراء والمعراج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/083--.mp3" },
-            { title: "سبحان الله ذي الوجه الأكرم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/086-.mp3" },
-            { title: "مواعظ جليلة وفوائد نفيسة من رحلة الإسراء والمعراج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/155-.mp3" },
-            { title: "هل الدعاء يرد القضاء؟ (2)", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/174-.mp3" },
-            { title: "( إِنَّمَا يَتَقَبَّلُ اللَّهُ مِنَ الْمُتَّقِينَ ) كلمات رائعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/001-.mp3" },
-            { title: "وأحسن كما أحسن الله إليك ولا تبغِ الفساد في الأرض", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/002-__-.mp3" },
-            { title: "{ بَلْ هُوَ آيَاتٌ بَيِّنَاتٌ فِي صُدُورِ الَّذِينَ أُوتُوا الْعِلْمَ}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/003--.mp3" },
-            { title: "{اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/004-.mp3" },
-            { title: "{لا يُغَادِرُ صَغِيرَةً وَلا كَبِيرَةً إِلاَّ أَحْصَاهَا}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/005--.mp3" },
-            { title: "{لَقَدْ خَلَقْنَا الْإِنسَانَ فِي كَبَدٍ}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/006--.mp3" },
-            { title: "{وكفى بالله عليمًا}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/007-.mp3" },
-            { title: "ابن مسعود_خمس آيات في سورة النساء كم أنا فَرِحٌ بها ولا يعرفها العلماء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/008-_-.mp3" },
-            { title: "إحسانك على العباد يظهر يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/009--.mp3" },
-            { title: "آخر هذه الأمة عهدًا بنبينا ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/010-.mp3" },
-            { title: "اسم الله الأعظم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/011-.mp3" },
-            { title: "إطعام الطعام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/012--.mp3" },
-            { title: "أعظم أحوال المؤمن أن يكون إمامًا في الخير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/013--.mp3" },
-            { title: "أعظم أدعية القرآن التي يرجى إجابتها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/014-.mp3" },
-            { title: "اعظم الخذلان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/015-.mp3" },
-            { title: "أعظم الشرف أن تنضوي تحت لواء الصالحين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/016--.mp3" },
-            { title: "أعظم باعث لإتيان الطاعة والإحجام عن المعصية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/018--.mp3" },
-            { title: "أعظم رابط هو رابط العقيدة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/019--.mp3" },
-            { title: "أعظم غايات القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/020-.mp3" },
-            { title: "أعظم ما ترجح به كفة العبد يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/021-_.mp3" },
-            { title: "أعظم وصية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/022-.mp3" },
-            { title: "أفضل الصدقة سقيا الماء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/023--.mp3" },
-            { title: "أكرم العباد على الله من لم يغمض عينيه إلا وقد بيّت نية صالحة لربه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/024--.mp3" },
-            { title: "الالتجاء الى الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/025-.mp3" },
-            { title: "الأيادي ثلاث", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/026--.mp3" },
-            { title: "البيعة وجمع الكلمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/027-.mp3" },
-            { title: "التَّحْجِيل من خصائص هذه الأمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/028--.mp3" },
-            { title: "التراحم بين الخلق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/029--.mp3" },
-            { title: "التصديق من أعظم التوفيق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/030--.mp3" },
-            { title: "الجنة ومرافقة الأنبياء فيها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/031-.mp3" },
-            { title: "الحياء من الله في تقصير العبد في حق الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/032--.mp3" },
-            { title: "الحياة الحقَّة أن تُسَدِّدَ وتُقارب ما استطعت", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/033--.mp3" },
-            { title: "الرد على من ينكر الصدقة في الخارج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/034-.mp3" },
-            { title: "الركن والمقام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/035-.mp3" },
-            { title: "الرمان في السنة النبوية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/036-.mp3" },
-            { title: "الرمان في القرآن ( 1 ) سورة الأنعام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/037-1.mp3" },
-            { title: "السؤدد يجمع في أمرين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/038--.mp3" },
-            { title: "الشيخ صالح المغامسي ــ يلقن الشهادة لمجموعة من المسلمين الجدد ـ في ربوة الرياض", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/039-.mp3" },
-            { title: "الصالحون إذا فقدوا آمالهم تفقَّدوا أعمالهم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/041--.mp3" },
-            { title: "العبادة والعباد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/043--.mp3" },
-            { title: "العباس بن عبد المطلب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/044--.mp3" },
-            { title: "العبرة بكمال النهايات لا بنقص البدايات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/045--.mp3" },
-            { title: "العقوبة على قدر الذنب لا على قدر الجسد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/046--.mp3" },
-            { title: "العيد معناه ومشروعيته", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/047--.mp3" },
-            { title: "الفرحة في العيد وضوابطها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/048--.mp3" },
-            { title: "القلوب بيد الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/049--.mp3" },
-            { title: "المراد بأهل الأعراف ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/050-.mp3" },
-            { title: "المكان الوحيد الذي لو دخلته لا تندم إن قبضت فيه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/051-.mp3" },
-            { title: "الملحمة ليس هذا زمانها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/052-.mp3" },
-            { title: "المواطن التي تحفها الملائكة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/053--.mp3" },
-            { title: "المؤمن لابد أن يكون بين الرجاء والخوف", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/054-.mp3" },
-            { title: "المؤمن يُوطِّن نفسه على ألَّا يدخل جوفه شيء حرمه الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/055--.mp3" },
-            { title: "النبي ﷺ أكمل الخلق خلقًا وخُلقًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/056-.mp3" },
-            { title: "الوليد بن المغيرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/057--.mp3" },
-            { title: "إن الله لا يريد منا إلا قلوبنا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/058--.mp3" },
-            { title: "إن الله لاطف بهذه الآية أصحاب رسول الله ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/059--.mp3" },
-            { title: "انكسار إبراهيم عليه السلام لربه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/060--.mp3" },
-            { title: "أهل الجنة يحمدون الله في أمور شتى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/061-.mp3" },
-            { title: "أول الطرائق الى سلم العبودية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/062--.mp3" },
-            { title: "أين الشاكرون ؟!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/063--.mp3" },
-            { title: "بعض من النعيم الذي أعده الله لعباده", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/064-.mp3" },
-            { title: "تعظيم الإسلام شأن الجار", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/065--.mp3" },
-            { title: "تعظيم يوم الجمعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/066--.mp3" },
-            { title: "تفسير آية (ولم يجعلني جبارا شقيا)", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/068--.mp3" },
-            { title: "تفسير قوله تعالى ــ هَذَانِ خَصْمَانِ اخْتَصَمُوا فِي رَبِّهِمْ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/069-.mp3" },
-            { title: "جعل الله هذه الدنيا ممرًا ومعبرًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/070--.mp3" },
-            { title: "جملة من الوصايا بالبر بالوالدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/071--.mp3" },
-            { title: "حاجة المرء للنور في الدنيا والآخرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/072-.mp3" },
-            { title: "حتى تعلم الأمة شرف نبيها ﷺ وكرامته عند ربه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/073--.mp3" },
-            { title: "حتى تكون قريبًا من رحمة الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/074--.mp3" },
-            { title: "حتى تنال شرف السقيا من حوض نبينا ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/075--.mp3" },
-            { title: "حديث القصاص", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/076-.mp3" },
-            { title: "حق المساكين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/077--.mp3" },
-            { title: "حق الوالدين أن يُدعَى لهما بعد كل تشهد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/078--.mp3" },
-            { title: "حكمة علي رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/080-.mp3" },
-            { title: "حكمة من حكم علي رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/081-_.mp3" },
-            { title: "خروج الدابــة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/082--.mp3" },
-            { title: "خيمتا أم معبد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/083-_.mp3" },
-            { title: "دعاة الفتنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/088-.mp3" },
-            { title: "ذكر الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/089--.mp3" },
-            { title: "رحمة للعالمين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/090--.mp3" },
-            { title: "رسالة للمتهاونين عن أداء الصلاة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/091-_.mp3" },
-            { title: "سنة الابتلاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/092--.mp3" },
-            { title: "صدقة السر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/093--.mp3" },
-            { title: "صلاة العصر والعشاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/094-.mp3" },
-            { title: "صلاة الفجر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/095-_.mp3" },
-            { title: "ضعف الإنسان وحاجته إلى نصير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/096--.mp3" },
-            { title: "ضمَّة القبر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/097--.mp3" },
-            { title: "طريقة تعلم تفسير القرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/099--.mp3" },
-            { title: "طمع أهل النار في طلب الماء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/100--.mp3" },
-            { title: "عملك إما أن يزين عنقك أو يشينه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/101--.mp3" },
-            { title: "فضل صلاتي العشاء والفجر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/102-.mp3" },
-            { title: "فوائد في الرزق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/103--.mp3" },
-            { title: "قد تقلُّ المعصية لكنها تفجر وتعظم من النِّـيَّة السَّيِّئة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/104--.mp3" },
-            { title: "قد يُزَيَّنُ للإنسان سوءُ عمله فيراه حسنًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/105--.mp3" },
-            { title: "قد يُورِث الله بعض عباده ودًّا لهم في قلوب الناس", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/106--.mp3" },
-            { title: "قصة جريج العبد الصالح من بني اسرائيل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/107--.mp3" },
-            { title: "كلمه للمربين بمناسبة عام دراسي جديد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/109-.mp3" },
-            { title: "كيف تجد قلبك في رمضان ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/110-.mp3" },
-            { title: "كيف نصل إلى حسن الخاتمة؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/111-.mp3" },
-            { title: "لا تعلق قلبك بأحد غير الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/112--.mp3" },
-            { title: "لا رزق في الآخرة إلا لمن دخل الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/113--.mp3" },
-            { title: "لا يجوز مدح النبي ﷺ بمثل هذه الطرائق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/114--.mp3" },
-            { title: "لا ينبغي للمؤمن أن يشمت بصاحب معصية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/115-.mp3" },
-            { title: "لا يوجد في الدنيا خيرٌ محض ولا شرٌّ محض", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/116--.mp3" },
-            { title: "لطف الله بعباده", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/117--.mp3" },
-            { title: "لن ينصرك الله بشيء أعظم من طاعتك له", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/119--.mp3" },
-            { title: "لهذا نشأ النبي ﷺ يتيمًا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/120--.mp3" },
-            { title: "ما يشرع في ليلة ويوم العيد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/121--.mp3" },
-            { title: "متى يرزق العبد الخير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/122-_.mp3" },
-            { title: "متى يعظم الشوق للقيا الله ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/123-.mp3" },
-            { title: "مجاهدة النفس", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/124--.mp3" },
-            { title: "محبة النبي ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/125-_.mp3" },
-            { title: "محبته صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/126-_.mp3" },
-            { title: "معاداة النبي ﷺ مذمّة ينال بها الإنسان العداء من الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/130--.mp3" },
-            { title: "معنى قوله {أَلَمْ تَرَ أَنَّ اللَّهَ يَسْجُدُ لَهُ مَنْ فِي السَّمَاوَاتِ }", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/131-.mp3" },
-            { title: "مقام إبراهيم عليه السلام في الملأ الأعلى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/132--.mp3" },
-            { title: "مقام الحمد أعظم مقامات الصالحين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/133-.mp3" },
-            { title: "من أسباب النجاة يوم القيامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/134-.mp3" },
-            { title: "من أظهر لله الصبر أظهر الله له الكرامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/135--.mp3" },
-            { title: "من أعظم الخيانة خيانة الوطن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/136--.mp3" },
-            { title: "من أعظم القربات إلى الله أن تحب أن يُعَظَّم الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/137--.mp3" },
-            { title: "من أعظم مناقب أبي بكر الصديق رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/138--.mp3" },
-            { title: "من الأكمل أن تحافظ على صلاة الضُّحى في هذه الحالة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/139--.mp3" },
-            { title: "من الخذلان أن يرزق الله عبدًا جبروتًا يطغى به على الخلق", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/140--.mp3" },
-            { title: "من الذي يفعل ما يشاء؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/141-.mp3" },
-            { title: "من بركات النبي ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/142--.mp3" },
-            { title: "مِن حُسْنِ الأدب عند حضور صلاة الجمعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/143--.mp3" },
-            { title: "من خبر إبراهيم عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/144-.mp3" },
-            { title: "من عجز في الدنيا عن أن يعتبر فهو في الآخرة أعجز عن أن يعتذر !!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/145-.mp3" },
-            { title: "من فضائل _لا إله إلا الله_ في الدنيا والآخرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/146-__-.mp3" },
-            { title: "من كمال رحمة الله بعباده", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/147--.mp3" },
-            { title: "من هديه صلى الله عليه وسلم في سنة الفجر والظهر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/148-.mp3" },
-            { title: "من وصايا خطبة الوداع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/149--.mp3" },
-            { title: "نصائح في زمن الفتن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/151-_.mp3" },
-            { title: "نصيحة لكل مسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/154-.mp3" },
-            { title: "هذا مما تنعقد عليه أنامل الصالحين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/155--.mp3" },
-            { title: "هذه الأمة مرحومة منصورة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/156-.mp3" },
-            { title: "والله لا يستغني عن رحمة الله أحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/157-.mp3" },
-            { title: "وطننا ليس كسائر الأوطان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/159--.mp3" },
-            { title: "وقديمًا كان في الناس الحسد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/160--.mp3" },
-            { title: "وَلاَ تَقْرَبُوا الزِّنَى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/161-_.mp3" },
-            { title: "ولهذا عظمت كلمة _ لا إله إلا الله _ !!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/162-__.mp3" },
-            { title: "يختلف المراد بالتقوى باختلاف المخاطَب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/163--.mp3" },
-            { title: "يد النبي ﷺ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-mix_Mghamsi-mp3/164-_.mp3" },
-            { title: "أبشر بطول سلامة يا مربع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/001-.mp3" },
-            { title: "ابن تيمية وسيبويه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/002-.mp3" },
-            { title: "احرص على الخوف من مقام الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/004-.mp3" },
-            { title: "أدب سحرة فرعون", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/005-.mp3" },
-            { title: "ادعاء المهدي وأثر ذلك على الأمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/006--.mp3" },
-            { title: "أدلة نزول عيسى عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/007-.mp3" },
-            { title: "أسباب الوقاية من فتنة الدجال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/009-.mp3" },
-            { title: "استعن على من ظلمك بأمرين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/010--.mp3" },
-            { title: "اسماء المدينه المنوره وفضلها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/011-.mp3" },
-            { title: "أعظم ما يدخر من العمل لحظة سؤال الملائكة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/012--.mp3" },
-            { title: "أقسام أهل الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/013--.mp3" },
-            { title: "أكثر الناس تبعاً للدجال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/014-.mp3" },
-            { title: "الإجازة راحة من أعمال الدنيا لا من أعمال الآخرة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/015--.mp3" },
-            { title: "الأحاديث الواردة في المهدي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/016-.mp3" },
-            { title: "الإنصاف عزيز", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/019--.mp3" },
-            { title: "التأصيل الفقهي لمسألة اعفاء اللحية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/021-.mp3" },
-            { title: "التفاضل بين الأقاليم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/022--.mp3" },
-            { title: "الحجاب الإسلامي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/025-.mp3" },
-            { title: "الحكمة من خروج الدابة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/027-.mp3" },
-            { title: "الخوف من مقام الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/029--.mp3" },
-            { title: "الخوف والاطمئنان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/030-.mp3" },
-            { title: "الدابه علامة من علامات الساعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/031-.mp3" },
-            { title: "الدجال أعظم فتنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/032-.mp3" },
-            { title: "الربط بين القلب والسمع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/034-.mp3" },
-            { title: "الرجال المغيبون الموعودة بهم الأمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/035-.mp3" },
-            { title: "السعيد من أعد لنفسه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/043-.mp3" },
-            { title: "الصحابي الجليل ذو البجادين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/047-.mp3" },
-            { title: "الفتن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/050-.mp3" },
-            { title: "القدس لا يعيدها إلا شيء واحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/054--.mp3" },
-            { title: "القسم فيه عبودية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/056-.mp3" },
-            { title: "الكلمة الطيبة لاإله إلا الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/057-.mp3" },
-            { title: "المجادلة والحوار في القرآن", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/059--.mp3" },
-            { title: "الهدية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/065-.mp3" },
-            { title: "الهمة في طلب العلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/066-.mp3" },
-            { title: "الهمه العالية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/067-.mp3" },
-            { title: "إن الرسول لنور يستضاء به", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/068--.mp3" },
-            { title: "إن الله لا يخذل أولياءه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/069--.mp3" },
-            { title: "بر الوالدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/073-.mp3" },
-            { title: "تحريم الزنا", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/077-.mp3" },
-            { title: "تدبر القرآن وقدم من قدمه الله وأحتكم اليه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/078-.mp3" },
-            { title: "تفسير {لَّا يَكَادُونَ يَفْقَهُونَ قَوْلاً }", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/082-.mp3" },
-            { title: "تفسير رَّبُّكُمْ أَعْلَمُ بِكُمْ إِن يَشَأْ يَرْحَمْكُمْ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/083-.mp3" },
-            { title: "تفسير لَيْسُواْ سَوَاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/087-.mp3" },
-            { title: "تفسير مَّا جَعَلَ اللَّهُ لِرَجُلٍ مِّن قَلْبَيْنِ فِي جَوْفِهِ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/088-.mp3" },
-            { title: "تفسير وَجَاهِدُوا فِي اللَّهِ حَقَّ جِهَادِهِ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/089-.mp3" },
-            { title: "حال الأمة قبل خروج المهدي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/093-.mp3" },
-            { title: "حالتان لا تقبل بعدهما التوبة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/096--.mp3" },
-            { title: "حتى تكون شكواك للاستجابة أقرب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/097-.mp3" },
-            { title: "خروج الدجال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/101-.mp3" },
-            { title: "دعاء لمن ابتلي بالسحر او المرض", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/103-.mp3" },
-            { title: "دقات قلب المرء قائلة له إن الحياة دقائق وثوان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/104-.mp3" },
-            { title: "رحلة الاسراء لنبينا محمد عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/108-.mp3" },
-            { title: "رقية جبرائيل للنبي صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/109-.mp3" },
-            { title: "سجود التلاوة وسجود الشكر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/114-.mp3" },
-            { title: "شرح الاية انما الصدقات للفقراء والمساكين الاقسام الثمانية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/115-.mp3" },
-            { title: "شرح آية _ {وَيُطْعِمُونَ الطَّعَامَ عَلَى حُبِّهِ}", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/116-_-.mp3" },
-            { title: "شرح اية إِنَّ الْأَبْرَارَ يَشْرَبُونَ مِن كَأْسٍ كَانَ مِزَاجُهَا كَافُوراً", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/117-.mp3" },
-            { title: "شرح اية يُوفُونَ بِالنَّذْرِ", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/119-.mp3" },
-            { title: "صفات الدجال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/122-.mp3" },
-            { title: "عطايا الله غالباً تُعطى لمن لا يطلبها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/128-.mp3" },
-            { title: "عيد القيامة للنصارى وعيد الفصح لليهود", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/131-.mp3" },
-            { title: "عيسى عليه السلام ومعجزاته مع قومه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/132-.mp3" },
-            { title: "كن جزء من الأمة وأنفعها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/143-.mp3" },
-            { title: "كيف وسوس إبليس لآدم عليه السلام بعد خروجه من الجنة ؟!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/145-.mp3" },
-            { title: "كيفية الرد على من آذاء الرسول صلى الله عليه وسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/146-.mp3" },
-            { title: "لم يرد سائله نبي الله محمد ولم يقل كلمة لا لسائل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/148-.mp3" },
-            { title: "ما الذي يجعل الإيمان يزيد في القلب؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/154-.mp3" },
-            { title: "ما هي فتنة الدجال؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/158-.mp3" },
-            { title: "ماذا تفعل أيام الفتن؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/159-.mp3" },
-            { title: "متى يعزي الإنسان نفسه ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/161-.mp3" },
-            { title: "معنى الحديث يصلحه الله في ليلة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/164-.mp3" },
-            { title: "من صور قيام الليل", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/168--.mp3" },
-            { title: "من قال هذا لا سبيل للدجال عليه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/169-.mp3" },
-            { title: "من لا يعرف الله احقر من البهيمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/170-.mp3" },
-            { title: "من منا يستطيع أن يقول معاذ الله ؟!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/171-.mp3" },
-            { title: "من هم يأجوج ومأجوج ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/172-.mp3" },
-            { title: "من يشعر بوحشه او غربه يقول هذا الدعاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/176-.mp3" },
-            { title: "من يفعل الخير لا يعدم جوازيه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/177-.mp3" },
-            { title: "من يقبل على الله يعرف أن الله عظيم وسنة الله في المسجد النبوي نهاية العالم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/178-.mp3" },
-            { title: "منزلة الصديقية كيف نصل إليها", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/179-.mp3" },
-            { title: "منزلة علامة خروج الدجال من علامات الساعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/180-.mp3" },
-            { title: "منهج للدعاة إلى الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/181-.mp3" },
-            { title: "مؤثر - متى تنفعك جوارحك ؟!", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/183---.mp3" },
-            { title: "نزول عيسى عليه السلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/184-.mp3" },
-            { title: "هجرة المعاصي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/186--.mp3" },
-            { title: "هل ابن الصياد هو المسيح الدجال ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/188-.mp3" },
-            { title: "هل الدجال موجود الآن ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/189-.mp3" },
-            { title: "هل المؤمن يركع ويصلي بعد خروج الدابة ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/190-.mp3" },
-            { title: "هل يحدث زمن المهدي قتال؟ وأقوال العلماء فيه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/192-.mp3" },
-            { title: "هلاك الدجال على يد عيسى ابن مريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/193-.mp3" },
-            { title: "وفاة النبي عليه السلام وادب زيارة النبي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/194-.mp3" },
-            { title: "يأجوج ومأجوج وذو القرنين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/195-.mp3" },
-            { title: "ينبغي في العقيدة أن يعرف قصد المتكلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/197--.mp3" },
-            { title: "يوسف وإخوته", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin_Mghamsi-mp3/198-.mp3" },
-            { title: "أدب حوار رسول الله عليه الصلاة والسلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/001-.mp3" },
-            { title: "أرجى آية في كتاب الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/002--.mp3" },
-            { title: "استشعر هذه الأسئلة عند طواف الوداع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/003--.mp3" },
-            { title: "البيعة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/007--.mp3" },
-            { title: "الجميع له إله حتى الملحد", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/009--.mp3" },
-            { title: "الحاج بعد الحج يسأل الله أمرين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/010--.mp3" },
-            { title: "السبيل إلى محو الشهوات من القلب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/015-.mp3" },
-            { title: "السفر في طلب العلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/016-.mp3" },
-            { title: "السؤدد في الاستغفار", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/019--.mp3" },
-            { title: "الشيخ صالح المغامسي - لا يدخل الجنة قاطع", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/023--.mp3" },
-            { title: "الصبر على البلاء", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/027-.mp3" },
-            { title: "الصراط والأيام الأولى بالجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/028--.mp3" },
-            { title: "الفاروق عمر رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/030-.mp3" },
-            { title: "الفروق بين الجنة والنار", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/031-.avi.mp3" },
-            { title: "القلوب المغلقة متى تفتح ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/034-.mp3" },
-            { title: "الله خالق الأسباب والمسببات", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/035-.mp3" },
-            { title: "المال في الإسلام", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/036-.mp3" },
-            { title: "تربية القلب", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/051--.mp3" },
-            { title: "تغير النوايا بعد حضور مجالس الذكر", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/055-.mp3" },
-            { title: "جميعنا نستحق النار لولا رحمة الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/079-.mp3" },
-            { title: "خلافة عمر رضي الله عنه", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/084-.mp3" },
-            { title: "عمر رضي الله عنه و المال", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/097-.mp3" },
-            { title: "فتنة هاروت وماروت", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/098-.mp3" },
-            { title: "كلمة من الشيخ صالح المغامسي إلى أهل غزة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/104-.mp3" },
-            { title: "كم عدد الجنان؟ ونصيحة قيمة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/105-.mp3" },
-            { title: "كيف رأى النبي عليه الصلاة والسلام من يعذب في النار ليلة المعراج", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/108-.mp3" },
-            { title: "كيف يتعامل العبد مع الهموم والغموم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/109-.mp3" },
-            { title: "لشبابنا تقوى الله في استخدام التقنية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/111-.mp3" },
-            { title: "مسئولية الكلمة لدى المسلم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/121-.mp3" },
-            { title: "مكفرات ذنوب عصاة بني آدم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/125-.mp3" },
-            { title: "نصائح وتوجيهات هامة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/128-.mp3" },
-            { title: "نصيحة لكل مبتلى", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/129--.mp3" },
-            { title: "هل الأذكار تكفر الكبائر والصغائر ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/130-.mp3" },
-            { title: "هل أول ليلة في القبر فيها متاعب ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/131-.mp3" },
-            { title: "هل قاتل النفس عمدا مخلد في النار ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/132-.mp3" },
-            { title: "هل هناك أحد عليه حجة على الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/134-.mp3" },
-            { title: "هل وجه الله لا يسأل به إلا الجنة ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/135-.mp3" },
-            { title: "هل يجوز الدعاء بالموت بالمدينة ؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/136-.mp3" },
-            { title: "يذكر بالقرآن من يخاف وعيد الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Ma9ate3-ma9am-amin-3_Mghamsi-mp3/138-.mp3" }
+            { title: "النداء الأخير أيها المسلمون أسمعوه", sheikh: "الشيخ خالد الراشد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0307.mp3" },
+            { title: "نصائح لكل عاشق", sheikh: "الشيخ محمد العريفي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0182.mp3" },
+            { title: "نعمة الهداية", sheikh: "الشيخ مشعل العتيبي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0027.mp3" },
+            { title: "فضل الاستغفار", sheikh: "الشيخ طلال فاخر", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0090.mp3" },
+            { title: "كم آية تقرأ؟", sheikh: "الشيخ طلال فاخر", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0091.mp3" },
+            { title: "اكتبوها كثيرًا #الحمدلله", sheikh: "الشيخ طلال فاخر", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0081.mp3" },
+            { title: "ماذا أعددت للقاء الله؟", sheikh: "الشيخ إبراهيم الزيات", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0011.mp3" },
+            { title: "الأم", sheikh: "الشيخ إبراهيم الدويش", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0017.mp3" },
+            { title: "زوجة يتمناها كل رجل", sheikh: "الشيخ مشعل العتيبي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0030.mp3" },
+            { title: "نجوم السماء", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0049.mp3" },
+            { title: "اعرف اليهود", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0056.mp3" },
+            { title: "تريد الهداية", sheikh: "الشيخ محمد بن قنة الشهراني", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0066.mp3" },
+            { title: "فضل الباقيات الصالحات", sheikh: "الشيخ طلال فاخر", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0089.mp3" },
+            { title: "يا تارك الصلاة", sheikh: "الشيخ محمد حسين يعقوب", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0103.mp3" },
+            { title: "كيف تجعل قلبك سعيدًا؟", sheikh: "الشيخ خالد الجبير", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0110.mp3" },
+            { title: "نداء أخير للنساء", sheikh: "الشيخ عبد المحسن الأحمد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0150.mp3" },
+            { title: "الوصفة السحرية للسعادة الزوجية", sheikh: "الشيخ عائض القرني", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0200.mp3" },
+            { title: "حقيقة حسن الظن بالله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0211.mp3" },
+            { title: "الله نور السموات والأرض", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0220.mp3" },
+            { title: "بر الوالدين", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0221.mp3" },
+            { title: "بادر إلى الأعمال الخفية", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0297.mp3" },
+            { title: "فضل ذكر الله", sheikh: "الشيخ توفيق الصايغ", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0261.mp3" },
+            { title: "يا من تبحث عن الحياة الطيبة", sheikh: "الشيخ محمد حسان", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0399.mp3" },
+            { title: "بسم الله", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0059.mp3" },
+            { title: "لا تحزن لعله خير", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0396.mp3" },
+            { title: "وقفة محاسبة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0431.mp3" },
+            { title: "باب التوبة مفتوح فماذا تنتظر", sheikh: "الشيخ خالد الراشد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0313.mp3" },
+            { title: "هل تشتكي كثرة الهموم والغموم", sheikh: "الشيخ خالد الراشد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0321.mp3" },
+            { title: "احفظ الله يحفظك", sheikh: "الشيخ خالد الراشد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0442-ihfad-allah-yahfadk-khaed-rashed.mp3" },
+            { title: "بكاء الرسول صلى الله عليه وسلم", sheikh: "الشيخ عائض القرني", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0201.mp3" },
+            { title: "قصة فيروز الديلمي", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0215.mp3" },
+            { title: "أقم صلاتك تسعد حياتك", sheikh: "الشيخ خالد الراشد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0308.mp3" },
+            { title: "الطريق إلى الجنة", sheikh: "الشيخ خالد الراشد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0312.mp3" },
+            { title: "فرصة مغفرة الذنوب في خمس دقائق", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0367.mp3" },
+            { title: "خطر اللسان", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0448-khatar-lisan.mp3" },
+            { title: "فضل وعظمة الاستغفار", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0372.mp3" },
+            { title: "نصيحة لكل مسلم قبل رمضان", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0409.mp3" },
+            { title: "فضائل لا إله إلا الله", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0445-Mghamsi-fadl-lailahaillaallah.mp3" },
+            { title: "وصايا قبل لقاء شهر رمضان", sheikh: "الشيخ محمد مختار الشنقيطي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0420.mp3" },
+            { title: "كلمات لامست القلوب", sheikh: "الشيخ محمد المنجد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0443-kalima-tayba.mp3" },
+            { title: "اللحظات الأخيرة", sheikh: "الشيخ محمد حسان", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0446-Mohammed-hassan_almout.mp3" },
+            { title: "أحسن الكلام ما كان عن الله", sheikh: "الشيخ إبراهيم الزيات", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0001.mp3" },
+            { title: "أدركوا يا شباب", sheikh: "الشيخ إبراهيم الزيات", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0009.mp3" },
+            { title: "لمن الملك اليوم؟", sheikh: "الشيخ إبراهيم الزيات", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0012.mp3" },
+            { title: "من هو الفائز في رمضان؟", sheikh: "الشيخ إبراهيم الدويش", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0019.mp3" },
+            { title: "قصة المؤذن", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0043.mp3" },
+            { title: "آخر إنسان يدخل الجنة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0053.mp3" },
+            { title: "الجنة لا يدخلها إلا الطيبين", sheikh: "الشيخ محمد بن قنة الشهراني", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0061.mp3" },
+            { title: "قصة في الجناح الانفرادي", sheikh: "الشيخ محمد العريفي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0174.mp3" },
+            { title: "من آداب يوم الجمعة", sheikh: "الشيخ محمد العريفي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0179.mp3" },
+            { title: "أسباب الهم والغم", sheikh: "الشيخ عائض القرني", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0197.mp3" },
+            { title: "طعام أهل الجنة", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0213.mp3" },
+            { title: "كيف تكون من الذين يخشون ربهم", sheikh: "الشيخ وسيم يوسف", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0235.mp3" },
+            { title: "أين السعادة", sheikh: "الشيخ وسيم يوسف", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0249.mp3" },
+            { title: "ما الذي يجري من حولنا", sheikh: "الشيخ توفيق الصايغ", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0258.mp3" },
+            { title: "أعظم كنوز بر الوالدين", sheikh: "الشيخ محمد الشنقيطي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0280.mp3" },
+            { title: "وقفات مع النفس قبل يوم القيامة", sheikh: "الشيخ خالد الراشد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0324.mp3" },
+            { title: "الوصية التي بحث عنها الكثير", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0356.mp3" },
+            { title: "قصة وفاة رسول الله", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0377.mp3" },
+            { title: "نصيحة أغلى من الذهب والألماس", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0406.mp3" },
+            { title: "هل حمدت الله وشكرته على نعمه", sheikh: "الشيخ عبد المحسن الأحمد", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0416.mp3" },
         ];
 
         // تسخين مبكر للاتصال بخادم الصوتيات (archive.org) عند فتح قسم "المواعظ":
@@ -5644,11 +5550,20 @@
                         <div class="offline-badge" style="${isSaved ? '' : 'display:none;'}"><i class="fa-solid fa-check-circle"></i> متاح بدون إنترنت</div>
                     </div>
                     <div class="sound-card-actions">
+                        <button class="surah-download-btn" title="تحميل مباشر إلى الهاتف">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
                         <button class="offline-save-btn ${isSaved ? 'is-saved' : ''}" title="${isSaved ? 'محفوظ - اضغط للحذف' : 'حفظ للاستماع بدون نت'}">
                             <i class="fa-solid ${isSaved ? 'fa-check' : 'fa-cloud-arrow-down'}"></i>
                         </button>
                         <button class="btn-primary" style="padding: 8px 15px;"><i class="fa-solid fa-play"></i> استماع</button>
                     </div>`;
+
+                const downloadBtn = card.querySelector('.surah-download-btn');
+                downloadBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    downloadAudioFile(s.url, `${s.title} - ${s.sheikh}.mp3`);
+                });
 
                 const offlineBtn = card.querySelector('.offline-save-btn');
                 const offlineBadge = card.querySelector('.offline-badge');
@@ -6776,34 +6691,6 @@
                 ]
             },
             {
-                id: 8, category: 'muasira', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم استخدام الذكاء الاصطناعي في طلب الفتاوى الشرعية؟',
-                shortAnswer: 'يجوز الاستعانة بأدوات الذكاء الاصطناعي للاستئناس والتوجيه الأولي وفهم المسألة، لكن لا يجوز الاعتماد عليها كمصدر فتوى نهائي في المسائل التي تحتاج اجتهادًا أو لها أثر شرعي مُلزم.',
-                detail: 'الفتوى بابها أهل العلم المتخصصون الذين يجمعون بين معرفة النصوص الشرعية وفقه الواقع وأصول الاستنباط، والذكاء الاصطناعي أداة تعتمد على معطيات مبرمجة قد تُخطئ أو لا تراعي خصوصية كل حالة أو اختلاف المذاهب. لذلك يحسن استخدامه كوسيلة تعليمية أولية أو للبحث السريع عن المعلومة العامة، مع ضرورة الرجوع لأهل العلم الموثوقين في المسائل المهمة أو التي تحتاج نظرًا اجتهاديًا.',
-                evidences: [
-                    { text: 'فَاسْأَلُوا أَهْلَ الذِّكْرِ إِنْ كُنْتُمْ لَا تَعْلَمُونَ.', source: 'سورة النحل، آية 43' }
-                ]
-            },
-            {
-                id: 9, category: 'muasira', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم قضاء وقت طويل في متابعة المحتوى الترفيهي على وسائل التواصل الاجتماعي؟',
-                shortAnswer: 'الأصل في وسائل التواصل الإباحة كأداة، لكن الحكم يتبع المحتوى والوقت المُستهلك؛ فإن شغل عن الواجبات الشرعية أو تضمّن محرمًا كان حرامًا، وإلا فالمكروه أقرب إذا استغرق دون فائدة.',
-                detail: 'وسائل التواصل الاجتماعي وسيلة حديثة تأخذ حكم ما تُستخدم فيه؛ فإن استُخدمت في نشر الخير والعلم والتواصل النافع فهي مستحبة أو مباحة، وإن استُخدمت في محتوى محرم كالغيبة أو التبرج أو الاختلاط المحرم فهي حرام بحسب ما تحويه. أما الإفراط في متابعتها دون فائدة حتى يضيع بها الوقت والواجبات كالصلاة وحقوق الأهل والعمل، فهذا من تضييع الوقت المنهي عنه شرعًا، وقد يصل للكراهة أو التحريم بحسب أثره.',
-                evidences: [
-                    { text: 'مِنْ حُسْنِ إِسْلَامِ الْمَرْءِ تَرْكُهُ مَا لَا يَعْنِيهِ.', source: 'رواه الترمذي' }
-                ]
-            },
-            {
-                id: 10, category: 'digital', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم التعامل بالعملات الرقمية مثل البيتكوين؟',
-                shortAnswer: 'المسألة محل اجتهاد معاصر بين المجامع الفقهية؛ فمنهم من أجاز التعامل بها بضوابط باعتبارها مالًا رقميًا معتبرًا، ومنهم من منع ذلك لما فيها من غرر وجهالة وتذبذب حاد في القيمة.',
-                detail: 'تباينت اجتهادات العلماء والمجامع الفقهية المعاصرة حول العملات الرقمية المشفرة؛ فبعضهم اعتبرها مالًا متقوَّمًا يجوز تداوله كسائر الأموال متى انضبط بعدم الغرر الفاحش وعدم استخدامه في محرم، بينما رأى آخرون أن غياب جهة إصدار موثوقة، وشدة التذبذب، واستخدامها أحيانًا في أنشطة مشبوهة، يجعلها أقرب للمقامرة والغرر المنهي عنه. ولذلك يُنصح من أراد التعامل بها بمراجعة مجمع فقهي معتبر يراعي مستجدات كل عملة على حدة، والابتعاد عن كل ما فيه شبهة غرر بيّن أو تمويل لأنشطة محرمة.',
-                evidences: [
-                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ إِلَّا أَنْ تَكُونَ تِجَارَةً عَنْ تَرَاضٍ مِنْكُمْ.', source: 'سورة النساء، آية 29' },
-                    { text: 'نَهَى رَسُولُ اللَّهِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ عَنْ بَيْعِ الْغَرَرِ.', source: 'رواه مسلم' }
-                ]
-            },
-            {
                 id: 11, category: 'salah', ruling: 'jaiz', rulingLabel: 'جائز',
                 question: 'ما حكم أداء صلاة الجماعة عبر البث المباشر لمن هو خارج المسجد؟',
                 shortAnswer: 'لا تصح صلاة الجماعة الحقيقية عبر البث المباشر لعدم اتحاد المكان واشتراط الاقتداء الفعلي، لكن يجوز للمريض والمعذور متابعة الخطبة أو الدرس عن بُعد للاستفادة العلمية.',
@@ -6858,15 +6745,6 @@
                 detail: 'اتفق جمهور الفقهاء على تحريم لبس الذهب على الرجال بأي هيئة كان، خاتمًا أو سلسلة أو ساعة أو غير ذلك، لثبوت النهي الصريح عن ذلك في السنة النبوية، بينما أُبيح للنساء لبسه لورود النص بإباحته لهن. ويجوز للرجل لبس خاتم الفضة بشرط ألا يتجاوز وزنه مثقالًا واحدًا تقريبًا (نحو 4.25 غرام) عند من اشترط ذلك من أهل العلم.',
                 evidences: [
                     { text: 'هَذَانِ حَرَامٌ عَلَى ذُكُورِ أُمَّتِي حِلٌّ لِإِنَاثِهِمْ.', source: 'رواه أبو داود، يقصد الذهب والحرير' }
-                ]
-            },
-            {
-                id: 17, category: 'muamalat', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم عقود التأمين التجاري؟',
-                shortAnswer: 'ذهب جمهور المجامع الفقهية المعاصرة إلى تحريم التأمين التجاري لما فيه من الغرر والربا والقمار، وأجازوا بدلًا عنه التأمين التعاوني القائم على التبرع والتكافل.',
-                detail: 'قررت أكثر المجامع الفقهية المعاصرة كمجمع الفقه الإسلامي الدولي تحريم عقود التأمين التجاري بصورته المعتادة، لاشتمالها على الغرر الفاحش في معرفة مقدار ما يدفع وما يُستحق، ولاحتوائها في الغالب على شبهة الربا في استثمار الأقساط، ولمشابهتها للمقامرة من حيث الكسب أو الخسارة غير المتيقنة. وأجازوا في المقابل نظام التأمين التعاوني (التكافلي) القائم على التبرع والتعاون بين المشتركين لتغطية الأضرار، لخلوه من هذه المحاذير الشرعية.',
-                evidences: [
-                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ إِلَّا أَنْ تَكُونَ تِجَارَةً عَنْ تَرَاضٍ مِنْكُمْ.', source: 'سورة النساء، آية 29' }
                 ]
             },
             {
@@ -6935,15 +6813,6 @@
                 ]
             },
             {
-                id: 25, category: 'muamalat', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم العمل بالتسويق بالعمولة (الأفلييت) على الإنترنت؟',
-                shortAnswer: 'التسويق بالعمولة جائز في أصله لأنه نوع من السمسرة أو الوكالة بأجر معلوم، بشرط أن تكون السلعة أو الخدمة المُسوَّق لها مباحة، وأن يكون الوصف والإعلان صادقًا غير مضلل.',
-                detail: 'يُكيّف كثير من أهل العلم المعاصرين التسويق بالعمولة على أنه صورة من صور السمسرة المباحة، حيث يأخذ المسوّق أجرًا معلومًا أو نسبة متفقًا عليها مقابل جهده في التعريف بالسلعة وجلب المشتري. ويشترط لجوازه أن تكون السلعة المروَّج لها حلالًا في ذاتها، وألا يشتمل الإعلان على كذب أو مبالغة أو تغرير بالمشتري، وألا يكون في العقد جهالة فاحشة تفضي إلى نزاع. أما الترويج لسلع محرمة أو مواقع قمار أو محتوى مخالف للشرع فلا يجوز أخذ عمولة عليه.',
-                evidences: [
-                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا أَوْفُوا بِالْعُقُودِ.', source: 'سورة المائدة، آية 1' }
-                ]
-            },
-            {
                 id: 26, category: 'usra', ruling: 'jaiz', rulingLabel: 'جائز',
                 question: 'ما حكم استخدام موانع الحمل المؤقتة بين الزوجين؟',
                 shortAnswer: 'يجوز للزوجين استخدام وسائل منع الحمل المؤقتة بالتراضي بينهما لغرض مشروع كتنظيم النسل أو مراعاة صحة الأم، بشرط ألا يكون فيها ضرر دائم أو قصد لقطع النسل بالكلية دون عذر.',
@@ -6968,15 +6837,6 @@
                 detail: 'الغش بجميع صوره من نقل إجابات الغير خلسة أو استخدام وسائل غير مشروعة في الامتحان محرم، لما فيه من الكذب على القائمين على الاختبار، والتحايل للحصول على شهادة أو درجة لا يستحقها صاحبها بجهده، وقد يترتب عليه أضرار على الغير كمن يُحرم فرصة كان يستحقها أحد المجتهدين. كما أن من غش في مؤهل علمي ثم زاول مهنة تعتمد عليه كالطب أو الهندسة، فإن الغش قد يمتد ضرره ليشمل حياة الناس وأموالهم فيكون أشد إثمًا.',
                 evidences: [
                     { text: 'مَنْ غَشَّنَا فَلَيْسَ مِنَّا.', source: 'رواه مسلم' }
-                ]
-            },
-            {
-                id: 29, category: 'digital', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم استخدام برامج الذكاء الاصطناعي لتوليد الصور التي تحتوي على وجوه بشرية؟',
-                shortAnswer: 'المسألة محل اجتهاد معاصر؛ فمن اعتبر الصورة الرقمية المولدة بالذكاء الاصطناعي غير داخلة في تحريم التصوير لعدم وجود عين مصوَّرة حقيقية أجازها بضوابط، ومن ألحقها بحكم التصوير الفوتوغرافي منع إنشاء صور لذوات الأرواح.',
-                detail: 'اختلف العلماء المعاصرون في حكم التصوير الفوتوغرافي أصلًا، فمنهم من ألحقه بالتصوير المحرّم الوارد في النصوص، ومنهم من فرّق بينه وبين الرسم اليدوي فأجازه لعدم مضاهاة خلق الله بالفرشاة. وصور الذكاء الاصطناعي المولّدة رقميًا أشبه ما تكون بالتصوير الفوتوغرافي من حيث كونها تركيبًا لبيانات لا رسمًا يدويًا مباشرًا، فتأخذ عند كثير من المعاصرين نفس حكم اجتهادهم في التصوير الفوتوغرافي. ومع اختلاف الرأي، يبقى الأولى تجنب توليد صور لذوات الأرواح خروجًا من الخلاف، خاصة إن اقترن ذلك بمحتوى فيه تشبّه أو محرّم آخر.',
-                evidences: [
-                    { text: 'إِنَّ أَشَدَّ النَّاسِ عَذَابًا يَوْمَ الْقِيَامَةِ الْمُصَوِّرُونَ.', source: 'رواه البخاري ومسلم' }
                 ]
             },
             {
@@ -7061,24 +6921,6 @@
                 ]
             },
             {
-                id: 39, category: 'muamalat', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم استخدام بطاقات الائتمان (فيزا وماستركارد) التي عليها رسوم سنوية؟',
-                shortAnswer: 'يجوز استخدام بطاقة الائتمان للسحب والشراء بشرط سداد كامل المبلغ قبل موعد الاستحقاق لتجنب الفوائد الربوية، أما الرسوم السنوية الثابتة مقابل الخدمة فأجازها كثير من المعاصرين لكونها أجرة خدمة لا فائدة على قرض.',
-                detail: 'بطاقة الائتمان في حقيقتها قرض مؤجل من البنك للعميل، فإن التزم العميل بالسداد الكامل قبل انتهاء المهلة المجانية فلا ربا في ذلك، وتُعامل الرسوم السنوية الثابتة كأجرة مقابل خدمات البطاقة والتأمين والامتيازات المرتبطة بها، وهذا جائز عند كثير من المجامع الفقهية المعاصرة لأنها ليست زيادة على أصل الدين المتأخر. أما إذا تأخر السداد وترتبت فوائد على المبلغ المتبقي فذلك من الربا المحرم صراحة، فيجب على المسلم الحرص التام على السداد في الموعد.',
-                evidences: [
-                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا اتَّقُوا اللَّهَ وَذَرُوا مَا بَقِيَ مِنَ الرِّبَا إِنْ كُنْتُمْ مُؤْمِنِينَ.', source: 'سورة البقرة، آية 278' }
-                ]
-            },
-            {
-                id: 40, category: 'muamalat', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم التأمين التجاري على السيارات؟',
-                shortAnswer: 'التأمين التجاري التقليدي محل خلاف بين أهل العلم؛ فمنهم من حرّمه لما فيه من غرر وربا، ومنهم من أجازه للحاجة والإلزام النظامي، والأولى الالتزام بالتأمين التعاوني الإسلامي إذا وُجد بديلًا مباحًا بالإجماع.',
-                detail: 'التأمين التجاري عقد معاوضة يدفع فيه المؤمَّن له قسطًا دوريًا مقابل تعويض محتمل غير معلوم وقوعه ولا مقداره، وهذا يجعله عند كثير من الفقهاء داخلًا في بيوع الغرر المنهي عنها، إضافة لما قد يشوبه من ربا في استثمار الشركة لأموال المؤمَّنين. ومع ذلك أجازه بعض المعاصرين للضرورة والإلزام القانوني في كثير من الدول، خصوصًا التأمين الإلزامي على السيارات (ضد الغير) الذي لا خيار للمواطن فيه. وحيثما وُجد تأمين تعاوني إسلامي بديل فهو المتعين شرعًا لسلامته من هذه الإشكالات.',
-                evidences: [
-                    { text: 'نَهَى رَسُولُ اللَّهِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ عَنْ بَيْعِ الْغَرَرِ.', source: 'رواه مسلم' }
-                ]
-            },
-            {
                 id: 41, category: 'muamalat', ruling: 'jaiz', rulingLabel: 'جائز',
                 question: 'ما حكم العمل موظفًا في بنك ربوي بوظيفة لا تباشر عقود الربا مباشرة كالحراسة أو الصيانة؟',
                 shortAnswer: 'الأصل تحريم العمل في البنوك الربوية لأنها قائمة على الربا المحرم، لكن من كانت وظيفته إدارية بحتة لا صلة لها بعقود الربا كالحراسة والنظافة والصيانة الفنية، فقد رخّص فيها بعض أهل العلم للحاجة مع استمرار البحث عن بديل حلال.',
@@ -7124,30 +6966,12 @@
                 ]
             },
             {
-                id: 46, category: 'usra', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم زواج المسيار؟',
-                shortAnswer: 'زواج المسيار عقد نكاح مستوفٍ لأركانه وشروطه بتنازل الزوجة عن بعض حقوقها كالسكنى أو المبيت أو النفقة، فهو صحيح عند من أجازه من العلماء، مع كراهة كثير من أهل العلم له لما قد يترتب عليه من مفاسد اجتماعية.',
-                detail: 'زواج المسيار هو عقد زواج شرعي مستكمل لأركانه من إيجاب وقبول وولي وشاهدين ومهر، إلا أن الزوجة تتنازل فيه عن بعض حقوقها الواجبة لها كالمبيت أو النفقة أو السكن المستقل، رضًا منها بذلك. وقد أجازه جمهور من أفتى فيه من المعاصرين تأسيسًا على أن الحقوق الزوجية يجوز للمرأة التنازل عنها برضاها التام، لكن كثيرًا من أهل العلم كرهه أو حذر منه لما قد يصاحبه من إخفاء عن الأهل أو ضياع لحقوق الأولاد أو تفكك للبيوت، فالأصل الجواز مع مراعاة الآثار الاجتماعية له.',
-                evidences: [
-                    { text: 'فَإِنْ خِفْتُمْ أَلَّا تَعْدِلُوا فَوَاحِدَةً... وَإِنِ امْرَأَةٌ خَافَتْ مِنْ بَعْلِهَا نُشُوزًا أَوْ إِعْرَاضًا فَلَا جُنَاحَ عَلَيْهِمَا أَنْ يُصْلِحَا بَيْنَهُمَا صُلْحًا.', source: 'سورة النساء، الآيتان 3 و128' }
-                ]
-            },
-            {
                 id: 47, category: 'usra', ruling: 'haram', rulingLabel: 'محرم',
                 question: 'ما حكم عضل الأب لابنته عن الزواج ممن ترضاه دون سبب شرعي؟',
                 shortAnswer: 'عضل الولي لموليته عن الزواج بمن يكافئها ويرضاه دينه وخلقه دون عذر شرعي محرم، فإن أصرّ الولي على العضل انتقلت الولاية إلى من يليه من الأولياء ثم إلى القاضي.',
                 detail: 'الولاية في النكاح شُرعت لمصلحة المرأة ورعاية شؤونها لا للتضييق عليها أو حرمانها من حقها في الزواج المشروع، فإذا تقدم لها من يرضى دينه وخلقه فامتنع الولي دون عذر معتبر عُدّ ذلك عضلًا محرمًا يأثم به الولي، وقد توعده الله بالنهي الصريح عن العضل، وفي هذه الحالة يحق للمرأة أن ترفع أمرها للقضاء لينتقل الحق لوليها الأبعد أو يزوجها القاضي نفسه صيانة لحقها.',
                 evidences: [
                     { text: 'فَلَا تَعْضُلُوهُنَّ أَنْ يَنْكِحْنَ أَزْوَاجَهُنَّ إِذَا تَرَاضَوْا بَيْنَهُمْ بِالْمَعْرُوفِ.', source: 'سورة البقرة، آية 232' }
-                ]
-            },
-            {
-                id: 48, category: 'zakah', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'هل تجب الزكاة في الذهب الذي تتحلى به المرأة للاستعمال الشخصي؟',
-                shortAnswer: 'اختلف أهل العلم في زكاة الحلي المُعَدّ للاستعمال المباح؛ فمنهم من أوجبها إذا بلغ نصابًا وحال عليه الحول، ومنهم من رأى عدم وجوبها لأنه ليس مالًا ناميًا بل مُستعمَل، والأحوط إخراج زكاته خروجًا من الخلاف.',
-                detail: 'ذهب جمهور الحنفية إلى وجوب الزكاة في الحلي مطلقًا إذا بلغ النصاب، بينما ذهب جمهور المالكية والشافعية والحنابلة إلى أن الحلي المُعَدّ للُبس المباح لا زكاة فيه لأنه ليس من أموال التجارة أو الأموال النامية التي شُرعت الزكاة لتطهيرها. وهذا الخلاف مبني على اجتهاد كل مذهب في تحقيق مناط الزكاة، والأحوط لمن أراد الخروج من الخلاف وبراءة الذمة أن يخرج زكاة حليه إذا بلغ النصاب (نحو 85 جرامًا) وحال عليه الحول، خاصة إذا كان كثيرًا يخرج عن حد المعتاد.',
-                evidences: [
-                    { text: 'وَالَّذِينَ يَكْنِزُونَ الذَّهَبَ وَالْفِضَّةَ وَلَا يُنْفِقُونَهَا فِي سَبِيلِ اللَّهِ فَبَشِّرْهُمْ بِعَذَابٍ أَلِيمٍ.', source: 'سورة التوبة، آية 34' }
                 ]
             },
             {
@@ -7184,15 +7008,6 @@
                 detail: 'ربط الأحداث المستقبلية أو صفات الشخصية بمواقع النجوم وحركتها من باب ادعاء علم الغيب الذي استأثر الله به وحده، وقد جاء الوعيد الشديد فيمن أتى عرافًا أو منجمًا فصدّقه بما يقول، ولو كانت المتابعة على سبيل التسلية المجردة دون تصديق فهي محل تحذير شديد لما تجره غالبًا من تعلق القلب بها شيئًا فشيئًا، والواجب على المسلم صرف قلبه عن هذا الباب بالكلية والاكتفاء بما شرعه الله من الاستخارة والتوكل عليه في أمور المستقبل.',
                 evidences: [
                     { text: 'مَنْ أَتَى عَرَّافًا فَسَأَلَهُ عَنْ شَيْءٍ لَمْ تُقْبَلْ لَهُ صَلَاةٌ أَرْبَعِينَ لَيْلَةً.', source: 'رواه مسلم' }
-                ]
-            },
-            {
-                id: 53, category: 'muasira', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم المشاركة في صناديق الاستثمار التي تجمع بين أنشطة مباحة ونسبة يسيرة من نشاط مختلط؟',
-                shortAnswer: 'الأصل وجوب اختيار الصناديق الملتزمة بالمعايير الشرعية الموثقة من هيئات الرقابة الشرعية المعتمدة، فإن وُجد صندوق شرعي متخصص فهو المتعين، وما دون ذلك من صناديق مختلطة تحتاج فتوى دقيقة بحسب نسبة النشاط المحرم ومدى تحكم المستثمر فيه.',
-                detail: 'الاستثمار في الأسهم والصناديق أصبح من المسائل المستجدة التي تحتاج ضوابط دقيقة، وقد وضعت المجامع الفقهية معايير لقياس مدى جواز الاستثمار في شركة مختلطة النشاط من أبرزها نسبة الدَّين الربوي إلى إجمالي الأصول، ونسبة الإيرادات المحرمة إلى إجمالي الإيرادات، مع وجوب تطهير الدخل المحرم اليسير بالتصدق به دون نية الأجر. فإن كانت نسبة النشاط المحرم يسيرة جدًا (أقل من الحدود التي وضعتها الهيئات الشرعية) وتم تطهير العائد المحرم منها، أجاز ذلك بعض المجامع للحاجة، وإلا فالأصل الاجتناب والبحث عن بديل شرعي خالص.',
-                evidences: [
-                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ إِلَّا أَنْ تَكُونَ تِجَارَةً عَنْ تَرَاضٍ مِنْكُمْ.', source: 'سورة النساء، آية 29' }
                 ]
             },
             {
@@ -7300,15 +7115,6 @@
                 ]
             },
             {
-                id: 65, category: 'salah', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'هل يجوز للمسافر أن يقصر الصلاة إذا طالت إقامته في بلد السفر؟',
-                shortAnswer: 'من نوى إقامة أكثر من أربعة أيام في بلد السفر فالراجح عند جمهور الفقهاء أنه يُتم الصلاة لزوال معنى السفر، أما من كانت إقامته معلّقة بانتهاء حاجة لا يدري متى تنقضي فله أن يقصر ولو طالت المدة.',
-                detail: 'اختلف الفقهاء في ضابط المدة التي يتحول بها المسافر إلى مقيم فيلزمه الإتمام؛ فذهب جمهورهم إلى أن من نوى إقامة أكثر من أربعة أيام في بلد قدم إليه انقطع عنه حكم السفر ولزمه الإتمام، استئناسًا بفعل النبي صلى الله عليه وسلم في غزوة الفتح حين أقام تسعة عشر يومًا يقصر الصلاة دون أن ينوي إقامة محددة. أما من دخل بلدًا لحاجة كعلاج أو دراسة أو عمل مؤقت ولا يدري متى تنتهي حاجته، فالراجح أن له حكم المسافر ويقصر الصلاة ما دام لم يستقر ولم ينوِ التوطن، ولو طالت المدة أشهرًا، لأن العبرة بانقطاع نية الإقامة المحددة لا بمجرد طول الزمن.',
-                evidences: [
-                    { text: 'أَقَامَ رَسُولُ اللَّهِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ بِمَكَّةَ عَامَ الْفَتْحِ تِسْعَةَ عَشَرَ يَوْمًا يَقْصُرُ الصَّلَاةَ.', source: 'رواه البخاري عن ابن عباس' }
-                ]
-            },
-            {
                 id: 66, category: 'tahara', ruling: 'jaiz', rulingLabel: 'جائز',
                 question: 'ما حكم المسح على الجوربين عند الوضوء؟',
                 shortAnswer: 'يجوز المسح على الجوربين عند جمهور المتأخرين من أهل العلم إذا كانا يثبتان بأنفسهما ويمكن متابعة المشي عليهما، قياسًا على المسح على الخفين، وذلك لمدة يوم وليلة للمقيم وثلاثة أيام بلياليها للمسافر.',
@@ -7347,40 +7153,12 @@
                 ]
             },
             {
-                id: 70, category: 'zakah', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'هل يجوز إخراج زكاة الفطر نقدًا بدلًا من الطعام؟',
-                shortAnswer: 'ذهب جمهور الفقهاء من المالكية والشافعية والحنابلة إلى وجوب إخراج زكاة الفطر طعامًا اتباعًا للسنة الفعلية، بينما أجاز الحنفية إخراج قيمتها نقدًا مراعاةً لمصلحة الفقير، وهو قول معتبر يجوز الأخذ به خصوصًا في زماننا حيث يكون النقد أنفع للمحتاج غالبًا.',
-                detail: 'الثابت عن النبي صلى الله عليه وسلم أنه فرض زكاة الفطر صاعًا من طعام كالتمر أو الشعير، ولذلك رأى جمهور الفقهاء لزوم إخراجها من جنس الطعام المنصوص عليه أو ما يقوم مقامه من قوت البلد، تعبدًا واتباعًا لفعل النبي صلى الله عليه وسلم. في حين ذهب الإمام أبو حنيفة وأصحابه إلى جواز إخراج قيمتها نقدًا، بناءً على أن المقصود من الزكاة سد حاجة الفقير وإغناؤه عن السؤال يوم العيد، وقد يكون النقد أحيانًا أعظم نفعًا له من الطعام العيني، وهذا الخلاف من مسائل الاجتهاد السائغة التي يسع المسلم الأخذ بأي من القولين، مع مراعاة ما تفتي به الجهات الرسمية في بلده تحقيقًا للمصلحة ورفعًا للحرج.',
-                evidences: [
-                    { text: 'فَرَضَ رَسُولُ اللَّهِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ زَكَاةَ الْفِطْرِ صَاعًا مِنْ تَمْرٍ أَوْ صَاعًا مِنْ شَعِيرٍ.', source: 'رواه البخاري ومسلم عن ابن عمر' }
-                ]
-            },
-            {
                 id: 71, category: 'hajj', ruling: 'jaiz', rulingLabel: 'جائز',
                 question: 'ما حكم الحج عن الميت الذي مات وهو مستطيع ولم يحج؟',
                 shortAnswer: 'يجوز بل يستحب لولي الميت أو من ينيبه أن يحج عنه إذا مات وهو مستطيع ولم يؤدِّ فريضة الحج، ويُجزئ ذلك ويُسقط عنه الفرض إن شاء الله، وكذلك من مات عاجزًا عن الحج ببدنه مع قدرته المالية.',
                 detail: 'ثبت عن النبي صلى الله عليه وسلم إجازته الحج عن الميت الذي وجب عليه الحج ولم يؤده، سواء مات فجأة قبل أن يحج مع استطاعته، أو كان عاجزًا عن الحج ببدنه لكبر أو مرض لا يُرجى برؤه مع قدرته المالية، فأجاز النبي صلى الله عليه وسلم لأقاربه أن يحجوا عنه ويقع ذلك مجزئًا. أما من مات غير مستطيع أصلًا لا ببدنه ولا بماله فلا يجب على أحد الحج عنه، وإن تبرع أحد أقاربه بذلك كان ذلك من البر المستحب لا فرضًا لازمًا، ويُشترط فيمن يحج عن غيره أن يكون قد حج عن نفسه أولًا عند جمهور الفقهاء.',
                 evidences: [
                     { text: 'إِنَّ أَبِي أَدْرَكَتْهُ فَرِيضَةُ اللَّهِ فِي الْحَجِّ شَيْخًا كَبِيرًا لَا يَسْتَطِيعُ أَنْ يَثْبُتَ عَلَى الرَّاحِلَةِ، أَفَأَحُجُّ عَنْهُ؟ قَالَ: نَعَمْ.', source: 'رواه البخاري ومسلم عن ابن عباس' }
-                ]
-            },
-            {
-                id: 72, category: 'muasira', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم العمل في وظيفة إدارية أو فنية بشركة أو بنك يتعامل بالربا؟',
-                shortAnswer: 'يحرم العمل في الوظائف التي تباشر عقد الربا مباشرة كموظفي القروض الربوية وكتابة عقودها والشهادة عليها، أما الوظائف البعيدة عن مباشرة العقد الربوي كالحراسة والصيانة وخدمات الدعم الفني فمحل خلاف، مع ميل كثير من المعاصرين للتضييق فيها احتياطًا ونصح صاحبها بالبحث عن بديل حلال إن استطاع.',
-                detail: 'لعن النبي صلى الله عليه وسلم آكل الربا وموكله وكاتبه وشاهديه وأخبر أنهم سواء في الإثم، وهذا يشمل كل من باشر عقد الربا بنفسه من الموظفين كمسؤولي القروض الربوية والفوائد ومن يوثق عقودها، فهذا لا يجوز العمل فيه بحال. أما الوظائف التي لا صلة لها المباشرة بعقد الربا كموظف الاستقبال أو الحراسة أو صيانة المبنى أو الدعم الفني العام الذي لا يخص قسم القروض، فقد اختلف فيها المعاصرون؛ فمنهم من ضيّق فيها لعموم النهي عن الإعانة على الإثم، ومنهم من رخّص فيها للحاجة ما دام العمل ذاته مباحًا في أصله ولا يتضمن مباشرة للعقد الربوي، والأولى لمن استطاع البحث عن عمل آخر أن يفعل، ومن اضطر لضيق فرص العمل فليجتهد في الانتقال متى تيسر له بديل حلال.',
-                evidences: [
-                    { text: 'لَعَنَ رَسُولُ اللَّهِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ آكِلَ الرِّبَا وَمُوكِلَهُ وَكَاتِبَهُ وَشَاهِدَيْهِ، وَقَالَ: هُمْ سَوَاءٌ.', source: 'رواه مسلم عن جابر' }
-                ]
-            },
-            {
-                id: 73, category: 'digital', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم برامج استرداد النقود (الكاش باك) ونقاط المكافآت من البنوك وبطاقات الائتمان؟',
-                shortAnswer: 'يجوز الانتفاع ببرامج الكاش باك ونقاط المكافآت إذا كانت مقابل استخدام الخدمة كهدية تسويقية لا فائدة على قرض أو دين مؤجل، أما إن كانت البطاقة ربوية تُحصَّل عليها فوائد عند تأخر السداد، فالواجب سداد كامل المديونية في موعدها تجنبًا للربا، وحينئذ يجوز أخذ المكافأة الترويجية المصاحبة.',
-                detail: 'الأصل في المعاملات المالية المستحدثة الإباحة ما لم يقم دليل على تحريمها، وبرامج الكاش باك ونقاط المكافآت التي تقدمها البنوك وشركات البطاقات هي في حقيقتها هدايا وحوافز تسويقية تُمنح مقابل حجم الاستخدام لا مقابل تأجيل دين بزيادة، فلا مانع شرعًا من قبولها والانتفاع بها. لكن الإشكال الحقيقي يكمن في طبيعة بطاقة الائتمان ذاتها، فإن كانت من النوع الذي يفرض فائدة ربوية عند عدم سداد الرصيد كاملًا في الموعد المحدد، فالواجب على المسلم الحرص التام على السداد الكامل في موعده حتى لا يقع في الربا المحرم، وحينئذ لا حرج في الاستفادة من المكافآت المصاحبة للاستخدام لأنها منفصلة عن أصل التعامل الربوي المحتمل.',
-                evidences: [
-                    { text: 'الْمُسْلِمُونَ عَلَى شُرُوطِهِمْ إِلَّا شَرْطًا حَرَّمَ حَلَالًا أَوْ أَحَلَّ حَرَامًا.', source: 'رواه أبو داود والترمذي' },
-                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ إِلَّا أَنْ تَكُونَ تِجَارَةً عَنْ تَرَاضٍ مِنْكُمْ.', source: 'سورة النساء، آية 29' }
                 ]
             },
             {
@@ -7404,16 +7182,6 @@
                 ]
             },
             {
-                id: 76, category: 'other', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم تهنئة غير المسلمين بأعيادهم الدينية؟',
-                shortAnswer: 'ذهب جمهور أهل العلم إلى منع تهنئة غير المسلمين بأعيادهم الدينية الخاصة بمعتقدهم لما فيها من إقرار لشعائر مخالفة للإسلام، بينما أجاز بعض المعاصرين مجاملة اجتماعية عامة لا تتضمن إقرارًا بالشعيرة الدينية مع الجيران والأقارب من غير المسلمين، مراعاة لمقصد البر والإحسان إليهم.',
-                detail: 'أمر الله تعالى ببر غير المسلمين الذين لا يقاتلون المسلمين في دينهم والإقساط إليهم، إلا أن جمهور الفقهاء فرّقوا بين البر والإحسان العام وبين المشاركة في تعظيم شعائرهم الدينية الخاصة كتهنئتهم بأعيادهم التي تتضمن معتقدات مخالفة للتوحيد، لأن ذلك فيه نوع من الرضا بشعائرهم أو موافقتهم عليها. وذهب بعض العلماء المعاصرين إلى جواز تهنئة عامة مجردة من أي مضمون ديني، كقول "أسعد الله أيامكم" لجار أو قريب من غير المسلمين بمناسبة اجتماعية، دون التعرض لصلب المعتقد، اعتبارًا بمقاصد حسن الجوار والمعاملة، والأحوط لمن أراد السلامة أن يقتصر على البر والإحسان العام دون الدخول في تفاصيل التهنئة بالشعائر الدينية ذاتها.',
-                evidences: [
-                    { text: 'لَا يَنْهَاكُمُ اللَّهُ عَنِ الَّذِينَ لَمْ يُقَاتِلُوكُمْ فِي الدِّينِ وَلَمْ يُخْرِجُوكُمْ مِنْ دِيَارِكُمْ أَنْ تَبَرُّوهُمْ وَتُقْسِطُوا إِلَيْهِمْ.', source: 'سورة الممتحنة، آية 8' },
-                    { text: 'مَنْ تَشَبَّهَ بِقَوْمٍ فَهُوَ مِنْهُمْ.', source: 'رواه أبو داود' }
-                ]
-            },
-            {
                 id: 77, category: 'salah', ruling: 'jaiz', rulingLabel: 'جائز',
                 question: 'هل تجب صلاة الجمعة على المسافر؟',
                 shortAnswer: 'لا تجب الجمعة على المسافر عند جمهور الفقهاء لأنه ليس من أهل الإقامة الذين خوطبوا بوجوبها، فإن حضرها مع الناس أجزأته عن الظهر ولم يلزمه إعادتها.',
@@ -7429,15 +7197,6 @@
                 detail: 'سألت أم سلمة رضي الله عنها النبي صلى الله عليه وسلم عن حكم نقض شعرها المضفور عند الاغتسال من الجنابة، فأخبرها أنه لا يلزمها ذلك، وأن الواجب هو إيصال الماء إلى أصول الشعر وتعميم الرأس والجسد بالغسل، ولو كان الشعر متماسكًا بضفيرة، وهذا رفعًا للحرج والمشقة عن المرأة في كل مرة تغتسل فيها من الجنابة. ويختلف هذا عن غسل الحيض عند بعض الفقهاء الذين استحبوا فيه نقض الضفائر احتياطًا لطول مدة الحيض وتراكم ما قد يعلق بالشعر، وإن كان الراجح عند كثير من المحققين أن الحكم واحد في الجنابة والحيض ما دام الماء يصل إلى أصول الشعر.',
                 evidences: [
                     { text: 'قُلْتُ: يَا رَسُولَ اللَّهِ، إِنِّي امْرَأَةٌ أَشُدُّ ضَفْرَ رَأْسِي، أَفَأَنْقُضُهُ لِغُسْلِ الْجَنَابَةِ؟ قَالَ: لَا، إِنَّمَا يَكْفِيكِ أَنْ تَحْثِي عَلَى رَأْسِكِ ثَلَاثَ حَثَيَاتٍ.', source: 'رواه مسلم عن أم سلمة' }
-                ]
-            },
-            {
-                id: 79, category: 'muamalat', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم عقد الإجارة المنتهية بالتمليك؟',
-                shortAnswer: 'يجوز هذا العقد بضوابط شرعية عند كثير من المجامع الفقهية المعاصرة، بشرط الفصل بين عقد الإجارة وعقد التمليك اللاحق بحيث لا يُلزم المستأجر بالشراء ابتداءً، وأن تكون الأقساط أجرة حقيقية لا قسط ثمن مقنّع باسم آخر.',
-                detail: 'الإجارة المنتهية بالتمليك صيغة تمويلية معاصرة يستأجر فيها الشخص عينًا معينة مدة محددة، ثم تنتقل إليه ملكيتها في نهاية المدة إما بعقد بيع منفصل أو هبة، وقد أجازتها كثير من المجامع الفقهية بضوابط تمنع الجمع بين عقدين متناقضين في عقد واحد، أهمها أن يكون عقد الإجارة في بداية المدة إجارة حقيقية تترتب عليها أحكام الإجارة من ضمان وصيانة على المالك، ثم يُبرم عقد تمليك منفصل مستقل في نهاية المدة، ولا يجوز أن يُشترط على المستأجر ابتداءً إلزامه بالشراء لأن ذلك يجمع بين عقدين متنافيين في عقد واحد وهو ما نهى عنه الشرع.',
-                evidences: [
-                    { text: 'لَا يَحِلُّ سَلَفٌ وَبَيْعٌ، وَلَا شَرْطَانِ فِي بَيْعٍ.', source: 'رواه أبو داود والترمذي والنسائي عن عمرو بن شعيب' }
                 ]
             },
             {
@@ -7459,40 +7218,12 @@
                 ]
             },
             {
-                id: 82, category: 'zakah', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'هل تجب الزكاة في الذهب والفضة المستعملين كحلي للمرأة؟',
-                shortAnswer: 'ذهب جمهور الفقهاء إلى عدم وجوب الزكاة في الحلي المعد للاستعمال المعتاد المباح، بينما ذهب الحنفية وبعض المعاصرين إلى وجوبها إذا بلغت نصابًا وحال عليها الحول، وهو قول قوي يُحتاط بالأخذ به خاصة مع كثرة ما تملكه بعض النساء من الذهب اليوم.',
-                detail: 'استدل الجمهور القائلون بعدم وجوب زكاة الحلي المعتاد بأن الأصل في الزكاة تعلقها بالمال النامي المُعَد للاستثمار أو الادخار، والحلي المستعمل ليس كذلك بل هو من حاجات المرأة المعتادة كثيابها، فأشبه سائر الأمتعة المعفاة من الزكاة. في حين استدل الحنفية بعموم الأدلة الموجبة للزكاة في كل ذهب وفضة بلغا نصابًا دون تفريق بين المستعمل وغيره، واستدلوا بحديث المرأة التي أتت النبي صلى الله عليه وسلم ومعها ابنتها وفي يد ابنتها سواران غليظان من ذهب، فسألها النبي صلى الله عليه وسلم: أتؤدين زكاة هذا؟ فقالت: لا، فقال: أيسرك أن يسورك الله بهما يوم القيامة سوارين من نار؟ ففهم منه وجوب الزكاة فيهما وإن كانا حليًا مستعملاً. والاحتياط لمن ملكت حليًا يبلغ النصاب أن تُخرج زكاته خروجًا من الخلاف.',
-                evidences: [
-                    { text: 'أَتُؤَدِّينَ زَكَاةَ هَذَا؟ قَالَتْ: لَا. قَالَ: أَيَسُرُّكِ أَنْ يُسَوِّرَكِ اللَّهُ بِهِمَا يَوْمَ الْقِيَامَةِ سِوَارَيْنِ مِنْ نَارٍ؟', source: 'رواه أبو داود والنسائي' }
-                ]
-            },
-            {
                 id: 83, category: 'hajj', ruling: 'jaiz', rulingLabel: 'جائز',
                 question: 'ما هي أنساك الحج الثلاثة (التمتع والقران والإفراد) وأيها أفضل؟',
                 shortAnswer: 'للحاج أن يُحرم بأحد ثلاثة أنساك جائزة صحيحة: التمتع بأن يحرم بعمرة في أشهر الحج ثم يتحلل ويحرم بالحج مستقلاً، أو القران بأن يجمع نية العمرة والحج معًا، أو الإفراد بأن يحرم بالحج وحده، وأفضلها عند جمهور الفقهاء التمتع لحث النبي صلى الله عليه وسلم أصحابه عليه.',
                 detail: 'اتفق الفقهاء على صحة الإحرام بأي من الأنساك الثلاثة، واختلفوا في أيها أفضل؛ فذهب جمهورهم إلى تفضيل التمتع لأن النبي صلى الله عليه وسلم أمر من لم يسق الهدي من أصحابه أن يجعلوا إحرامهم عمرة يتحللون منها ثم يحرمون بالحج من جديد، وتمنى لو أنه فعل ذلك لولا أنه ساق الهدي فلزمه البقاء على إحرامه. ويجب على المتمتع والقارن هدي شكران لجمعهما بين النسكين في سفرة واحدة، فمن لم يجد الهدي صام عشرة أيام؛ ثلاثة في الحج وسبعة إذا رجع إلى أهله، بخلاف المفرد الذي لا هدي عليه لأنه أحرم بنسك واحد فقط.',
                 evidences: [
                     { text: 'مَا شَأْنُ النَّاسِ حَلُّوا وَلَمْ تَحْلِلْ أَنْتَ مِنْ عُمْرَتِكَ؟ قَالَ: إِنِّي لَبَّدْتُ رَأْسِي وَقَلَّدْتُ هَدْيِي فَلَا أَحِلُّ حَتَّى أَنْحَرَ.', source: 'رواه البخاري ومسلم عن حفصة' }
-                ]
-            },
-            {
-                id: 84, category: 'muasira', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم التبرع بالأعضاء بعد الموت لإنقاذ حياة مريض؟',
-                shortAnswer: 'يجوز التبرع بالأعضاء بعد الموت بضوابط شرعية عند كثير من المجامع الفقهية المعاصرة، إذا كان بوصية من المتبرع أو إذن وليه، ولم يكن فيه بيع أو تجارة، وكانت الحاجة إليه ملحّة لإنقاذ حياة معصومة، مراعاة لقاعدة الضرورات، خلافًا لمن منعه صيانة لحرمة جسد الميت مطلقًا.',
-                detail: 'الأصل عند الفقهاء أن جسد الميت له حرمة كحرمته حيًا، فلا يجوز التمثيل به أو انتهاك حرمته، لكن أجاز كثير من المجامع الفقهية المعاصرة نقل الأعضاء بعد الموت للضرورة الملحّة المتمثلة في إنقاذ حياة إنسان معصوم، بناءً على قاعدة "الضرورات تبيح المحظورات" وتقديم حفظ النفس الحية على حرمة الجسد الميت التي هي حرمة أقل رتبة، بشرط ألا يكون ذلك محل تجارة أو بيع، وأن يكون بإذن الميت في حياته أو إذن ورثته بعد وفاته، وأن يتحقق الموت الحقيقي بضوابطه الطبية والشرعية المعتبرة قبل الإقدام على النقل.',
-                evidences: [
-                    { text: 'مَنْ أَحْيَاهَا فَكَأَنَّمَا أَحْيَا النَّاسَ جَمِيعًا.', source: 'سورة المائدة، آية 32' },
-                    { text: 'كَسْرُ عَظْمِ الْمَيِّتِ كَكَسْرِهِ حَيًّا.', source: 'رواه أبو داود وابن ماجه عن عائشة' }
-                ]
-            },
-            {
-                id: 85, category: 'digital', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم التداول في أسهم الشركات المساهمة في سوق البورصة؟',
-                shortAnswer: 'يجوز الاستثمار في أسهم الشركات التي نشاطها الأساسي مباح خالٍ من الربا والمحرمات، مع مراعاة ضوابط نسبة الديون الربوية والإيرادات المحرمة في ميزانية الشركة وتطهير ما ينتج عنها من دخل محرم يسير بالتصدق به، أما أسهم الشركات المحرم نشاطها أصلًا كالبنوك الربوية وشركات الخمور فلا يجوز شراؤها.',
-                detail: 'المساهمة في الشركات في أصلها شركة عقد مباح يقوم على المشاركة في رأس المال والربح والخسارة، فإن كان نشاط الشركة الأساسي مباحًا جاز الاستثمار في أسهمها، أما إن كان نشاطها الأساسي محرمًا كالربا أو الخمور أو القمار فلا يجوز المساهمة فيها ولو بحصة يسيرة لأنها إعانة مباشرة على الحرام. وقد وضعت الهيئات الشرعية المعاصرة ضوابط دقيقة لفرز الأسهم المباحة من غيرها، منها ألا تتجاوز نسبة الديون الربوية للشركة أو الإيرادات المحرمة العرضية حدًا معينًا متفقًا عليه بين المجامع، ومن استثمر في شركة ثم تبين له دخل محرم يسير فيها وجب عليه تطهير ما يخصه من ذلك الدخل بالتصدق به دون نية التقرب.',
-                evidences: [
-                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ إِلَّا أَنْ تَكُونَ تِجَارَةً عَنْ تَرَاضٍ مِنْكُمْ.', source: 'سورة النساء، آية 29' }
                 ]
             },
             {
@@ -7513,15 +7244,182 @@
                 evidences: [
                     { text: 'لَا يَدْخُلُ الْجَنَّةَ مَنْ كَانَ فِي قَلْبِهِ مِثْقَالُ ذَرَّةٍ مِنْ كِبْرٍ. قِيلَ: إِنَّ الرَّجُلَ يُحِبُّ أَنْ يَكُونَ ثَوْبُهُ حَسَنًا وَنَعْلُهُ حَسَنَةً. قَالَ: إِنَّ اللَّهَ جَمِيلٌ يُحِبُّ الْجَمَالَ، الْكِبْرُ بَطَرُ الْحَقِّ وَغَمْطُ النَّاسِ.', source: 'رواه مسلم عن ابن مسعود' }
                 ]
+            }
+        ,
+            {
+                id: 89, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم عقوق الوالدين؟',
+                shortAnswer: 'عقوق الوالدين من كبائر الذنوب، وقد قرن الله طاعتهما بتوحيده، فبرّهما واجب وعقوقهما محرم تحريمًا قاطعًا مهما كانت الأسباب.',
+                detail: 'أمر الله تعالى ببر الوالدين والإحسان إليهما إحسانًا عامًا لا يتوقف على حالهما من الصلاح أو غيره، ونهى عن أدنى درجات الأذى لهما ولو بكلمة تأفف. والعقوق يشمل كل قول أو فعل يتأذى به الوالدان، كرفع الصوت عليهما أو التقصير في حقهما مع القدرة، وقد عدّه النبي صلى الله عليه وسلم من أكبر الكبائر بعد الشرك بالله.',
+                evidences: [
+                    { text: 'وَقَضَىٰ رَبُّكَ أَلَّا تَعْبُدُوا إِلَّا إِيَّاهُ وَبِالْوَالِدَيْنِ إِحْسَانًا', source: 'سورة الإسراء، آية 23' },
+                    { text: 'أَلَا أُنَبِّئُكُمْ بِأَكْبَرِ الْكَبَائِرِ؟ الْإِشْرَاكُ بِاللَّهِ وَعُقُوقُ الْوَالِدَيْنِ', source: 'رواه البخاري' }
+                ]
             },
             {
-                id: 88, category: 'other', ruling: 'khilaf', rulingLabel: 'محل خلاف',
-                question: 'ما حكم الاحتفال بالمولد النبوي الشريف؟',
-                shortAnswer: 'ذهب جمهور المتقدمين إلى منع الاحتفال بالمولد النبوي باعتباره أمرًا محدثًا لم يفعله النبي صلى الله عليه وسلم ولا الصحابة ولا القرون المفضلة، بينما أجازه بعض العلماء المتأخرين إذا خلا من المخالفات الشرعية واقتصر على ذكر سيرته صلى الله عليه وسلم والصلاة عليه دون غلو أو اختلاط محرم.',
-                detail: 'استدل من منع الاحتفال بالمولد بأن الدين قد اكتمل في حياة النبي صلى الله عليه وسلم، ولم يفعل هذا الاحتفال هو ولا صحابته ولا التابعون مع توفر دواعيه ومحبتهم الشديدة له صلى الله عليه وسلم، ولو كان خيرًا مشروعًا لسبقونا إليه، فيُعد إحداثًا في الدين داخلاً تحت عموم النهي عن البدع. بينما رأى بعض العلماء المتأخرين أن أصل الاحتفال بذكرى مولده صلى الله عليه وسلم بتذكر سيرته والصلاة عليه وإطعام الطعام لا محذور فيه من حيث الأصل، ما لم يقترن بمخالفات كالغلو فيه صلى الله عليه وسلم بما يخرج عن حده البشري، أو الاختلاط المحرم، أو اعتقاد أن لليلة بعينها فضلاً خاصًا لم يرد به دليل. وهذه المسألة من مسائل الاجتهاد التي وقع فيها الخلاف قديمًا وحديثًا، فينبغي التعامل معها بسعة صدر دون تبديع من خالف أو تعنيف من احتفل ما لم يقترن بمخالفة بيّنة.',
+                id: 90, category: 'muamalat', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الرشوة وأخذها لتمرير معاملة أو حق؟',
+                shortAnswer: 'الرشوة محرمة شرعًا سواء لمن يعطيها أو يأخذها أو يتوسط فيها، لما فيها من أكل لأموال الناس بالباطل وإفساد للعدل بين الناس.',
+                detail: 'الرشوة هي كل مال أو منفعة تُعطى لموظف أو صاحب سلطة لتمرير معاملة بغير حقها أو لإسقاط حق أو تعطيله، وقد لعن النبي صلى الله عليه وسلم الراشي والمرتشي لما في ذلك من إفساد لموازين العدل وتضييع لحقوق الناس. ويُستثنى من ذلك ما يُدفع لدفع ظلم واقع أو استخراج حق ثابت لا يمكن الوصول إليه إلا بذلك، فالإثم حينئذ على الآخذ لا الدافع.',
                 evidences: [
-                    { text: 'مَنْ أَحْدَثَ فِي أَمْرِنَا هَذَا مَا لَيْسَ مِنْهُ فَهُوَ رَدٌّ.', source: 'رواه البخاري ومسلم عن عائشة' },
-                    { text: 'الْيَوْمَ أَكْمَلْتُ لَكُمْ دِينَكُمْ وَأَتْمَمْتُ عَلَيْكُمْ نِعْمَتِي وَرَضِيتُ لَكُمُ الْإِسْلَامَ دِينًا.', source: 'سورة المائدة، آية 3' }
+                    { text: 'لَعَنَ اللَّهُ الرَّاشِيَ وَالْمُرْتَشِيَ', source: 'رواه أحمد والترمذي' },
+                    { text: 'وَلَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ', source: 'سورة البقرة، آية 188' }
+                ]
+            },
+            {
+                id: 91, category: 'siyam', ruling: 'mustahab', rulingLabel: 'مستحب',
+                question: 'ما حكم صيام يومي الاثنين والخميس من كل أسبوع؟',
+                shortAnswer: 'صيام الاثنين والخميس من السنن الثابتة عن النبي صلى الله عليه وسلم، وهو مستحب لمن قدر عليه دون أن يكون واجبًا.',
+                detail: 'كان النبي صلى الله عليه وسلم يتحرى صيام يومي الاثنين والخميس، وبيّن الحكمة من ذلك بأن الأعمال تُعرض على الله فيهما، فأحب أن يكون صائمًا حال عرض عمله. وهذا الصيام تطوع محض يُثاب عليه فاعله ولا إثم على تاركه.',
+                evidences: [
+                    { text: 'تُعْرَضُ الْأَعْمَالُ يَوْمَ الِاثْنَيْنِ وَالْخَمِيسِ فَأُحِبُّ أَنْ يُعْرَضَ عَمَلِي وَأَنَا صَائِمٌ', source: 'رواه الترمذي' }
+                ]
+            },
+            {
+                id: 92, category: 'aqidah', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الحلف بغير الله كالحلف بالنبي أو بالكعبة أو بالأمانة؟',
+                shortAnswer: 'الحلف بغير الله محرم، ولا يجوز أن يُقسم المسلم إلا بالله تعالى أو بصفة من صفاته، وما عدا ذلك من الحلف بمخلوق فهو محرم.',
+                detail: 'اليمين تعظيم للمحلوف به، ولا يستحق هذا التعظيم إلا الله عز وجل، فالحلف بغيره -كالنبي أو الكعبة أو الآباء أو الأمانة- محرم ووسيلة قد تفضي إلى الشرك الأصغر. ومن سبق لسانه لذلك عن غير قصد فعليه أن يستغفر ويرجع إلى الحلف بالله وحده.',
+                evidences: [
+                    { text: 'مَنْ حَلَفَ بِغَيْرِ اللَّهِ فَقَدْ كَفَرَ أَوْ أَشْرَكَ', source: 'رواه الترمذي وأبو داود' }
+                ]
+            },
+            {
+                id: 93, category: 'muamalat', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الغش في البيع والشراء كإخفاء عيب في السلعة؟',
+                shortAnswer: 'الغش في المعاملات التجارية محرم، ويجب على البائع بيان عيوب سلعته، فمن كتم عيبًا يعلمه فهو آثم وبيعه فيه شبهة.',
+                detail: 'أمر الإسلام بالصدق والأمانة في المعاملات، ونهى عن كل صورة من صور الغش سواء بإخفاء عيب أو خلط جيد برديء أو التدليس في الوصف أو الكيل والوزن. وقد تبرأ النبي صلى الله عليه وسلم ممن يغش، لما في ذلك من ظلم للمشتري وأكل لماله بغير حق.',
+                evidences: [
+                    { text: 'مَنْ غَشَّنَا فَلَيْسَ مِنَّا', source: 'رواه مسلم' }
+                ]
+            },
+            {
+                id: 94, category: 'usra', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم بر الوالدين والإحسان إليهما؟',
+                shortAnswer: 'بر الوالدين واجب على كل مسلم ومسلمة، وهو من أعظم القربات، ويشمل طاعتهما في غير معصية والإنفاق عليهما عند الحاجة وحسن معاملتهما.',
+                detail: 'قرن الله تعالى بر الوالدين بتوحيده في مواضع عدة من القرآن، وجعله من أفضل الأعمال بعد الصلاة، ويشمل البر: الإحسان إليهما بالقول والفعل، وطاعتهما فيما ليس فيه معصية لله، وصلتهما ولو كانا غير مسلمين، والدعاء لهما في حياتهما وبعد مماتهما.',
+                evidences: [
+                    { text: 'وَبِالْوَالِدَيْنِ إِحْسَانًا', source: 'سورة الإسراء، آية 23' },
+                    { text: 'جاء رجل إلى النبي صلى الله عليه وسلم فقال: من أحق الناس بحسن صحابتي؟ قال: أمك، قال: ثم من؟ قال: أمك، قال: ثم من؟ قال: أمك، قال: ثم من؟ قال: ثم أبوك', source: 'رواه البخاري ومسلم' }
+                ]
+            },
+            {
+                id: 95, category: 'zakah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'هل تجب الزكاة في عروض التجارة كالبضائع المعروضة للبيع؟',
+                shortAnswer: 'تجب الزكاة في عروض التجارة إذا بلغت قيمتها نصاب الذهب أو الفضة وحال عليها الحول، وتُقوَّم بسعرها وقت وجوب الزكاة ويُخرج ربع العشر من قيمتها.',
+                detail: 'عروض التجارة هي كل ما يُعدّ للبيع والشراء بقصد الربح كالبضائع والعقارات المعدة للتجارة. ويقوم التاجر بحساب قيمة ما عنده من بضاعة عند حلول الحول، فإذا بلغت النصاب أخرج ربع العشر (2.5%) من قيمتها، ويُضاف إليها النقد الحاضر والديون المرجوة السداد.',
+                evidences: [
+                    { text: 'كَانَ رَسُولُ اللَّهِ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ يَأْمُرُنَا أَنْ نُخْرِجَ الصَّدَقَةَ مِنَ الَّذِي نُعِدُّ لِلْبَيْعِ', source: 'رواه أبو داود' }
+                ]
+            },
+            {
+                id: 96, category: 'hajj', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'هل الحج واجب على كل مسلم؟',
+                shortAnswer: 'الحج ركن من أركان الإسلام الخمسة، وهو واجب مرة واحدة في العمر على كل مسلم بالغ عاقل مستطيع ماليًا وبدنيًا.',
+                detail: 'فرض الله الحج على المسلمين مرة واحدة في العمر، وشرط وجوبه الاستطاعة، وهي القدرة المالية على تكاليف الرحلة زيادة عن نفقاته ونفقة من يعول، والقدرة البدنية على أداء المناسك، فمن لم يستطع سقط عنه الفرض حتى يستطيع، ومن حج مرة سقط عنه الفرض وما زاد فهو تطوع.',
+                evidences: [
+                    { text: 'وَلِلَّهِ عَلَى النَّاسِ حِجُّ الْبَيْتِ مَنِ اسْتَطَاعَ إِلَيْهِ سَبِيلًا', source: 'سورة آل عمران، آية 97' }
+                ]
+            },
+            {
+                id: 97, category: 'tahara', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'هل خروج الريح أو البول أو الغائط ينقض الوضوء؟',
+                shortAnswer: 'خروج أي شيء من السبيلين (القبل أو الدبر) كالبول والغائط والريح ينقض الوضوء، وتجب إعادته قبل الصلاة أو أي عبادة تشترط الطهارة.',
+                detail: 'من نواقض الوضوء المتفق عليها بين الفقهاء خروج الخارج المعتاد من السبيلين، سواء كان ريحًا أو بولًا أو غائطًا أو غيره، فمتى تحقق خروج شيء من ذلك بطل الوضوء ووجب على المسلم أن يتوضأ من جديد قبل أن يصلي أو يمس المصحف أو يطوف بالبيت.',
+                evidences: [
+                    { text: 'أَوْ جَاءَ أَحَدٌ مِنْكُمْ مِنَ الْغَائِطِ ... فَلَمْ تَجِدُوا مَاءً فَتَيَمَّمُوا صَعِيدًا طَيِّبًا', source: 'سورة المائدة، آية 6' }
+                ]
+            },
+            {
+                id: 98, category: 'akhlaq', ruling: 'mustahab', rulingLabel: 'مستحب',
+                question: 'ما حكم إماطة الأذى عن الطريق كإزالة حجر أو شوكة يؤذي المارة؟',
+                shortAnswer: 'إماطة الأذى عن الطريق عمل مستحب وصورة من صور الإحسان للناس، وقد عدّه النبي صلى الله عليه وسلم شعبة من شعب الإيمان.',
+                detail: 'كل ما يؤذي المارة في الطرقات كالحجر أو الشوك أو القمامة، فإزالته من الأعمال الصالحة التي رغّب فيها الإسلام، بل جعلها النبي صلى الله عليه وسلم من أدنى درجات الإيمان، وأخبر أن رجلاً غُفر له بسبب إماطته غصن شوك عن طريق المسلمين.',
+                evidences: [
+                    { text: 'الْإِيمَانُ بِضْعٌ وَسَبْعُونَ شُعْبَةً ... وَأَدْنَاهَا إِمَاطَةُ الْأَذَى عَنِ الطَّرِيقِ', source: 'رواه مسلم' }
+                ]
+            },
+            {
+                id: 100, category: 'salah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'كم عدد الصلوات المفروضة على المسلم في اليوم والليلة؟',
+                shortAnswer: 'الصلوات المفروضة على كل مسلم بالغ عاقل خمس صلوات في اليوم والليلة: الفجر والظهر والعصر والمغرب والعشاء، وهذا أمر مجمع عليه بين علماء المسلمين لا خلاف فيه.',
+                detail: 'فرض الله سبحانه وتعالى على عباده المسلمين خمس صلوات في اليوم والليلة، وهي ركن من أركان الإسلام الخمسة، ولا يُعرف خلاف بين أهل العلم في عددها أو في أصل وجوبها، وإنما تختلف بعض المسائل الفرعية المتعلقة بأحكامها. وقد فُرضت هذه الصلوات ليلة الإسراء والمعراج، وهي عماد الدين الذي لا يقوم إلا به.',
+                evidences: [
+                    { text: 'إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا.', source: 'سورة النساء، آية 103' },
+                    { text: 'خَمْسُ صَلَوَاتٍ كَتَبَهُنَّ اللَّهُ عَلَى الْعِبَادِ.', source: 'رواه مالك والنسائي' }
+                ]
+            },
+            {
+                id: 101, category: 'siyam', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم صيام شهر رمضان؟',
+                shortAnswer: 'صيام شهر رمضان فريضة واجبة على كل مسلم ومسلمة بالغ عاقل قادر مقيم غير معذور، وهو ركن من أركان الإسلام الخمسة، ووجوبه ثابت بالإجماع لا خلاف فيه بين المسلمين.',
+                detail: 'أوجب الله صيام شهر رمضان على المسلمين كما أوجبه على الأمم قبلهم، وذلك امتثالًا لأمره وتحقيقًا للتقوى. ويسقط هذا الوجوب أو يُرخّص فيه بالفطر مع القضاء عن أصحاب الأعذار كالمريض والمسافر والحائض والنفساء والحامل والمرضع إذا خافتا على نفسيهما أو ولديهما، وذلك من رحمة الله ويسر الشريعة.',
+                evidences: [
+                    { text: 'شَهْرُ رَمَضَانَ الَّذِي أُنْزِلَ فِيهِ الْقُرْآنُ ... فَمَنْ شَهِدَ مِنْكُمُ الشَّهْرَ فَلْيَصُمْهُ.', source: 'سورة البقرة، آية 185' }
+                ]
+            },
+            {
+                id: 102, category: 'hajj', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم حج بيت الله الحرام؟',
+                shortAnswer: 'الحج فريضة واجبة مرة واحدة في العمر على كل مسلم ومسلمة بالغ عاقل حر مستطيع بدنيًا وماليًا، وهو ركن من أركان الإسلام الخمسة، ووجوبه على المستطيع محل إجماع بين علماء الأمة.',
+                detail: 'فرض الله الحج على من استطاع إليه سبيلًا، أي من قدر على الوصول إلى بيت الله الحرام ببدنه وماله دون ضرر يلحقه أو بمن يعول، ويكون الوجوب على الفور عند جمهور العلماء لمن توفرت فيه الاستطاعة. أما من لم يستطع فلا حرج عليه حتى يرزقه الله الاستطاعة.',
+                evidences: [
+                    { text: 'وَلِلَّهِ عَلَى النَّاسِ حِجُّ الْبَيْتِ مَنِ اسْتَطَاعَ إِلَيْهِ سَبِيلًا.', source: 'سورة آل عمران، آية 97' }
+                ]
+            },
+            {
+                id: 103, category: 'usra', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم بر الوالدين وطاعتهما في غير معصية الله؟',
+                shortAnswer: 'بر الوالدين والإحسان إليهما واجب متفق عليه بين علماء المسلمين، وقد قرن الله طاعته بالإحسان إلى الوالدين، وعقوق الوالدين من كبائر الذنوب باتفاق أهل العلم.',
+                detail: 'أوجبت الشريعة بر الوالدين ولو كانا غير مسلمين، ويشمل ذلك الإحسان إليهما بالقول والفعل وخفض الجناح لهما وعدم التأفف منهما أو رفع الصوت عليهما، ولا طاعة لهما إلا في المعروف، فإن أمرا بمعصية الله فلا طاعة لمخلوق في معصية الخالق، مع بقاء وجوب مصاحبتهما بالمعروف.',
+                evidences: [
+                    { text: 'وَقَضَىٰ رَبُّكَ أَلَّا تَعْبُدُوا إِلَّا إِيَّاهُ وَبِالْوَالِدَيْنِ إِحْسَانًا.', source: 'سورة الإسراء، آية 23' }
+                ]
+            },
+            {
+                id: 104, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم قتل النفس التي حرم الله إلا بالحق؟',
+                shortAnswer: 'قتل النفس المعصومة بغير حق من كبائر الذنوب المحرمة تحريمًا قطعيًا بنص القرآن والسنة وإجماع الأمة، ولا خلاف بين المسلمين في تحريمه.',
+                detail: 'صانت الشريعة الإسلامية الأنفس المعصومة وحرّمت الاعتداء عليها بغير حق، سواء كان القتل عمدًا أو بسبب اعتداء ظالم، وجعلت ذلك من أعظم الكبائر بعد الشرك بالله. ولا يُستثنى من هذا التحريم إلا ما أذنت به الشريعة من القصاص العادل بحكم القضاء الشرعي.',
+                evidences: [
+                    { text: 'وَلَا تَقْتُلُوا النَّفْسَ الَّتِي حَرَّمَ اللَّهُ إِلَّا بِالْحَقِّ.', source: 'سورة الإسراء، آية 33' },
+                    { text: 'مَنْ قَتَلَ نَفْسًا بِغَيْرِ نَفْسٍ أَوْ فَسَادٍ فِي الْأَرْضِ فَكَأَنَّمَا قَتَلَ النَّاسَ جَمِيعًا.', source: 'سورة المائدة، آية 32' }
+                ]
+            },
+            {
+                id: 105, category: 'usra', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الزنا (الفاحشة) في الإسلام؟',
+                shortAnswer: 'الزنا من كبائر الذنوب المحرمة تحريمًا قطعيًا لا خلاف فيه بين المسلمين، وقد نهى الله عن مجرد الاقتراب منه صيانةً للأعراض والأنساب.',
+                detail: 'حرّم الإسلام الزنا تحريمًا قاطعًا لما فيه من فساد للأنساب وهدم للأسر وانتشار للفاحشة في المجتمع، ونهى القرآن عن مجرد الاقتراب من أسبابه ومقدماته سدًا للذريعة، لا عن مجرد الفعل فحسب. وهذا التحريم من المسائل المجمع عليها التي لا اجتهاد فيها.',
+                evidences: [
+                    { text: 'وَلَا تَقْرَبُوا الزِّنَا إِنَّهُ كَانَ فَاحِشَةً وَسَاءَ سَبِيلًا.', source: 'سورة الإسراء، آية 32' }
+                ]
+            },
+            {
+                id: 106, category: 'muamalat', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم سرقة أموال الناس؟',
+                shortAnswer: 'سرقة أموال الناس بغير حق من كبائر الذنوب المحرمة إجماعًا، وقد رتّب الشرع عليها حدًا رادعًا صيانة للأموال وحفظًا لأمن المجتمع.',
+                detail: 'حرّم الإسلام أخذ أموال الناس بغير وجه حق، ومن صوره السرقة وهي أخذ المال خفيةً من حرزه، وقد شرع الله لها حد القطع في حال توفر شروطه المعتبرة عند الفقهاء زجرًا وردعًا. وأصل تحريم السرقة والاعتداء على أموال الغير محل اتفاق بين جميع المسلمين.',
+                evidences: [
+                    { text: 'وَالسَّارِقُ وَالسَّارِقَةُ فَاقْطَعُوا أَيْدِيَهُمَا جَزَاءً بِمَا كَسَبَا نَكَالًا مِنَ اللَّهِ.', source: 'سورة المائدة، آية 38' }
+                ]
+            },
+            {
+                id: 107, category: 'aqidah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما هي أركان الإيمان التي يجب الإيمان بها؟',
+                shortAnswer: 'أركان الإيمان ستة متفق عليها بين أهل السنة والجماعة: الإيمان بالله وملائكته وكتبه ورسله واليوم الآخر والقدر خيره وشره، ولا يصح إيمان المسلم إلا بها جميعًا.',
+                detail: 'بيّن النبي صلى الله عليه وسلم أركان الإيمان في حديث جبريل عليه السلام المشهور، وهي أصول اعتقادية لا يتم إيمان العبد إلا بالتصديق الجازم بها كلها، وهذا من الأمور المجمع عليها بين علماء المسلمين ولا خلاف فيها البتة، وإنما يقع الخلاف أحيانًا في بعض تفاصيلها الدقيقة لا في أصلها.',
+                evidences: [
+                    { text: 'أَنْ تُؤْمِنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ وَالْيَوْمِ الْآخِرِ، وَتُؤْمِنَ بِالْقَدَرِ خَيْرِهِ وَشَرِّهِ.', source: 'رواه مسلم' }
+                ]
+            },
+            {
+                id: 108, category: 'other', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم شرب الخمر والمسكرات؟',
+                shortAnswer: 'شرب الخمر وكل ما يسكر محرم تحريمًا قطعيًا بنص القرآن الكريم، وهذا التحريم مجمع عليه بين علماء المسلمين قاطبة لا خلاف فيه.',
+                detail: 'حرّم الله الخمر وجعلها من عمل الشيطان، وقد قضت القاعدة الفقهية المتفق عليها بأن كل مسكر خمر وكل خمر حرام، سواء كان مصدره العنب أو غيره من المواد، وسواء قلّت الكمية أم كثرت، فالقليل منه المسكر لجنسه حرام كالكثير. وهذا من أعظم المسائل التي لا خلاف فيها بين المسلمين.',
+                evidences: [
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا إِنَّمَا الْخَمْرُ وَالْمَيْسِرُ وَالْأَنْصَابُ وَالْأَزْلَامُ رِجْسٌ مِنْ عَمَلِ الشَّيْطَانِ فَاجْتَنِبُوهُ.', source: 'سورة المائدة، آية 90' }
                 ]
             }
         ];
@@ -8299,6 +8197,85 @@
             });
         }
 
+        /* ---------- إشعارات الدفع (Web Push) — تصل حتى لو كان التطبيق مغلقًا ----------
+           يختلف هذا تمامًا عن التذكيرات المحلية أعلاه (والتي تعمل فقط أثناء فتح
+           التبويب). هنا نُنشئ اشتراكًا فريدًا لهذا الجهاز عبر متصفحه لدى خدمة
+           Push الخاصة بالمتصفح (FCM لكروم، Mozilla لفايرفوكس...)، ثم نُرسل بيانات
+           هذا الاشتراك لتُخزَّن في خادمنا الخلفي. لاحقًا، عندما يريد صاحب الموقع
+           إرسال إشعار جديد (مثلًا عند إضافة محتوى)، يقوم الخادم بإرسال رسالة Push
+           إلى كل الأجهزة المخزَّنة دفعة واحدة، فتظهر كإشعار نظام حتى لو كان
+           المتصفح/التطبيق مغلقًا تمامًا (بفضل استمرار عمل الـ Service Worker
+           في الخلفية). يتطلب هذا وجود مفتاح VAPID عام هنا يطابق مفتاحًا خاصًا
+           مطابقًا له على الخادم — راجع تعليمات الخادم المرفقة لتوليدهما معًا. */
+        const VAPID_PUBLIC_KEY = "REPLACE-WITH-YOUR-VAPID-PUBLIC-KEY";
+
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+            const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+            const rawData = atob(base64);
+            return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+        }
+
+        function updatePushSubscribeUI(isSubscribed) {
+            const btn = document.getElementById('push-subscribe-btn');
+            const btnText = document.getElementById('push-subscribe-btn-text');
+            const desc = document.getElementById('push-status-desc');
+            if (!btn || !btnText || !desc) return;
+            if (isSubscribed) {
+                btnText.textContent = 'الإشعارات مُفعّلة على هذا الجهاز';
+                btn.classList.add('active-reminder');
+                desc.textContent = 'سيصلك إشعار فوري على هذا الجهاز عند إضافة محتوى جديد أو صدور تحديث للمنصة.';
+            } else {
+                btnText.textContent = 'تفعيل إشعارات التحديثات';
+                btn.classList.remove('active-reminder');
+                desc.textContent = 'فعّل الإشعارات لتصلك رسالة فورية على جهازك عند إضافة محتوى جديد أو تحديث للمنصة، حتى لو كان التطبيق مغلقًا.';
+            }
+        }
+
+        async function subscribeToPushNotifications() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                showToast('الإشعارات غير مدعومة على هذا الجهاز/المتصفح');
+                return;
+            }
+            if (VAPID_PUBLIC_KEY.startsWith('REPLACE-WITH')) {
+                showToast('لم يتم إعداد الإشعارات من قِبل مالك الموقع بعد');
+                return;
+            }
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    showToast('يجب السماح بالإشعارات لتفعيل هذه الميزة');
+                    return;
+                }
+                const reg = await navigator.serviceWorker.ready;
+                let subscription = await reg.pushManager.getSubscription();
+                if (!subscription) {
+                    subscription = await reg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                    });
+                }
+                await fetch(BACKEND_BASE_URL + '/api/push/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(subscription)
+                });
+                updatePushSubscribeUI(true);
+                showToast('تم تفعيل إشعارات التحديثات بنجاح');
+            } catch (e) {
+                console.warn('تعذر تفعيل إشعارات الدفع', e);
+                showToast('حدث خطأ أثناء تفعيل الإشعارات، حاول لاحقًا');
+            }
+        }
+
+        // عند تحميل الصفحة: تحقق بصمت هل هذا الجهاز مشترك أصلًا لتحديث شكل الزر فورًا
+        (function checkExistingPushSubscription() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+            navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => {
+                if (sub) updatePushSubscribeUI(true);
+            }).catch(() => {});
+        })();
+
         /* ---------- بطاقة التهنئة السريعة ---------- */
         const greetingTemplates = [
             { bg: ['#10b981', '#059669'], label: 'زمردي' },
@@ -9018,6 +8995,85 @@
                 if (typeof track.__refreshScrollHint === 'function') track.__refreshScrollHint();
             });
         }
+
+        /* ============================================================
+           السحب من أعلى الصفحة إلى أسفل لتحديث الموقع/التطبيق (Pull to
+           Refresh). يعمل هذا يدويًا عبر أحداث اللمس لأن وضع "standalone"
+           في PWA (انظر manifest.json) يُعطّل إيماءة السحب-للتحديث الأصلية
+           في أغلب المتصفحات. يظهر المؤشر فقط عندما يبدأ السحب من أعلى
+           الصفحة تمامًا (scrollY = 0)، وعند تجاوز مسافة السحب حدًا معينًا
+           تتم إعادة تحميل الصفحة، فتُجلب أحدث نسخة من الخادم مباشرة
+           (بحسب استراتيجية Network-First لملف index.html في sw.js)
+           لضمان ظهور آخر الإضافات فور توفرها. */
+        (function initPullToRefresh() {
+            const indicator = document.getElementById('pull-refresh-indicator');
+            const label = document.getElementById('pull-refresh-text');
+            if (!indicator || !label) return;
+
+            const PULL_THRESHOLD = 78; // بالبكسل
+            const MAX_PULL = 120;
+            let startY = 0;
+            let pulling = false;
+            let refreshing = false;
+
+            document.addEventListener('touchstart', (e) => {
+                if (refreshing) return;
+                if (window.scrollY > 0) { pulling = false; return; }
+                startY = e.touches[0].clientY;
+                pulling = true;
+            }, { passive: true });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!pulling || refreshing) return;
+                const delta = e.touches[0].clientY - startY;
+                if (delta <= 0) {
+                    indicator.classList.remove('visible', 'ready');
+                    indicator.style.transform = 'translate(-50%, -70px)';
+                    return;
+                }
+                // منع ارتداد الصفحة الافتراضي أثناء السحب حتى تظهر الإيماءة المخصصة بسلاسة
+                if (window.scrollY === 0) e.preventDefault();
+
+                const distance = Math.min(delta, MAX_PULL);
+                const translateY = -70 + (distance / MAX_PULL) * 90;
+                indicator.style.transform = `translate(-50%, ${translateY}px)`;
+                indicator.classList.add('visible');
+
+                if (distance >= PULL_THRESHOLD) {
+                    indicator.classList.add('ready');
+                    label.textContent = 'حرّر الآن للتحديث';
+                } else {
+                    indicator.classList.remove('ready');
+                    label.textContent = 'اسحب للتحديث';
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchend', () => {
+                if (!pulling || refreshing) { pulling = false; return; }
+                pulling = false;
+
+                if (indicator.classList.contains('ready')) {
+                    refreshing = true;
+                    indicator.classList.add('refreshing');
+                    indicator.classList.remove('ready');
+                    label.textContent = 'جارِ التحديث...';
+                    indicator.style.transform = 'translate(-50%, 20px)';
+
+                    // إخطار الـ Service Worker (إن وُجد) بضرورة التحقق من نسخة أحدث،
+                    // ثم إعادة تحميل الصفحة فعليًا لجلب آخر التحديثات والإضافات
+                    Promise.resolve(
+                        navigator.serviceWorker?.getRegistration
+                            ? navigator.serviceWorker.getRegistration().then(reg => reg && reg.update()).catch(() => {})
+                            : null
+                    ).finally(() => {
+                        setTimeout(() => window.location.reload(), 350);
+                    });
+                } else {
+                    indicator.classList.remove('visible');
+                    indicator.style.transform = 'translate(-50%, -70px)';
+                }
+            }, { passive: true });
+        })();
     </script>
 </body>
 </html>
