@@ -19,7 +19,7 @@
       الخاصة بالوسائط.
 ============================================================ */
 
-const CACHE_VERSION = 'v10';
+const CACHE_VERSION = 'v7';
 const APP_SHELL_CACHE = `quran-sunnah-shell-${CACHE_VERSION}`;
 const API_CACHE = `quran-sunnah-api-${CACHE_VERSION}`;
 const MAX_API_CACHE_ENTRIES = 60;
