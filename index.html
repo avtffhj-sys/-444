@@ -8334,6 +8334,24 @@
             return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
         }
 
+        // يتحقق هل مفتاح الاشتراك الحالي (إن وجد) يطابق VAPID_PUBLIC_KEY الحالي.
+        // ضروري لأن أي اشتراك أُنشئ بمفتاح عام قديم (قبل تغيير مفاتيح VAPID على
+        // الخادم) يظل "صالحًا" من ناحية المتصفح، لكن أي إشعار يُرسل له لاحقًا
+        // يُرفض بخطأ 403 من خدمة الدفع لأن المفتاحين لم يعودا متطابقين.
+        function subscriptionKeyMatches(subscription) {
+            try {
+                const currentKeyBytes = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+                const subKeyBytes = new Uint8Array(subscription.options.applicationServerKey);
+                if (currentKeyBytes.length !== subKeyBytes.length) return false;
+                return currentKeyBytes.every((b, i) => b === subKeyBytes[i]);
+            } catch (e) {
+                // بعض المتصفحات القديمة لا تعرض options.applicationServerKey؛
+                // في هذه الحالة لا يمكننا التأكد فنفترض التطابق ونترك الأمر
+                // للخادم يكتشف الخطأ عند الإرسال إن وُجد (يُحذف تلقائيًا هناك)
+                return true;
+            }
+        }
+
         function updatePushSubscribeUI(isSubscribed) {
             const btn = document.getElementById('push-subscribe-btn');
             const btnText = document.getElementById('push-subscribe-btn-text');
@@ -8367,6 +8385,12 @@
                 }
                 const reg = await navigator.serviceWorker.ready;
                 let subscription = await reg.pushManager.getSubscription();
+                if (subscription && !subscriptionKeyMatches(subscription)) {
+                    // اشتراك قديم بمفتاح VAPID سابق: يجب إلغاؤه أولًا وإلا فستفشل
+                    // محاولة الاشتراك بالمفتاح الجديد (المتصفح يسمح باشتراك واحد فقط)
+                    await subscription.unsubscribe();
+                    subscription = null;
+                }
                 if (!subscription) {
                     subscription = await reg.pushManager.subscribe({
                         userVisibleOnly: true,
@@ -8386,10 +8410,32 @@
             }
         }
 
-        // عند تحميل الصفحة: تحقق بصمت هل هذا الجهاز مشترك أصلًا لتحديث شكل الزر فورًا
+        // عند تحميل الصفحة: تحقق بصمت هل هذا الجهاز مشترك أصلًا لتحديث شكل الزر فورًا.
+        // كذلك: إن كان الاشتراك الموجود مرتبطًا بمفتاح VAPID قديم (تغيّر على
+        // الخادم بعد اشتراك هذا الجهاز)، نعيد الاشتراك تلقائيًا بصمت بالمفتاح
+        // الصحيح — طالما الإذن (Notification permission) ممنوح أصلًا، هذا لا
+        // يتطلب أي تفاعل جديد من المستخدم، ويمنع تكرار خطأ 403 مستقبلًا.
         (function checkExistingPushSubscription() {
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-            navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => {
+            navigator.serviceWorker.ready.then(async (reg) => {
+                let sub = await reg.pushManager.getSubscription();
+                if (sub && !subscriptionKeyMatches(sub)) {
+                    try {
+                        await sub.unsubscribe();
+                        sub = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                        });
+                        await fetch(BACKEND_BASE_URL + '/api/push/subscribe', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(sub)
+                        });
+                    } catch (e) {
+                        console.warn('تعذر تجديد اشتراك الإشعارات القديم', e);
+                        sub = null;
+                    }
+                }
                 if (sub) updatePushSubscribeUI(true);
             }).catch(() => {});
         })();
