@@ -860,6 +860,24 @@
 
         .surah-card:hover { border-color: var(--primary); transform: translateY(-3px); }
 
+        /* سورة غير مسجّلة فعليًا لدى القارئ بهذه الرواية بالذات — تبقى قابلة للضغط
+           (ستُشغَّل تلقائيًا من قارئ آخر كخيار احتياطي) لكن بمظهر مختلف يوضّح ذلك
+           للمستخدم قبل الضغط عليها، بدل أن يُفاجأ بتبديل القارئ دون سابق علم. */
+        .surah-card.surah-unavailable {
+            opacity: 0.55;
+            border-style: dashed;
+        }
+        .surah-card.surah-unavailable:hover { border-color: var(--border-color); transform: none; }
+        .surah-unavailable-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--glow);
+            padding: 2px 8px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
         .surah-actions {
             display: flex;
             align-items: center;
@@ -1814,6 +1832,20 @@
         .countdown-live-grid { gap: 6px; }
         .mini-calendar-grid { gap: 4px; }
 
+        /* التقويم الهجري والميلادي - توافق مع شاشات الهواتف */
+        .islamic-calendar-section .glass-panel { padding: 20px 14px; }
+        .dual-date-row { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+        .date-box { padding: 16px 10px 14px; gap: 6px; border-radius: 16px; }
+        .date-box-icon { width: 38px; height: 38px; font-size: 1rem; border-radius: 12px; }
+        .date-box .date-box-label { font-size: 0.72rem; }
+        .date-box .date-box-main { font-size: 1.05rem; line-height: 1.35; word-break: break-word; }
+        .date-box .date-box-sub { font-size: 0.7rem; padding: 3px 10px; }
+        .mini-calendar-header h4 { font-size: 0.95rem; }
+        .mini-calendar-nav button { width: 32px; height: 32px; font-size: 0.8rem; border-radius: 10px; }
+        .mini-calendar-grid .cal-weekday { font-size: 0.62rem; padding-bottom: 6px; }
+        .mini-calendar-cell { font-size: 0.72rem; border-radius: 10px; }
+        .mini-calendar-cell .cal-hijri-num { font-size: 0.56rem; }
+
         .fatwa-detail-body, .app-modal-body { padding: 16px; }
         .fatwa-detail-header, .fatwa-detail-footer { padding: 14px 16px; flex-direction: column; align-items: stretch; }
 
@@ -1952,6 +1984,19 @@
         .occasion-name i { width: 28px; height: 28px; font-size: 0.8rem; }
         .occasion-icon-btn { width: 28px; height: 28px; font-size: 0.72rem; }
         .occasion-remaining { font-size: 0.68rem; padding: 4px 9px; }
+
+        /* التقويم الهجري والميلادي - شاشات أصغر */
+        .islamic-calendar-section .glass-panel { padding: 14px 10px; }
+        .dual-date-row { gap: 8px; margin-bottom: 16px; }
+        .date-box { padding: 12px 6px 10px; border-radius: 14px; }
+        .date-box-icon { width: 32px; height: 32px; font-size: 0.9rem; border-radius: 10px; }
+        .date-box .date-box-label { font-size: 0.66rem; }
+        .date-box .date-box-main { font-size: 0.92rem; }
+        .date-box .date-box-sub { font-size: 0.64rem; padding: 3px 8px; }
+        .mini-calendar-nav button { width: 30px; height: 30px; }
+        .mini-calendar-grid { gap: 3px; }
+        .mini-calendar-cell { font-size: 0.66rem; }
+        .mini-calendar-cell .cal-hijri-num { font-size: 0.5rem; }
     }
 
     @media (max-width: 360px) {
@@ -1969,6 +2014,17 @@
         .azkar-grid { gap: 5px; }
         .zikr-card { padding: 6px; }
         .zikr-text { font-size: calc(0.56rem * var(--zikr-font-scale)); }
+
+        /* التقويم الهجري والميلادي - أصغر الشاشات */
+        .date-box { padding: 10px 5px 8px; gap: 4px; }
+        .date-box-icon { width: 28px; height: 28px; font-size: 0.82rem; }
+        .date-box .date-box-label { font-size: 0.6rem; }
+        .date-box .date-box-main { font-size: 0.8rem; }
+        .date-box .date-box-sub { font-size: 0.58rem; padding: 2px 7px; }
+        .mini-calendar-header h4 { font-size: 0.86rem; }
+        .mini-calendar-nav button { width: 27px; height: 27px; font-size: 0.72rem; }
+        .mini-calendar-cell { font-size: 0.6rem; border-radius: 8px; }
+        .mini-calendar-cell .cal-hijri-num { font-size: 0.46rem; }
     }
 
     /* ============================================================
@@ -3853,9 +3909,11 @@
             }
 
             // عند فتح قسم "المواعظ": نبدأ اتصالًا خفيفًا بخادم الصوتيات مبكرًا (قبل
-            // ضغط المستخدم على تشغيل أي مقطع فعليًا) حتى لا يبطئ إنشاء الاتصال أول تشغيل
-            if (pageId === 'sounds' && typeof warmupSoundsConnection === 'function') {
-                warmupSoundsConnection();
+            // ضغط المستخدم على تشغيل أي مقطع فعليًا) حتى لا يبطئ إنشاء الاتصال أول تشغيل،
+            // ونبني قائمة البطاقات (218 عنصرًا) الآن فقط بدل بنائها فور تحميل الموقع
+            if (pageId === 'sounds') {
+                if (typeof warmupSoundsConnection === 'function') warmupSoundsConnection();
+                if (typeof ensureSoundsLoaded === 'function') ensureSoundsLoaded();
             }
 
             // تحميل قائمة القرّاء والإذاعات فقط عند فتح صفحتيهما فعليًا (وليس فور
@@ -3865,6 +3923,12 @@
             }
             if (pageId === 'radio' && typeof ensureRadiosLoaded === 'function') {
                 ensureRadiosLoaded();
+            }
+            if (pageId === 'azkar' && typeof ensureAzkarDefaultLoaded === 'function') {
+                ensureAzkarDefaultLoaded();
+            }
+            if (pageId === 'fatwa' && typeof ensureFatwaGridLoaded === 'function') {
+                ensureFatwaGridLoaded();
             }
 
             // إعادة حساب مؤشرات "يوجد المزيد" بعد ظهور القسم الجديد فعليًا في الصفحة
@@ -4859,73 +4923,169 @@
                 });
             }
 
-            if (recitersData.length <= 1) {
-                recitersData.push(
-                    {
-                        id: 108,
-                        name: "محمود خليل الحصري",
-                        moshaf: [
-                            { id: 1, name: "حفص عن عاصم", server: "https://server13.mp3quran.net/hussary/", surah_total: 114, surah_list: "1-114" },
-                            { id: 2, name: "ورش عن نافع", server: "https://server13.mp3quran.net/hussary/warsh/", surah_total: 114, surah_list: "1-114" },
-                            { id: 3, name: "قالون عن نافع", server: "https://server13.mp3quran.net/hussary/qalun/", surah_total: 114, surah_list: "1-114" }
-                        ]
-                    },
-                    {
-                        id: 64,
-                        name: "عبد الباسط عبد الصمد",
-                        moshaf: [
-                            { id: 1, name: "حفص عن عاصم", server: "https://server7.mp3quran.net/basit/", surah_total: 114, surah_list: "1-114" },
-                            { id: 2, name: "ورش عن نافع", server: "https://server7.mp3quran.net/basit/warsh/", surah_total: 114, surah_list: "1-114" },
-                            { id: 3, name: "مجود - حفص عن عاصم", server: "https://server7.mp3quran.net/basit/Mujawwad/", surah_total: 114, surah_list: "1-114" }
-                        ]
-                    },
-                    {
-                        id: 54,
-                        name: "مشاري العفاسي",
-                        moshaf: [
-                            { id: 1, name: "حفص عن عاصم", server: "https://server8.mp3quran.net/afs/", surah_total: 114, surah_list: "1-114" }
-                        ]
-                    },
-                    {
-                        id: 92,
-                        name: "ماهر المعيقلي",
-                        moshaf: [
-                            { id: 1, name: "حفص عن عاصم", server: "https://server12.mp3quran.net/maher/", surah_total: 114, surah_list: "1-114" }
-                        ]
-                    },
-                    {
-                        id: 120,
-                        name: "الدوكالي محمد العالم",
-                        moshaf: [
-                            { id: 1, name: "قالون عن نافع", server: "https://server10.mp3quran.net/dokali/", surah_total: 114, surah_list: "1-114" }
-                        ]
-                    },
-                    {
-                        id: 121,
-                        name: "عبدالرشيد صوفي",
-                        moshaf: [
-                            { id: 1, name: "السوسي عن أبي عمرو", server: "https://server16.mp3quran.net/download/soufi/Rewayat-Assosi-A-n-Abi-Amr/", surah_total: 114, surah_list: "1-114" },
-                            { id: 2, name: "خلف عن حمزة", server: "https://server16.mp3quran.net/download/soufi/Rewayat-Khalaf-A-n-Hamzah/", surah_total: 114, surah_list: "1-114" }
-                        ]
-                    },
-                    {
-                        id: 122,
-                        name: "أحمد ديبان",
-                        moshaf: [
-                            { id: 1, name: "شعبة عن عاصم", server: "https://server16.mp3quran.net/download/deban/Rewayat-Sho-bah-A-n-Asim/", surah_total: 114, surah_list: "1-114" },
-                            { id: 2, name: "الدوري عن أبي عمرو", server: "https://server16.mp3quran.net/download/deban/Rewayat-Aldori-A-n-Abi-Amr/", surah_total: 114, surah_list: "1-114" }
-                        ]
-                    },
-                    {
-                        id: 123,
-                        name: "محمد العبدالله",
-                        moshaf: [
-                            { id: 1, name: "البزي وقنبل عن ابن كثير", server: "https://server9.mp3quran.net/download/abdullah/", surah_total: 114, surah_list: "1-114" },
-                            { id: 2, name: "الدوري عن الكسائي", server: "https://server9.mp3quran.net/download/abdullah/Rewayat-AlDorai-A-n-Al-Kisa-ai/", surah_total: 114, surah_list: "1-114" }
-                        ]
+            // قرّاء إضافيون يغطّون روايات نادرًا ما تتوفر بكثرة (كشعبة عن عاصم، الدوري
+            // عن أبي عمرو، خلف عن حمزة، السوسي، هشام، ابن ذكوان، ابن جماز، البزي وقنبل،
+            // الدوري عن الكسائي...)، رغم صحة بيانات API. تُدمَج هذه القائمة دائمًا مع
+            // نتائج API (وليس فقط عند فشله بالكامل)، مع تفادي أي تكرار لقارئ موجود
+            // بالفعل بنفس الاسم، حتى تبقى الروايات القليلة مزوَّدة بخيارات أكثر دومًا.
+            const extraRiwayaReciters = [
+                {
+                    id: 108,
+                    name: "محمود خليل الحصري",
+                    moshaf: [
+                        { id: 1, name: "حفص عن عاصم", server: "https://server13.mp3quran.net/hussary/", surah_total: 114, surah_list: "1-114" },
+                        { id: 2, name: "ورش عن نافع", server: "https://server13.mp3quran.net/hussary/warsh/", surah_total: 114, surah_list: "1-114" },
+                        { id: 3, name: "قالون عن نافع", server: "https://server13.mp3quran.net/hussary/qalun/", surah_total: 114, surah_list: "1-114" },
+                        // إضافة رابعة لنفس القارئ: المصحف المجود (رابط مؤكَّد فعليًا)، أسلوب
+                        // تلاوة مختلف عن "مجود - حفص عن عاصم" الموجود أصلًا لقارئ آخر
+                        { id: 4, name: "المصحف المجود", server: "https://server13.mp3quran.net/download/husr/Almusshaf-Al-Mojawwad/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    id: 64,
+                    name: "عبد الباسط عبد الصمد",
+                    moshaf: [
+                        { id: 1, name: "حفص عن عاصم", server: "https://server7.mp3quran.net/basit/", surah_total: 114, surah_list: "1-114" },
+                        { id: 2, name: "ورش عن نافع", server: "https://server7.mp3quran.net/basit/warsh/", surah_total: 114, surah_list: "1-114" },
+                        { id: 3, name: "مجود - حفص عن عاصم", server: "https://server7.mp3quran.net/basit/Mujawwad/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    id: 54,
+                    name: "مشاري العفاسي",
+                    moshaf: [
+                        { id: 1, name: "حفص عن عاصم", server: "https://server8.mp3quran.net/afs/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    id: 92,
+                    name: "ماهر المعيقلي",
+                    moshaf: [
+                        { id: 1, name: "حفص عن عاصم", server: "https://server12.mp3quran.net/maher/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    id: 120,
+                    name: "الدوكالي محمد العالم",
+                    moshaf: [
+                        { id: 1, name: "قالون عن نافع", server: "https://server10.mp3quran.net/dokali/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    id: 121,
+                    name: "عبدالرشيد صوفي",
+                    moshaf: [
+                        { id: 1, name: "السوسي عن أبي عمرو", server: "https://server16.mp3quran.net/download/soufi/Rewayat-Assosi-A-n-Abi-Amr/", surah_total: 114, surah_list: "1-114" },
+                        { id: 2, name: "خلف عن حمزة", server: "https://server16.mp3quran.net/download/soufi/Rewayat-Khalaf-A-n-Hamzah/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    // أحمد ديبان قارئ متخصص بالقراءات العشر، لذا فهو يوفّر بمفرده عددًا
+                    // كبيرًا من الروايات (روابط مؤكَّدة فعليًا من مصادر موثوقة)، وهو ما
+                    // يحقق طلب توسيع قائمة الروايات والقرّاء المتاحين في هذا القسم
+                    id: 122,
+                    name: "أحمد ديبان",
+                    moshaf: [
+                        { id: 1, name: "شعبة عن عاصم", server: "https://server16.mp3quran.net/download/deban/Rewayat-Sho-bah-A-n-Asim/", surah_total: 114, surah_list: "1-114" },
+                        { id: 2, name: "الدوري عن أبي عمرو", server: "https://server16.mp3quran.net/download/deban/Rewayat-Aldori-A-n-Abi-Amr/", surah_total: 114, surah_list: "1-114" },
+                        { id: 3, name: "قالون عن نافع", server: "https://server16.mp3quran.net/download/deban/Rewayat-Qalon-A-n-Nafi/", surah_total: 114, surah_list: "1-114" },
+                        { id: 4, name: "ورش عن نافع من طريق الأزرق", server: "https://server16.mp3quran.net/download/deban/Rewayat-Warsh-A-n-Nafi-Men-Tariq-Alazraq/", surah_total: 114, surah_list: "1-114" },
+                        { id: 5, name: "هشام عن ابي عامر", server: "https://server16.mp3quran.net/download/deban/Rewayat-Hesham-A-n-Abi-A-mer/", surah_total: 25, surah_list: "1-9,13,85,90,92-95,99-101,103,105,107,108,110,112-114" },
+                        { id: 6, name: "ابن ذكوان عن ابن عامر", server: "https://server16.mp3quran.net/download/deban/Rewayat-Ibn-Thakwan-A-n-Ibn-Amer/", surah_total: 24, surah_list: "1-9,13,77,83,85,86,88,90,92-97,99-101,103,105,107,108,109,112-114" },
+                        { id: 7, name: "ابن جماز عن أبي جعفر", server: "https://server16.mp3quran.net/download/deban/Rewayat-Ibn-Jammaz-A-n-Abi-Ja-far/", surah_total: 11, surah_list: "1,93,100,102,103,109,110,111,112,113,114" },
+                        // إضافتان لنفس القارئ (أحمد ديبان) تكملان روايتي ابن كثير كلٌّ على
+                        // حدة، بعد أن كانت الرواية المدموجة "البزي وقنبل" وحدها متاحة سابقًا
+                        // (روابط مؤكَّدة فعليًا)
+                        { id: 8, name: "قنبل عن ابن كثير", server: "https://server16.mp3quran.net/download/deban/Rewayat-Qunbol-A-n-Ibn-Katheer/", surah_total: 114, surah_list: "1-114" },
+                        { id: 9, name: "البزي عن ابن كثير", server: "https://server16.mp3quran.net/download/deban/Rewayat-Albizi-A-n-Ibn-Katheer/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    id: 123,
+                    name: "محمد العبدالله",
+                    moshaf: [
+                        { id: 1, name: "البزي وقنبل عن ابن كثير", server: "https://server9.mp3quran.net/download/abdullah/", surah_total: 114, surah_list: "1-114" },
+                        { id: 2, name: "الدوري عن الكسائي", server: "https://server9.mp3quran.net/download/abdullah/Rewayat-AlDorai-A-n-Al-Kisa-ai/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    // مفتاح السلطني يضيف قارئًا ثانيًا لروايات موجودة أصلًا (الدوري عن أبي
+                    // عمرو، ابن ذكوان عن ابن عامر، الدوري عن الكسائي) ليصبح لدى المستخدم
+                    // أكثر من صوت للاختيار من بينها لكل رواية (روابط مؤكَّدة فعليًا)
+                    id: 125,
+                    name: "مفتاح السلطني",
+                    moshaf: [
+                        { id: 1, name: "الدوري عن أبي عمرو", server: "https://server14.mp3quran.net/download/muftah_sultany/Rewayat-Aldori-A-n-Abi-Amr/", surah_total: 114, surah_list: "1-114" },
+                        { id: 2, name: "ابن ذكوان عن ابن عامر", server: "https://server14.mp3quran.net/download/muftah_sultany/Rewayat_Ibn-Thakwan-A-n-Ibn-Amer/", surah_total: 114, surah_list: "1-114" },
+                        { id: 3, name: "الدوري عن الكسائي", server: "https://server14.mp3quran.net/download/muftah_sultany/Rewayat-AlDorai-A-n-Al-Kisa-ai/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    // وليد النائحي يوفّر رواية "قالون عن نافع من طريق أبي نشيط"، وهي طريق مختلف
+                    // عن "قالون عن نافع" الأصلية الموجودة أعلاه ولم تكن ممثَّلة سابقًا (رابط مؤكَّد فعليًا)
+                    id: 126,
+                    name: "وليد النائحي",
+                    moshaf: [
+                        { id: 1, name: "قالون عن نافع من طريق أبي نشيط", server: "https://server9.mp3quran.net/download/waleed/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    // محمد عبدالكريم يوفّر رواية "ورش عن نافع من طريق أبي بكر الأصبهاني"، وهي
+                    // طريق مختلف عن "ورش عن نافع" و"ورش عن نافع من طريق الأزرق" الموجودتين
+                    // أعلاه، ولم تكن ممثَّلة سابقًا في هذه القائمة (رابط مؤكَّد فعليًا)
+                    id: 127,
+                    name: "محمد عبدالكريم",
+                    moshaf: [
+                        { id: 1, name: "ورش عن نافع من طريق أبي بكر الأصبهاني", server: "https://server7.mp3quran.net/m_kreem_warsh/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    // الحسيني العزازي يوفّر "المصحف المعلم" (تلاوة بأسلوب الترديد التعليمي لحفظ
+                    // القرآن)، وهو نمط مختلف لم يكن ممثَّلًا سابقًا في هذه القائمة (رابط مؤكَّد فعليًا)
+                    id: 128,
+                    name: "الحسيني العزازي",
+                    moshaf: [
+                        { id: 1, name: "المصحف المعلم", server: "https://server8.mp3quran.net/download/3zazi/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    // علي عبدالرحمن الحذيفي يضيف صوتًا ثانيًا لرواية شعبة عن عاصم، التي كانت
+                    // متاحة سابقًا فقط عبر أحمد ديبان (رابط مؤكَّد فعليًا)
+                    id: 129,
+                    name: "علي عبدالرحمن الحذيفي",
+                    moshaf: [
+                        { id: 1, name: "شعبة عن عاصم", server: "https://server9.mp3quran.net/download/hthfi/Rewayat-Sho-bah-A-n-Asim/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                },
+                {
+                    // صابر عبدالحكم يضيف صوتًا ثالثًا لرواية شعبة عن عاصم (رابط مؤكَّد فعليًا)
+                    id: 130,
+                    name: "صابر عبدالحكم",
+                    moshaf: [
+                        { id: 1, name: "شعبة عن عاصم", server: "https://server16.mp3quran.net/download/The-ten-readings/Rewayat-Sho-bah-A-n-Asim/Sabdulhakam/", surah_total: 114, surah_list: "1-114" }
+                    ]
+                }
+            ];
+            extraRiwayaReciters.forEach((r) => {
+                const existingReciter = recitersData.find(existing => existing.name === r.name);
+                if (!existingReciter) {
+                    // القارئ غير موجود إطلاقًا في نتائج API: يُضاف كاملًا كما كان سابقًا
+                    recitersData.push(r);
+                    return;
+                }
+                // القارئ موجود بالفعل في نتائج API (وهذا شائع لقرّاء مشهورين): بدل تجاهل
+                // الإضافة بالكامل كما كان يحدث سابقًا، نُدمج فقط الروايات التي لا يملكها
+                // القارئ الحقيقي من API، حتى لا تُفقَد الروايات الإضافية المؤكَّدة صمتًا.
+                if (!existingReciter.moshaf) existingReciter.moshaf = [];
+                r.moshaf.forEach((extraMoshaf) => {
+                    const alreadyHasIt = existingReciter.moshaf.some(
+                        m => normalizeRiwayaName(m.name) === normalizeRiwayaName(extraMoshaf.name)
+                    );
+                    if (!alreadyHasIt) {
+                        existingReciter.moshaf.push(extraMoshaf);
                     }
-                );
-            }
+                });
+            });
 
             renderRecitersOptions(recitersData);
             buildGlobalRiwayatList();
@@ -5163,23 +5323,104 @@
         // من القارئ/الرواية المختارة، حتى تبقى كل سورة قابلة للتشغيل دائمًا
         const DEFAULT_FALLBACK_SERVER = 'https://server8.mp3quran.net/afs/';
 
-        // يحاول تشغيل رابط صوتي واحد، ويُخبر عبر Promise هل نجح البدء بالتشغيل أم لا
-        function tryPlayUrl(url) {
+        // يحاول تشغيل رابط صوتي واحد على عنصر التشغيل الفعلي، ويُخبر عبر Promise هل نجح البدء بالتشغيل أم لا
+        function tryPlayUrl(url, options) {
+            const timeoutMs = (options && options.timeoutMs) || 20000;
+            const isRetry = !!(options && options.isRetry);
             return new Promise((resolve) => {
                 let settled = false;
-                const onCanPlay = () => { cleanup(); resolve(true); };
-                const onError = () => { cleanup(); resolve(false); };
+                let timer = null;
                 function cleanup() {
                     if (settled) return;
                     settled = true;
+                    if (timer) clearTimeout(timer);
                     audio.removeEventListener('canplay', onCanPlay);
                     audio.removeEventListener('error', onError);
                 }
+                function onCanPlay() { cleanup(); resolve(true); }
+                function onError() {
+                    cleanup();
+                    // خطأ واحد قد يكون تعثّرًا مؤقتًا من الخادم؛ نعيد المحاولة مرة واحدة
+                    // فقط قبل اعتبار السورة فعليًا غير قابلة للتشغيل من هذا القارئ.
+                    if (!isRetry) {
+                        tryPlayUrl(url, { timeoutMs, isRetry: true }).then(resolve);
+                    } else {
+                        resolve(false);
+                    }
+                }
+                function onTimeout() {
+                    if (settled) return;
+                    // إن كان الملف أصبح جاهزًا فعليًا (أو بدأ التشغيل) رغم انتهاء المهلة،
+                    // فهذا نجاح حقيقي ولا داعي لاعتباره فشلاً والتحويل لقارئ آخر.
+                    if (audio.src === url && (audio.readyState >= 2 || !audio.paused)) {
+                        onCanPlay();
+                        return;
+                    }
+                    onError();
+                }
                 audio.addEventListener('canplay', onCanPlay, { once: true });
                 audio.addEventListener('error', onError, { once: true });
+                timer = setTimeout(onTimeout, timeoutMs);
                 audio.src = url;
                 audio.load();
-                audio.play().catch(() => { /* سيُلتقط الخطأ الفعلي عبر حدث error إن وُجد */ });
+                audio.play().catch(() => { /* سيُلتقط الخطأ الفعلي عبر حدث error أو المهلة إن استمر الفشل */ });
+            });
+        }
+
+        // ========= تسريع بدء التشغيل =========
+        // (أ) ذاكرة مؤقتة: صيغة الترقيم الناجحة (001/01/1) لكل خادم قارئ+رواية، بحيث بعد
+        // أول تشغيل ناجح من خادم معيّن، لا يُعاد تجربة الصيغ الثلاث في كل مرة يبدّل فيها
+        // المستخدم السورة على نفس القارئ/الرواية — تجربة رابط واحد مباشرة أسرع بكثير.
+        const serverFormatCache = new Map();
+
+        // (ب) فحص رابط صوتي عبر عنصر Audio منفصل مؤقت (لا يُصدر صوتًا مسموعًا وله كتم صوت)
+        // بدل عنصر التشغيل الفعلي، حتى يمكن فحص عدة روابط بالتوازي دون التأثير على ما يُسمع،
+        // مع مهلة قصوى (ms) لتفادي التعليق الطويل إن كان الرابط معطّلاً أو الخادم متعثّرًا.
+        function probeUrl(url, timeoutMs = 9000) {
+            return new Promise((resolve) => {
+                const probe = new Audio();
+                probe.preload = 'auto';
+                probe.muted = true;
+                let settled = false;
+                function finish(ok) {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    probe.removeEventListener('canplay', onOk);
+                    probe.removeEventListener('error', onErr);
+                    probe.src = '';
+                    resolve(ok);
+                }
+                const onOk = () => finish(true);
+                const onErr = () => finish(false);
+                // قبل اعتبار الرابط فاشلاً عند انتهاء المهلة، نتحقق إن كان أصبح جاهزًا فعليًا
+                // (readyState) رغم بطء وصول الحدث نفسه — فلا نحكم عليه بالفشل ظلمًا بسبب
+                // تأخّر مؤقت من الخادم بينما الملف موجود وصالح للتشغيل بالفعل.
+                const timer = setTimeout(() => {
+                    if (probe.readyState >= 2) { finish(true); return; }
+                    finish(false);
+                }, timeoutMs);
+                probe.addEventListener('canplay', onOk, { once: true });
+                probe.addEventListener('error', onErr, { once: true });
+                probe.src = url;
+                probe.load();
+            });
+        }
+
+        // (ج) يفحص عدّة روابط بالتوازي (لا بالتتابع) ويُرجع أول رابط نجح الفحص عليه فورًا
+        // دون انتظار البقية، أو null إن فشلت كل الروابط — هذا هو ما يجعل بدء التشغيل أسرع
+        function raceUrls(urls) {
+            return new Promise((resolve) => {
+                let remaining = urls.length;
+                let resolved = false;
+                urls.forEach((url) => {
+                    probeUrl(url).then((ok) => {
+                        if (resolved) return;
+                        if (ok) { resolved = true; resolve(url); return; }
+                        remaining -= 1;
+                        if (remaining === 0 && !resolved) resolve(null);
+                    });
+                });
             });
         }
 
@@ -5200,16 +5441,32 @@
             updateNowPlaying(`سورة ${name}`, `${reciter.name} (${moshaf.name || ''})`);
             showToast(`جاري تحميل سورة ${name}...`);
 
-            // نجرّب صيغ الترقيم الشائعة تباعًا (001 ثم 01 ثم 1) على خادم القارئ نفسه أولًا
-            const candidateUrls = [
-                `${server}${surahNum3}.mp3`,
-                `${server}${surahNum2}.mp3`,
-                `${server}${surahNum1}.mp3`
-            ];
+            // إن كانت صيغة الترقيم الصحيحة لهذا الخادم معروفة من تشغيل سابق (نفس القارئ/الرواية)،
+            // نجرّب رابطًا واحدًا مباشرة بدل تجربة الصيغ الثلاث من جديد، فيبدأ التشغيل فورًا
+            // عند تبديل السور المتتالية لنفس القارئ
+            const cachedLen = serverFormatCache.get(server);
+            if (cachedLen) {
+                if (playbackContext.index !== index) return;
+                const cachedUrl = `${server}${surahNumberInt.toString().padStart(cachedLen, '0')}.mp3`;
+                const ok = await tryPlayUrl(cachedUrl);
+                if (ok) return;
+                // نادرًا ما تفشل السورة بعينها مع صيغة صالحة لباقي السور؛ نتابع للفحص الكامل أدناه
+            }
 
-            for (const url of candidateUrls) {
-                if (playbackContext.index !== index) return; // المستخدم بدّل السورة أثناء المحاولة
-                const ok = await tryPlayUrl(url);
+            // نفحص صيغ الترقيم الشائعة (001 ثم 01 ثم 1) بالتوازي عبر عناصر صوت مؤقتة صامتة
+            // بدل تجربتها تباعًا على عنصر التشغيل نفسه، فيبدأ التشغيل بأسرع ما يمكن
+            const candidateUrls = [
+                { url: `${server}${surahNum3}.mp3`, len: 3 },
+                { url: `${server}${surahNum2}.mp3`, len: 2 },
+                { url: `${server}${surahNum1}.mp3`, len: 1 }
+            ];
+            if (playbackContext.index !== index) return;
+            const winnerUrl = await raceUrls(candidateUrls.map(c => c.url));
+            if (playbackContext.index !== index) return; // المستخدم بدّل السورة أثناء الفحص
+            if (winnerUrl) {
+                const matched = candidateUrls.find(c => c.url === winnerUrl);
+                if (matched) serverFormatCache.set(server, matched.len);
+                const ok = await tryPlayUrl(winnerUrl);
                 if (ok) return;
             }
 
@@ -5225,6 +5482,31 @@
             }
         }
 
+        // يحوّل نص "surah_list" القادم من واجهة mp3quran (مثل "1-9,13,85-90") إلى مجموعة
+        // بأرقام السور المسجَّلة فعليًا لدى هذا القارئ بهذه الرواية. نص فارغ أو غير موجود
+        // يُعامَل كتغطية كاملة (١١٤ سورة) حفاظًا على التوافق مع بيانات لا تحدد هذا الحقل.
+        function parseSurahList(listStr) {
+            const full = new Set(Array.from({ length: 114 }, (_, i) => i + 1));
+            if (!listStr || typeof listStr !== 'string') return full;
+            const trimmed = listStr.trim();
+            if (trimmed === '' || trimmed === '1-114') return full;
+            const set = new Set();
+            trimmed.split(',').forEach((part) => {
+                const piece = part.trim();
+                if (!piece) return;
+                if (piece.includes('-')) {
+                    const [a, b] = piece.split('-').map(n => parseInt(n, 10));
+                    if (!isNaN(a) && !isNaN(b)) {
+                        for (let n = Math.min(a, b); n <= Math.max(a, b); n++) set.add(n);
+                    }
+                } else {
+                    const n = parseInt(piece, 10);
+                    if (!isNaN(n)) set.add(n);
+                }
+            });
+            return set.size > 0 ? set : full;
+        }
+
         function renderSurahsGrid(reciter, moshaf) {
             if (!reciter || !moshaf) return;
             const grid = document.getElementById('surah-grid');
@@ -5232,16 +5514,22 @@
 
             const rawServer = moshaf.server || '';
             const server = rawServer.endsWith('/') ? rawServer : rawServer + '/';
+            const availableSurahs = parseSurahList(moshaf.surah_list);
 
             staticSurahNames.forEach((name, i) => {
                 const surahNumberInt = i + 1;
                 const surahNum3 = surahNumberInt.toString().padStart(3, '0');
                 const audioUrl = `${server}${surahNum3}.mp3`;
+                const isAvailable = availableSurahs.has(surahNumberInt);
                 const card = document.createElement('div');
-                card.className = 'surah-card glass-panel';
+                card.className = isAvailable ? 'surah-card glass-panel' : 'surah-card glass-panel surah-unavailable';
+                if (!isAvailable) {
+                    card.title = `سورة ${name} غير مسجّلة لدى "${reciter.name}" بهذه الرواية، ستُشغَّل تلقائيًا من قارئ آخر عند الضغط عليها.`;
+                }
                 card.innerHTML = `
                     <div><strong>${surahNumberInt}. سورة ${name}</strong></div>
                     <div class="surah-actions">
+                        ${isAvailable ? '' : '<span class="surah-unavailable-badge">غير متوفرة بهذه الرواية</span>'}
                         <button class="surah-download-btn" title="تحميل مباشر للسورة">
                             <i class="fa-solid fa-download"></i>
                         </button>
@@ -5760,6 +6048,146 @@
             { title: "نصيحة غالية: كيف نتأثر بالقرآن الكريم", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/161---.mp3" },
             { title: "نصيحة هامة: كيف نستقبل رمضان؟", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/170-...mp3" },
             { title: "وصف حملة العرش", sheikh: "الشيخ صالح المغامسي", url: "https://archive.org/download/Mghamsi_Mawsoa-ma9ati3-mp3/181--.mp3" },
+
+            /* مواعظ إضافية للشيخ نبيل العوضي */
+            { title: "قصة لفتاة وشاب في الجامعة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0039.mp3" },
+            { title: "صدقك وهو كذوب", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0040.mp3" },
+            { title: "صدقوا ما عاهدوا الله عليه", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0041.mp3" },
+            { title: "قصة لفتاة غرر بها ذئب بشري", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0044.mp3" },
+            { title: "قصة: اخرج مع هذه المرأة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0045.mp3" },
+            { title: "قصة: ما كنت عوراء إلا لأجلك", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0046.mp3" },
+            { title: "هل نحن مستعدون للتضحية في سبيل مقدساتنا؟", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0052.mp3" },
+            { title: "شهر عسل في أفريقيا", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0060.mp3" },
+            { title: "الحقيقة الخطيرة لعيد الحب", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0285.mp3" },
+            { title: "رسالة لكل شارب وبائع خمر", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0350.mp3" },
+            { title: "غيّر حياتك وحقق أحلامك", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0364.mp3" },
+            { title: "قصة أغرب من الخيال، اسمع واعتبر", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0376.mp3" },
+            { title: "قصص الأنبياء: لوط عليه السلام", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0378.mp3" },
+            { title: "كيف تتخلص من مشاكل وهموم الحب", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0383.mp3" },
+            { title: "الجنة - الجزء الثاني", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0405.mp3" },
+            { title: "وصايا مهمة لكل المسلمين قبل رمضان", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/0421.mp3" },
+            { title: "نداء قبل فوات الأوان", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/muslim_up_by_ayoub-islam/452_nabil_askbeforfawat-.mp3" },
+
+            /* محاضرات إضافية من الموسوعة الصوتية الكاملة للشيخ نبيل العوضي */
+            { title: "الأرض المباركة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0049-.mp3" },
+            { title: "الأم نواة الأسرة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0057-.mp3" },
+            { title: "الأنفاس الأخيرة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0060-.mp3" },
+            { title: "أين السعادة؟", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0210-.mp3" },
+            { title: "تصوّر أنت في الجنة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0231-.mp3" },
+            { title: "حقيقة الموت", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0270-.mp3" },
+            { title: "عذاب القبر ونعيمه", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0360-.mp3" },
+            { title: "علامات الساعة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0367-.mp3" },
+            { title: "قصة أصحاب الكهف", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0411-.mp3" },
+            { title: "قصة الخضر عليه السلام", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0412-.mp3" },
+            { title: "قصة حب", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0416-.mp3" },
+            { title: "لا تهجروا القرآن", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0450-.mp3" },
+            { title: "لمحات من حياة الرسول صلى الله عليه وسلم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0461-.mp3" },
+            { title: "من أسباب دخول الجنة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0498-.mp3" },
+            { title: "نعمة الهداية", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0548-.mp3" },
+            { title: "هذا الحبيب يا محب", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0562-.mp3" },
+            { title: "وفاة الرسول صلى الله عليه وسلم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0587-.mp3" },
+
+            /* دفعة أخرى من محاضرات الشيخ نبيل العوضي */
+            { title: "أحسنكم أخلاقا", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0005-.mp3" },
+            { title: "أسباب هلاك الأمم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0017-.mp3" },
+            { title: "أعظم العلوم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0025-.mp3" },
+            { title: "البيت السعيد", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0065-.mp3" },
+            { title: "التوبة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0077-.mp3" },
+            { title: "الجنة والنار", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0085-.mp3" },
+            { title: "الصديق أبو بكر رضي الله عنه", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0131-.mp3" },
+            { title: "الموت والقبر", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0167-.mp3" },
+            { title: "أهوال القيامة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0201-.mp3" },
+            { title: "تعاطي المخدرات", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0232-.mp3" },
+            { title: "حصن المسلم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0258-.mp3" },
+            { title: "رحمة للعالمين", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0303-.mp3" },
+            { title: "فضل الصيام", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0397-.mp3" },
+            { title: "قيام الليل", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0430-.mp3" },
+            { title: "لماذا لا نتوب", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0459-.mp3" },
+
+            /* دفعة ثالثة من محاضرات الشيخ نبيل العوضي */
+            { title: "الأرقام تتكلم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0050-.mp3" },
+            { title: "الأقليات الإسلامية في بلاد الغرب", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0056-.mp3" },
+            { title: "التربية العبادية للنفس", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0070-.mp3" },
+            { title: "التوحيد", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0078-.mp3" },
+            { title: "الجهاد", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0086-.mp3" },
+            { title: "الحياء كله خير", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0091-.mp3" },
+            { title: "الخوف من الله", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0101-.mp3" },
+            { title: "الرحمة المهداة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0107-.mp3" },
+            { title: "السحر", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0116-.mp3" },
+            { title: "الصبر على الطاعة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0128-.mp3" },
+            { title: "العظمة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0143-.mp3" },
+            { title: "اللؤلؤة: كيف تحفظ نفسها؟", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0158-.mp3" },
+            { title: "الوقت والفراغ في حياتنا", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0173-.mp3" },
+            { title: "أمراض القلوب", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0185-.mp3" },
+            { title: "إن الله يقبل التوبة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0190-.mp3" },
+
+            /* دفعة رابعة من محاضرات الشيخ نبيل العوضي */
+            { title: "الدموع الغالية", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0104-.mp3" },
+            { title: "الرحمة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0109-.mp3" },
+            { title: "السر المكنون", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0119-.mp3" },
+            { title: "الشجاعة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0123-.mp3" },
+            { title: "الصبر", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0129-.mp3" },
+            { title: "الظلم وأثره في هلاك الأمم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0136-.mp3" },
+            { title: "القلوب القاسية", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0154-.mp3" },
+            { title: "الله مولانا ولا مولى لهم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0157-.mp3" },
+            { title: "النار: رؤية من الداخل", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0169-.mp3" },
+            { title: "إلى النساء", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0175-.mp3" },
+            { title: "إما شاكرا وإما كفورا", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0183-.mp3" },
+            { title: "إن أكرمكم عند الله أتقاكم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0189-.mp3" },
+            { title: "أهل النار", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0199-.mp3" },
+            { title: "أين المصير؟", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0211-.mp3" },
+            { title: "بين الجنة والنار", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0223-.mp3" },
+
+            /* دفعة خامسة من محاضرات الشيخ نبيل العوضي */
+            { title: "بيوت القراءة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0226-.mp3" },
+            { title: "تجارب من الواقع", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0229-.mp3" },
+            { title: "جاهلية الزمان", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0241-.mp3" },
+            { title: "حاسب نفسك", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0245-.mp3" },
+            { title: "حرمة العلماء", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0254-.mp3" },
+            { title: "حقوق الأخوة في الله", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0262-.mp3" },
+            { title: "حقوق المرأة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0265-.mp3" },
+            { title: "حياة السعداء", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0278-.mp3" },
+            { title: "حياؤك إيمانك", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0280-.mp3" },
+            { title: "دعوة للجنة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0292-.mp3" },
+            { title: "رجل قلبه معلق بالمساجد", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0298-.mp3" },
+            { title: "رسالة إلى صانعة الأجيال", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0304-.mp3" },
+            { title: "رمضان روضة المحبين", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0309-.mp3" },
+            { title: "سكارى", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0319-.mp3" },
+            { title: "سوء الخاتمة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0322-.mp3" },
+
+            /* دفعة سادسة من محاضرات الشيخ نبيل العوضي */
+            { title: "شاب نشأ في عبادة الله", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0324-.mp3" },
+            { title: "شكر النعم", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0328-.mp3" },
+            { title: "صفات المنافقين", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0334-.mp3" },
+            { title: "صفة الجنة والنار", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0337-.mp3" },
+            { title: "صلاتك احرص عليها", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0341-.mp3" },
+            { title: "طالوت وجالوت", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0344-.mp3" },
+            { title: "عاقبة الظالمين", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0349-.mp3" },
+            { title: "عالم الجن والشياطين", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0352-.mp3" },
+            { title: "عَبرة وعِبرة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0358-.mp3" },
+            { title: "عقوق الوالدين", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0366-.mp3" },
+            { title: "علو الهمة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0370-.mp3" },
+            { title: "فتاة لا تعجبني", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0384-.mp3" },
+            { title: "فرصة للتوبة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0393-.mp3" },
+            { title: "فليتنافس المتنافسون", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0401-.mp3" },
+            { title: "في رحاب الجنة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0403-.mp3" },
+
+            /* دفعة سابعة من محاضرات الشيخ نبيل العوضي */
+            { title: "في ظل العرش", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0406-.mp3" },
+            { title: "قرة العيون", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0409-.mp3" },
+            { title: "قصة السامري", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0413-.mp3" },
+            { title: "قصة سبأ", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0417-.mp3" },
+            { title: "قضايا تهم المرأة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0425-.mp3" },
+            { title: "قلوب الأحبة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0427-.mp3" },
+            { title: "قلوب بيضاء", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0428-.mp3" },
+            { title: "قوم صالح", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0429-.mp3" },
+            { title: "كفى بالموت واعظاً", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0432-.mp3" },
+            { title: "كل نفس ذائقة الموت", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0433-.mp3" },
+            { title: "كلنا مذنبون", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0436-.mp3" },
+            { title: "كم نشتاق إليه: الفاروق عمر", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0437-.mp3" },
+            { title: "لا تحاسدوا", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0449-.mp3" },
+            { title: "لحظة لا بد منها", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0451-.mp3" },
+            { title: "لذة الطاعة", sheikh: "الشيخ نبيل العوضي", url: "https://archive.org/download/Nabil-3awadi_Mawsoa-mp3/0452-.mp3" },
         ];
 
         // تسخين مبكر للاتصال بخادم الصوتيات (archive.org) عند فتح قسم "المواعظ":
@@ -5772,7 +6200,13 @@
             if (soundsWarmupDone || !soundsData.length) return;
             soundsWarmupDone = true;
             try {
-                fetch(soundsData[0].url, { mode: 'no-cors' }).catch(() => {});
+                // مهم: نستخدم HEAD وليس GET هنا. طلب GET بلا قراءة محتواه لا يوقف
+                // التنزيل فعليًا في أغلب المتصفحات، فكان الكود القديم يُحمّل ملف
+                // الصوت الأول كاملاً في الخلفية بمجرد فتح قسم "المواعظ"، فيستهلك
+                // جزءًا من نطاق الشبكة (خصوصًا على الجوال) ويبطئ أي تشغيل فعلي
+                // يضغط عليه المستخدم بعدها مباشرة. HEAD يفتح نفس الاتصال
+                // (DNS + TLS) دون تنزيل أي بايت من جسم الملف.
+                fetch(soundsData[0].url, { method: 'HEAD', mode: 'no-cors' }).catch(() => {});
             } catch (e) { /* التسخين اختياري وليس حرجًا، يمكن تجاهل أي خطأ هنا بأمان */ }
         }
 
@@ -5839,7 +6273,19 @@
             soundsOfflineUrlsCache = await listOfflineSoundUrls();
             renderSoundsGrid(soundsData);
         }
-        loadSounds();
+        // تنبيه أداء: كانت loadSounds() تُستدعى هنا مباشرة عند تحميل الصفحة، فتُنشئ
+        // 218 بطاقة (كل بطاقة معها تأثير ضبابي backdrop-filter + عدة مستمعي أحداث)
+        // فور فتح الموقع، حتى لو لم يزر المستخدم قسم "مواعظ" إطلاقًا. هذا يستهلك
+        // وقت المعالج الرئيسي أثناء التحميل الأول وقد يجعل أولى عمليات التنقل في
+        // الموقع تبدو أبطأ. الآن يتم بناء القائمة فقط عند فتح القسم فعليًا تمامًا
+        // كما هو معمول به أصلاً مع "القرآن الكريم" و"الإذاعات" — الخدمة والمحتوى
+        // المعروض للمستخدم يبقيان كما هما دون أي تغيير.
+        let soundsLoadStarted = false;
+        function ensureSoundsLoaded() {
+            if (soundsLoadStarted) return;
+            soundsLoadStarted = true;
+            loadSounds();
+        }
 
         // البحث عن موعظة بالعنوان أو الشيخ (نصيًا أو صوتيًا) داخل قسم المواعظ
         function searchSounds() {
@@ -7789,6 +8235,446 @@
                     { text: 'أَلَا أُنَبِّئُكُمْ بِأَكْبَرِ الْكَبَائِرِ؟ الْإِشْرَاكُ بِاللَّهِ وَعُقُوقُ الْوَالِدَيْنِ.', source: 'متفق عليه' },
                     { text: 'لَا يَدْخُلُ الْجَنَّةَ قَاطِعُ رَحِمٍ.', source: 'متفق عليه' }
                 ]
+            },
+            {
+                id: 136, category: 'salah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم وجوب الصلوات الخمس على كل مسلم ومسلمة بالغ عاقل؟',
+                shortAnswer: 'وجوب الصلوات الخمس في اليوم والليلة على كل مسلم ومسلمة بالغ عاقل من الأمور المعلومة من الدين بالضرورة، وقد أجمعت الأمة على ذلك، فهي مسألة غير محل خلاف بين علماء المسلمين.',
+                detail: 'الصلوات الخمس ركن من أركان الإسلام الخمسة، ثبت وجوبها بالكتاب والسنة وإجماع الأمة إجماعًا قطعيًا لا خلاف فيه بين أهل العلم على مر العصور، ومن جحد وجوبها فقد كفر لإنكاره أمرًا معلومًا من الدين بالضرورة. أما التفريط في أدائها تكاسلًا مع الإقرار بوجوبها فذنب عظيم يستوجب التوبة، لكنه لا يخرج صاحبه عن دائرة الإجماع على أصل الفرضية.',
+                evidences: [
+                    { text: 'إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا.', source: 'سورة النساء، آية 103' },
+                    { text: 'بُنِيَ الْإِسْلَامُ عَلَى خَمْسٍ: شَهَادَةِ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ، وَإِقَامِ الصَّلَاةِ، وَإِيتَاءِ الزَّكَاةِ، وَحَجِّ الْبَيْتِ، وَصَوْمِ رَمَضَانَ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 137, category: 'tahara', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الوضوء لمن أراد إقامة الصلاة وهو محدث؟',
+                shortAnswer: 'الوضوء شرط لصحة الصلاة، فلا تصح صلاة المحدث حدثًا أصغر إلا بعد الوضوء، وهذا الحكم مجمع عليه بين علماء المسلمين قاطبة ولا خلاف فيه.',
+                detail: 'دلّ القرآن الكريم صراحة على وجوب الوضوء عند القيام إلى الصلاة لمن كان محدثًا، وأجمعت الأمة على أن الطهارة من الحدث شرط لا تصح الصلاة بدونه، فمن صلى محدثًا عالمًا بحدثه متعمدًا فصلاته باطلة باتفاق الفقهاء، ولا اعتبار لخلاف في أصل هذا الحكم، وإنما وقع الخلاف في بعض فروعه الدقيقة كنواقض الوضوء المختلف فيها.',
+                evidences: [
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا قُمْتُمْ إِلَى الصَّلَاةِ فَاغْسِلُوا وُجُوهَكُمْ وَأَيْدِيَكُمْ إِلَى الْمَرَافِقِ.', source: 'سورة المائدة، آية 6' },
+                    { text: 'لَا يَقْبَلُ اللَّهُ صَلَاةَ أَحَدِكُمْ إِذَا أَحْدَثَ حَتَّى يَتَوَضَّأَ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 138, category: 'zakah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم إخراج زكاة المال الذي بلغ النصاب وحال عليه الحول؟',
+                shortAnswer: 'زكاة المال ركن من أركان الإسلام، وهي واجبة وجوبًا قطعيًا على كل مسلم ملك نصابًا من المال وحال عليه الحول، وهذا مما أجمعت عليه الأمة ولا خلاف فيه بين علماء المسلمين.',
+                detail: 'الزكاة عبادة مالية وركن من أركان الإسلام الخمسة، فرضها الله في كتابه وبيّنتها السنة النبوية، وأجمع علماء المسلمين على وجوبها على كل من ملك نصابًا من الأموال الزكوية وحال عليه الحول، ومن أنكر وجوبها فقد كفر لإنكاره معلومًا من الدين بالضرورة، ومن بخل بإخراجها مع إقراره بوجوبها فهو آثم مرتكب لكبيرة، وقد قاتل الصحابة رضي الله عنهم مانعي الزكاة إجماعًا منهم على عدم التفريق بين الصلاة والزكاة.',
+                evidences: [
+                    { text: 'وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ.', source: 'سورة البقرة، آية 43' },
+                    { text: 'بُنِيَ الْإِسْلَامُ عَلَى خَمْسٍ... وَإِيتَاءِ الزَّكَاةِ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 139, category: 'siyam', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم صيام شهر رمضان على المسلم البالغ العاقل القادر المقيم؟',
+                shortAnswer: 'صيام شهر رمضان فرض عين على كل مسلم ومسلمة بالغ عاقل قادر مقيم غير معذور، وهو ركن من أركان الإسلام الثابتة بالإجماع القطعي الذي لا يسع أحدًا مخالفته.',
+                detail: 'فرض الله صيام رمضان في محكم كتابه، وتواترت الأحاديث النبوية ببيان فضله ووجوبه، وأجمعت الأمة إجماعًا لا خلاف فيه على فرضيته على كل مكلف قادر مقيم، فمن جحد وجوبه كفر، ومن أفطر فيه متعمدًا بغير عذر شرعي فقد ارتكب كبيرة من الكبائر يجب عليه التوبة والقضاء. أما أصحاب الأعذار كالمريض والمسافر والحائض فلهم أحكام مخصوصة في الفطر والقضاء لا تمس أصل الفرضية العامة.',
+                evidences: [
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا كُتِبَ عَلَيْكُمُ الصِّيَامُ كَمَا كُتِبَ عَلَى الَّذِينَ مِنْ قَبْلِكُمْ.', source: 'سورة البقرة، آية 183' },
+                    { text: 'بُنِيَ الْإِسْلَامُ عَلَى خَمْسٍ... وَصَوْمِ رَمَضَانَ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 140, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم قتل النفس التي حرّم الله بغير حق؟',
+                shortAnswer: 'قتل النفس المعصومة بغير حق من أعظم الكبائر المحرمة تحريمًا قاطعًا بنص القرآن الكريم، وهو أمر مجمع على تحريمه بين جميع علماء المسلمين ولا خلاف فيه البتة.',
+                detail: 'حرّم الإسلام الاعتداء على النفس البشرية المعصومة وجعل ذلك من أكبر الكبائر بعد الشرك بالله، وشدد النكير على من يقدم على ذلك بغير وجه حق كالقصاص العادل أو حد شرعي مقرر. وقد أجمعت الأمة على هذا التحريم إجماعًا لا يتطرق إليه خلاف، وإنما وقع الاجتهاد في تفاصيل فرعية كتقدير القصاص والديات وأحكام الجهاد، وهذا لا يمس أصل تحريم القتل الظالم الثابت بيقين.',
+                evidences: [
+                    { text: 'وَمَنْ يَقْتُلْ مُؤْمِنًا مُتَعَمِّدًا فَجَزَاؤُهُ جَهَنَّمُ خَالِدًا فِيهَا.', source: 'سورة النساء، آية 93' },
+                    { text: 'مِنْ أَجْلِ ذَلِكَ كَتَبْنَا عَلَى بَنِي إِسْرَائِيلَ أَنَّهُ مَنْ قَتَلَ نَفْسًا بِغَيْرِ نَفْسٍ أَوْ فَسَادٍ فِي الْأَرْضِ فَكَأَنَّمَا قَتَلَ النَّاسَ جَمِيعًا.', source: 'سورة المائدة، آية 32' }
+                ]
+            },
+            {
+                id: 141, category: 'muamalat', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم السرقة وأخذ أموال الناس بغير وجه حق؟',
+                shortAnswer: 'السرقة وأكل أموال الناس بالباطل من الكبائر المحرمة تحريمًا قطعيًا ثابتًا بالكتاب والسنة، وهذا التحريم مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'حفظ الإسلام أموال الناس وجعل الاعتداء عليها بغير حق جريمة عظيمة، سواء أكان ذلك سرقة خفية أم غصبًا أم أكلًا بالباطل بأي صورة من الصور المحرمة كالربا والغش والرشوة. وقد شرع الله حد السرقة زجرًا وردعًا لمن استوفت في حقه شروطها الشرعية، وأجمع الفقهاء على أصل تحريم الاعتداء على أموال الغير، وإنما اختلفوا في بعض تفاصيل تطبيق الحد وشروطه دون أصل التحريم.',
+                evidences: [
+                    { text: 'وَالسَّارِقُ وَالسَّارِقَةُ فَاقْطَعُوا أَيْدِيَهُمَا جَزَاءً بِمَا كَسَبَا نَكَالًا مِنَ اللَّهِ.', source: 'سورة المائدة، آية 38' },
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ.', source: 'سورة النساء، آية 29' }
+                ]
+            },
+            {
+                id: 142, category: 'aqidah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الإيمان بتوحيد الله سبحانه وتعالى وعدم الإشراك به؟',
+                shortAnswer: 'توحيد الله سبحانه وتعالى في ربوبيته وألوهيته وأسمائه وصفاته أصل الدين الأعظم وأول واجب على المكلف، وهو أمر مجمع عليه بين جميع المسلمين ولا خلاف فيه بين أهل القبلة.',
+                detail: 'التوحيد هو الأصل الأول الذي بُعث به جميع الأنبياء والمرسلون، وهو حق الله على عباده، ولا يصح إيمان عبد ولا تُقبل عبادته إلا بتحقيق هذا التوحيد ونفي الشرك بجميع صوره. وقد أجمع علماء الإسلام على أن الشرك بالله أعظم الذنوب على الإطلاق، وأن التوحيد شرط في صحة الإسلام لا يسع أحدًا الخلاف فيه، وإنما وقع الاجتهاد في تفصيل بعض مسائل الأسماء والصفات دون أصل وجوب التوحيد ذاته.',
+                evidences: [
+                    { text: 'وَمَا خَلَقْتُ الْجِنَّ وَالْإِنْسَ إِلَّا لِيَعْبُدُونِ.', source: 'سورة الذاريات، آية 56' },
+                    { text: 'إِنَّ اللَّهَ لَا يَغْفِرُ أَنْ يُشْرَكَ بِهِ وَيَغْفِرُ مَا دُونَ ذَلِكَ لِمَنْ يَشَاءُ.', source: 'سورة النساء، آية 48' }
+                ]
+            },
+            {
+                id: 143, category: 'hajj', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم حج بيت الله الحرام لمن استطاع إليه سبيلًا؟',
+                shortAnswer: 'حج بيت الله الحرام فرض على كل مسلم ومسلمة بالغ عاقل مستطيع مرة واحدة في العمر، وهو ركن من أركان الإسلام الثابتة بإجماع الأمة الذي لا يتطرق إليه خلاف.',
+                detail: 'فرض الله الحج على المستطيع في كتابه الكريم، وأجمعت الأمة إجماعًا قاطعًا على وجوبه مرة في العمر على من ملك الزاد والراحلة وأمن الطريق، فمن جحد وجوبه كفر لإنكاره ركنًا من أركان الإسلام المعلومة بالضرورة، ومن قدر عليه وأخّره تفريطًا دون عذر فهو آثم عند جمهور العلماء. أما من لم يستطع لعجز مالي أو بدني فلا حرج عليه ولا إثم، وسقط عنه الفرض حتى يقدر.',
+                evidences: [
+                    { text: 'وَلِلَّهِ عَلَى النَّاسِ حِجُّ الْبَيْتِ مَنِ اسْتَطَاعَ إِلَيْهِ سَبِيلًا.', source: 'سورة آل عمران، آية 97' },
+                    { text: 'بُنِيَ الْإِسْلَامُ عَلَى خَمْسٍ... وَحَجِّ الْبَيْتِ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 144, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الزنا في شريعة الإسلام؟',
+                shortAnswer: 'الزنا من أكبر الكبائر وأفحش الذنوب المحرمة تحريمًا قاطعًا بنص القرآن الكريم، وهذا التحريم مجمع عليه بين علماء المسلمين جميعًا ولا خلاف فيه بحال.',
+                detail: 'حرّم الإسلام الزنا تحريمًا صريحًا لما فيه من اختلاط الأنساب وهدم الأسرة وانتشار الفاحشة في المجتمع، ونهى عن مجرد الاقتراب من أسبابه ودواعيه صيانةً للأعراض. وقد شرع الله له حدًا رادعًا لمن ثبت عليه بشروطه الشرعية المعتبرة، وأجمعت الأمة على أصل هذا التحريم إجماعًا قطعيًا لا يسع أحدًا مخالفته، وإنما وقع الاجتهاد في بعض تفاصيل إثبات الحد وتطبيقه.',
+                evidences: [
+                    { text: 'وَلَا تَقْرَبُوا الزِّنَا إِنَّهُ كَانَ فَاحِشَةً وَسَاءَ سَبِيلًا.', source: 'سورة الإسراء، آية 32' },
+                    { text: 'الزَّانِيَةُ وَالزَّانِي فَاجْلِدُوا كُلَّ وَاحِدٍ مِنْهُمَا مِائَةَ جَلْدَةٍ.', source: 'سورة النور، آية 2' }
+                ]
+            },
+            {
+                id: 145, category: 'muamalat', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الوفاء بالعقود والعهود بين الناس؟',
+                shortAnswer: 'الوفاء بالعقود والعهود واجب شرعًا، والغدر والخيانة فيها محرمان تحريمًا قاطعًا، وهذا الأصل مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'أمر الإسلام بالوفاء بالعقود والعهود أمرًا عامًا شاملًا لجميع أنواع المعاملات والالتزامات بين الناس، وجعل الغدر من صفات المنافقين المذمومة، وحرّم نقض العهد بغير موجب شرعي. وقد أجمع الفقهاء على وجوب الوفاء بالعقود الصحيحة المستوفية لشروطها الشرعية، وإنما اختلفوا في تفاصيل بعض العقود المستحدثة وشروط صحتها دون أصل وجوب الوفاء بالعقد الصحيح.',
+                evidences: [
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا أَوْفُوا بِالْعُقُودِ.', source: 'سورة المائدة، آية 1' },
+                    { text: 'آيَةُ الْمُنَافِقِ ثَلَاثٌ: إِذَا حَدَّثَ كَذَبَ، وَإِذَا وَعَدَ أَخْلَفَ، وَإِذَا اؤْتُمِنَ خَانَ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 146, category: 'usra', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم بر الوالدين والإحسان إليهما؟',
+                shortAnswer: 'بر الوالدين والإحسان إليهما واجب شرعي عظيم قرنه الله بعبادته سبحانه، وهذا الوجوب مجمع عليه بين علماء المسلمين قاطبة ولا خلاف فيه بينهم.',
+                detail: 'أمر الله عباده ببر الوالدين وخفض الجناح لهما رحمة وشكرًا على تربيتهما، وقرن حق الوالدين بحقه سبحانه في مواضع عديدة من كتابه الكريم دلالة على عظم هذا الحق. وقد أجمعت الأمة على وجوب البر بالوالدين المسلمين وحتى غير المسلمين في المعروف الذي لا معصية فيه، وإنما اختلف الفقهاء في بعض صور تطبيق البر وأولوياته دون أصل الوجوب الثابت يقينًا.',
+                evidences: [
+                    { text: 'وَقَضَى رَبُّكَ أَلَّا تَعْبُدُوا إِلَّا إِيَّاهُ وَبِالْوَالِدَيْنِ إِحْسَانًا.', source: 'سورة الإسراء، آية 23' },
+                    { text: 'رِضَا الرَّبِّ فِي رِضَا الْوَالِدِ، وَسَخَطُ الرَّبِّ فِي سَخَطِ الْوَالِدِ.', source: 'رواه الترمذي' }
+                ]
+            },
+            {
+                id: 147, category: 'aqidah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الإيمان بالملائكة والكتب والرسل واليوم الآخر والقدر؟',
+                shortAnswer: 'الإيمان بالملائكة والكتب والرسل واليوم الآخر والقدر خيره وشره من أركان الإيمان الستة التي لا يصح إيمان العبد إلا بها، وهذا مما أجمعت عليه الأمة ولا خلاف فيه بين أهل السنة.',
+                detail: 'أركان الإيمان الستة ثابتة بنصوص القرآن والسنة الصحيحة المتواترة، وقد أجمع علماء أهل السنة والجماعة على وجوب الإيمان بها جميعًا إجمالًا وتفصيلًا بحسب ما ورد، فمن جحد ركنًا منها فقد خرج عن دائرة الإيمان الصحيح. وهذا الإجماع قطعي لا يتطرق إليه خلاف معتبر، وإنما وقع الخلاف بين الفرق المنحرفة في بعض تفاصيل القدر وغيره مما لا يُعتد به في مقابل إجماع أهل السنة.',
+                evidences: [
+                    { text: 'آمَنَ الرَّسُولُ بِمَا أُنْزِلَ إِلَيْهِ مِنْ رَبِّهِ وَالْمُؤْمِنُونَ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ.', source: 'سورة البقرة، آية 285' },
+                    { text: 'أَنْ تُؤْمِنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ وَالْيَوْمِ الْآخِرِ وَتُؤْمِنَ بِالْقَدَرِ خَيْرِهِ وَشَرِّهِ.', source: 'رواه مسلم' }
+                ]
+            },
+            {
+                id: 148, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم شهادة الزور والكذب على الناس؟',
+                shortAnswer: 'شهادة الزور من أكبر الكبائر المحرمة تحريمًا قاطعًا لما فيها من ظلم للناس وإفساد للحقوق، وقد قرنها النبي صلى الله عليه وسلم بالشرك بالله، وهذا التحريم مجمع عليه ولا خلاف فيه.',
+                detail: 'حذّر الإسلام من شهادة الزور تحذيرًا شديدًا لكونها وسيلة لهضم الحقوق وقلب الحقائق وإدانة البريء أو تبرئة المذنب زورًا وبهتانًا، وقد عدّها النبي صلى الله عليه وسلم من أكبر الكبائر وقرنها بالشرك بالله وعقوق الوالدين لخطورتها على المجتمع. وأجمع علماء المسلمين على تحريمها تحريمًا قاطعًا لا يسع أحدًا الخلاف فيه، فهي من الكبائر الموبقة التي يجب الابتعاد عنها والتوبة منها.',
+                evidences: [
+                    { text: 'أَلَا أُنَبِّئُكُمْ بِأَكْبَرِ الْكَبَائِرِ؟ الْإِشْرَاكُ بِاللَّهِ، وَعُقُوقُ الْوَالِدَيْنِ... وَشَهَادَةُ الزُّورِ.', source: 'متفق عليه' },
+                    { text: 'وَاجْتَنِبُوا قَوْلَ الزُّورِ.', source: 'سورة الحج، آية 30' }
+                ]
+            },
+            {
+                id: 149, category: 'other', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الأمانة وأداء الحقوق إلى أهلها؟',
+                shortAnswer: 'أداء الأمانات إلى أهلها واجب شرعي عام، وخيانة الأمانة محرمة تحريمًا قاطعًا، وهذا الأصل من المسائل المجمع عليها بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'أمر الله عباده بأداء الأمانات إلى أهلها أمرًا عامًا شاملًا لكل أنواع الأمانات المادية والمعنوية، من الودائع والحقوق الوظيفية والأسرار وغيرها، وجعل خيانتها من صفات المنافقين المذمومة. وقد أجمع الفقهاء على وجوب أداء الأمانة وتحريم خيانتها إجماعًا قطعيًا لا خلاف فيه، وإنما اختلفوا في تفاصيل بعض تطبيقاتها الفرعية دون أصل الوجوب الثابت بالنص والإجماع.',
+                evidences: [
+                    { text: 'إِنَّ اللَّهَ يَأْمُرُكُمْ أَنْ تُؤَدُّوا الْأَمَانَاتِ إِلَى أَهْلِهَا.', source: 'سورة النساء، آية 58' },
+                    { text: 'أَدِّ الْأَمَانَةَ إِلَى مَنِ ائْتَمَنَكَ، وَلَا تَخُنْ مَنْ خَانَكَ.', source: 'رواه أبو داود والترمذي' }
+                ]
+            },
+            {
+                id: 150, category: 'salah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم صلاة الجمعة على الرجال المقيمين القادرين؟',
+                shortAnswer: 'صلاة الجمعة فرض عين على كل رجل مسلم بالغ عاقل مقيم قادر غير معذور، وهذا الوجوب ثابت بالنص القرآني والسنة النبوية ومجمع عليه بين علماء المسلمين دون خلاف.',
+                detail: 'أوجب الله صلاة الجمعة على المسلمين وأمر بالسعي إليها وترك البيع عند ندائها، وتواترت الأحاديث النبوية بالتشديد على وجوبها والوعيد على تركها تهاونًا. وقد أجمع الفقهاء على فرضيتها على الرجل المقيم القادر غير المعذور بمرض أو سفر أو نحوهما، وإنما اختلفوا في بعض تفاصيل شروط انعقادها كعدد الحاضرين ومكان إقامتها دون أصل وجوبها الثابت يقينًا.',
+                evidences: [
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا نُودِيَ لِلصَّلَاةِ مِنْ يَوْمِ الْجُمُعَةِ فَاسْعَوْا إِلَى ذِكْرِ اللَّهِ وَذَرُوا الْبَيْعَ.', source: 'سورة الجمعة، آية 9' },
+                    { text: 'لَيَنْتَهِيَنَّ أَقْوَامٌ عَنْ وَدْعِهِمُ الْجُمُعَاتِ أَوْ لَيَخْتِمَنَّ اللَّهُ عَلَى قُلُوبِهِمْ ثُمَّ لَيَكُونُنَّ مِنَ الْغَافِلِينَ.', source: 'رواه مسلم' }
+                ]
+            },
+            {
+                id: 151, category: 'muamalat', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الغش في البيع والشراء وسائر المعاملات؟',
+                shortAnswer: 'الغش في المعاملات محرم تحريمًا قاطعًا، وقد تبرأ النبي صلى الله عليه وسلم ممن غش، وهذا التحريم مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'حرّم الإسلام الغش بجميع صوره في البيع والشراء وسائر المعاملات لما فيه من خداع للناس وأكل لأموالهم بالباطل، فنهى عن كتمان العيوب وتزيين السلعة بما ليس فيها وخلط الرديء بالجيد لتمريره على المشتري. وقد أجمع الفقهاء على تحريم الغش تحريمًا قطعيًا لا يسع أحدًا مخالفته، وإنما اختلفوا في بعض تفاصيل الخيارات المترتبة عليه للمشتري المغشوش دون أصل التحريم.',
+                evidences: [
+                    { text: 'مَنْ غَشَّنَا فَلَيْسَ مِنَّا.', source: 'رواه مسلم' },
+                    { text: 'وَيْلٌ لِلْمُطَفِّفِينَ الَّذِينَ إِذَا اكْتَالُوا عَلَى النَّاسِ يَسْتَوْفُونَ وَإِذَا كَالُوهُمْ أَوْ وَزَنُوهُمْ يُخْسِرُونَ.', source: 'سورة المطففين، الآيات 1-3' }
+                ]
+            },
+            {
+                id: 152, category: 'akhlaq', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الصدق في القول والحديث؟',
+                shortAnswer: 'الصدق في القول واجب شرعي وخُلق عظيم أمر الله به عباده، وهو من صفات المؤمنين الصادقين، وهذا الأصل مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'أمر الله المؤمنين بالصدق وأن يكونوا مع الصادقين، وجعل النبي صلى الله عليه وسلم الصدق طريقًا يهدي إلى البر ثم إلى الجنة، وحذّر من الكذب أشد التحذير. وقد أجمع علماء المسلمين على وجوب الصدق في الأقوال وتحريم الكذب في الأصل، وإنما استثنوا حالات محدودة ضيقة بضوابط شرعية معتبرة كالإصلاح بين المتخاصمين، وهذا لا ينقض أصل الوجوب العام المتفق عليه.',
+                evidences: [
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا اتَّقُوا اللَّهَ وَكُونُوا مَعَ الصَّادِقِينَ.', source: 'سورة التوبة، آية 119' },
+                    { text: 'عَلَيْكُمْ بِالصِّدْقِ فَإِنَّ الصِّدْقَ يَهْدِي إِلَى الْبِرِّ وَإِنَّ الْبِرَّ يَهْدِي إِلَى الْجَنَّةِ.', source: 'رواه مسلم' }
+                ]
+            },
+            {
+                id: 153, category: 'usra', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم نفقة الرجل على زوجته وأولاده؟',
+                shortAnswer: 'نفقة الرجل على زوجته وأولاده الصغار واجبة عليه شرعًا بالمعروف بحسب سعته، وهذا الوجوب مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'جعل الإسلام القوامة على الأسرة مسؤولية الرجل، وأوجب عليه الإنفاق على زوجته وأولاده الصغار غير القادرين على الكسب، وذلك بالمعروف بحسب حاله من يسر أو عسر. وقد أجمع الفقهاء على أصل وجوب هذه النفقة إجماعًا قطعيًا لا خلاف فيه، وإنما اختلفوا في تقدير مقدارها وبعض تفاصيلها التي تختلف باختلاف الأحوال والأعراف دون أصل الوجوب الثابت بالنص.',
+                evidences: [
+                    { text: 'لِيُنْفِقْ ذُو سَعَةٍ مِنْ سَعَتِهِ وَمَنْ قُدِرَ عَلَيْهِ رِزْقُهُ فَلْيُنْفِقْ مِمَّا آتَاهُ اللَّهُ.', source: 'سورة الطلاق، آية 7' },
+                    { text: 'كَفَى بِالْمَرْءِ إِثْمًا أَنْ يُضَيِّعَ مَنْ يَقُوتُ.', source: 'رواه أبو داود' }
+                ]
+            },
+            {
+                id: 154, category: 'aqidah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم النطق بالشهادتين لدخول الإسلام؟',
+                shortAnswer: 'النطق بالشهادتين مع اعتقاد معناهما هو باب الدخول في الإسلام، وهو الركن الأول من أركانه الذي لا يصح إسلام أحد بدونه، وهذا مجمع عليه بين علماء المسلمين قاطبة.',
+                detail: 'الشهادتان هما أساس الدين وأول ما يُدعى إليه غير المسلم، وهما شهادة أن لا إله إلا الله وأن محمدًا رسول الله، ولا يكون المرء مسلمًا إلا بالنطق بهما مع اعتقاد معناهما والعمل بمقتضاهما. وقد أجمعت الأمة على أن هذا الركن هو مفتاح الإسلام الذي لا يصح بدونه إيمان ولا تُقبل عبادة، وهذا من المسائل القطعية التي لا يتطرق إليها خلاف معتبر بين المسلمين.',
+                evidences: [
+                    { text: 'فَاعْلَمْ أَنَّهُ لَا إِلَهَ إِلَّا اللَّهُ.', source: 'سورة محمد، آية 19' },
+                    { text: 'بُنِيَ الْإِسْلَامُ عَلَى خَمْسٍ: شَهَادَةِ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 155, category: 'muamalat', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الرشوة في المعاملات والوظائف؟',
+                shortAnswer: 'الرشوة محرمة تحريمًا قاطعًا سواء أكانت للراشي أم المرتشي أم الوسيط بينهما، وقد لعن النبي صلى الله عليه وسلم فاعليها، وهذا التحريم مجمع عليه بين علماء المسلمين.',
+                detail: 'حرّم الإسلام الرشوة لما فيها من إفساد للعدل وضياع للحقوق وأكل لأموال الناس بالباطل، فقد تُستخدم لتمرير حكم جائر أو الحصول على حق ليس لصاحبها أو تعطيل حق غيره. وقد لعن النبي صلى الله عليه وسلم الراشي والمرتشي، وأجمع الفقهاء على تحريم هذا الفعل تحريمًا قطعيًا لا خلاف فيه، وإنما استثنوا ما يُعطى دفعًا لظلم واقع لا وسيلة لرفعه إلا بذلك، وهذا لا يمس أصل التحريم العام.',
+                evidences: [
+                    { text: 'وَلَا تَأْكُلُوا أَمْوَالَكُمْ بَيْنَكُمْ بِالْبَاطِلِ وَتُدْلُوا بِهَا إِلَى الْحُكَّامِ لِتَأْكُلُوا فَرِيقًا مِنْ أَمْوَالِ النَّاسِ بِالْإِثْمِ.', source: 'سورة البقرة، آية 188' },
+                    { text: 'لَعَنَ اللَّهُ الرَّاشِيَ وَالْمُرْتَشِيَ.', source: 'رواه أبو داود والترمذي' }
+                ]
+            },
+            {
+                id: 156, category: 'siyam', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم قضاء ما فات من صيام رمضان لعذر شرعي؟',
+                shortAnswer: 'من أفطر في رمضان لعذر شرعي كالمرض أو السفر أو الحيض وجب عليه قضاء الأيام التي أفطرها بعدد أيامها قبل رمضان التالي، وهذا الحكم مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'رخّص الله لأصحاب الأعذار الشرعية كالمريض والمسافر والحائض والنفساء الفطر في رمضان رفعًا للحرج عنهم، لكنه أوجب عليهم قضاء عدد الأيام التي أفطروها في أيام أخر بعد زوال العذر. وقد أجمعت الأمة على وجوب هذا القضاء بعدد الأيام الفائتة دون زيادة، وإنما اختلف الفقهاء في وقت وجوب المبادرة به وبعض تفاصيله الفرعية دون أصل وجوب القضاء الثابت بالنص القرآني الصريح.',
+                evidences: [
+                    { text: 'وَمَنْ كَانَ مَرِيضًا أَوْ عَلَى سَفَرٍ فَعِدَّةٌ مِنْ أَيَّامٍ أُخَرَ.', source: 'سورة البقرة، آية 184' }
+                ]
+            },
+            {
+                id: 157, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الظلم والاعتداء على حقوق الآخرين؟',
+                shortAnswer: 'الظلم محرم تحريمًا قاطعًا بجميع صوره وأشكاله، وقد حرّمه الله على نفسه وجعله بين الناس محرمًا، وهذا التحريم مجمع عليه بين علماء المسلمين ولا خلاف فيه بحال.',
+                detail: 'حرّم الإسلام الظلم تحريمًا عامًا شاملًا لظلم النفس وظلم الغير بجميع صوره من اعتداء على الأنفس أو الأموال أو الأعراض أو الحقوق المعنوية، وجعله ظلمات يوم القيامة وسببًا لغضب الله وعقوبته. وقد أجمع علماء المسلمين على تحريم الظلم تحريمًا قطعيًا لا يسع أحدًا مخالفته، فهو من أعظم المفاسد التي حاربتها الشريعة في كل صورها وأشكالها.',
+                evidences: [
+                    { text: 'يَا عِبَادِي إِنِّي حَرَّمْتُ الظُّلْمَ عَلَى نَفْسِي وَجَعَلْتُهُ بَيْنَكُمْ مُحَرَّمًا فَلَا تَظَالَمُوا.', source: 'رواه مسلم' },
+                    { text: 'وَاتَّقُوا ظُلْمًا فَإِنَّ الظُّلْمَ ظُلُمَاتٌ يَوْمَ الْقِيَامَةِ.', source: 'رواه مسلم' }
+                ]
+            },
+            {
+                id: 158, category: 'zakah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم صرف الزكاة لمستحقيها الثمانية المذكورين في القرآن؟',
+                shortAnswer: 'يجب صرف الزكاة إلى أصنافها الثمانية التي حددها الله في كتابه، ولا يجوز صرفها إلى غيرهم ممن لا يدخل في هذه الأصناف، وهذا الحكم مجمع عليه بين علماء المسلمين.',
+                detail: 'حدد الله مصارف الزكاة تحديدًا قاطعًا في آية صريحة لا تحتمل تأويلًا، فجعلها للفقراء والمساكين والعاملين عليها والمؤلفة قلوبهم وفي الرقاب والغارمين وفي سبيل الله وابن السبيل. وقد أجمع الفقهاء على حصر مصارف الزكاة في هذه الأصناف الثمانية، وإنما اختلفوا في تفاصيل تطبيق بعض الأصناف كالمؤلفة قلوبهم وسبيل الله في العصر الحاضر دون أصل الحصر المتفق عليه.',
+                evidences: [
+                    { text: 'إِنَّمَا الصَّدَقَاتُ لِلْفُقَرَاءِ وَالْمَسَاكِينِ وَالْعَامِلِينَ عَلَيْهَا وَالْمُؤَلَّفَةِ قُلُوبُهُمْ وَفِي الرِّقَابِ وَالْغَارِمِينَ وَفِي سَبِيلِ اللَّهِ وَابْنِ السَّبِيلِ فَرِيضَةً مِنَ اللَّهِ.', source: 'سورة التوبة، آية 60' }
+                ]
+            },
+            {
+                id: 159, category: 'tahara', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الغسل من الجنابة قبل أداء الصلاة؟',
+                shortAnswer: 'الغسل من الجنابة واجب شرط لصحة الصلاة، فلا تصح صلاة الجنب حتى يغتسل غسلًا كاملًا يعم جميع بدنه، وهذا الحكم مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'أوجب الله الاغتسال على من أصابته الجنابة سواء بجماع أو احتلام أو إنزال، وجعل ذلك شرطًا لصحة الصلاة والطواف وغيرهما من العبادات التي تشترط الطهارة. وقد أجمعت الأمة على وجوب هذا الغسل وعلى بطلان صلاة من صلى وهو جنب متعمدًا عالمًا بحاله، وإنما اختلف الفقهاء في بعض تفاصيل صفة الغسل المستحبة وترتيب أجزائه دون أصل الوجوب الثابت بالنص القرآني الصريح.',
+                evidences: [
+                    { text: 'وَإِنْ كُنْتُمْ جُنُبًا فَاطَّهَّرُوا.', source: 'سورة المائدة، آية 6' }
+                ]
+            },
+            {
+                id: 160, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الغيبة والنميمة بين الناس؟',
+                shortAnswer: 'الغيبة والنميمة من الكبائر المحرمة تحريمًا قاطعًا، وقد شبّه الله الغيبة بأكل لحم الأخ ميتًا، وهذا التحريم مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'حرّم الإسلام الغيبة وهي ذكر الشخص بما يكره في غيبته، والنميمة وهي نقل الكلام بين الناس بقصد الإفساد بينهم، وشبّه الله الغيبة بأبشع تشبيه وهو أكل لحم الأخ الميت تنفيرًا منها. وقد أجمع علماء المسلمين على تحريم الغيبة والنميمة تحريمًا قطعيًا، وإنما استثنوا حالات محدودة ضيقة بضوابط شرعية معتبرة كالتظلم من ظالم أو تحذير من شر، وهذا لا ينقض أصل التحريم العام المتفق عليه.',
+                evidences: [
+                    { text: 'وَلَا يَغْتَبْ بَعْضُكُمْ بَعْضًا أَيُحِبُّ أَحَدُكُمْ أَنْ يَأْكُلَ لَحْمَ أَخِيهِ مَيْتًا فَكَرِهْتُمُوهُ.', source: 'سورة الحجرات، آية 12' },
+                    { text: 'لَا يَدْخُلُ الْجَنَّةَ نَمَّامٌ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 161, category: 'muamalat', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم أداء الديون وسدادها لأصحابها؟',
+                shortAnswer: 'سداد الديون لأصحابها واجب شرعي، والمماطلة في أدائها مع القدرة على السداد محرمة وظلم، وهذا الأصل مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'أوجب الإسلام على المدين سداد دينه في وقته المتفق عليه، وحذّر من المماطلة في السداد مع القدرة عليه وجعلها ظلمًا يستحق صاحبه العقوبة. وقد أجمع الفقهاء على وجوب أداء الديون لأصحابها، بل إن النبي صلى الله عليه وسلم امتنع عن الصلاة على من مات وعليه دين لم يترك وفاءً له حتى ضمنه غيره، وإنما اختلف العلماء في بعض تفاصيل الإنظار والإعسار دون أصل وجوب السداد المتفق عليه.',
+                evidences: [
+                    { text: 'مَطْلُ الْغَنِيِّ ظُلْمٌ.', source: 'متفق عليه' },
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا تَدَايَنْتُمْ بِدَيْنٍ إِلَى أَجَلٍ مُسَمًّى فَاكْتُبُوهُ.', source: 'سورة البقرة، آية 282' }
+                ]
+            },
+            {
+                id: 162, category: 'other', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم طاعة الله ورسوله فيما أمرا به ونهيا عنه؟',
+                shortAnswer: 'طاعة الله ورسوله صلى الله عليه وسلم فيما أمرا به واجتناب ما نهيا عنه واجب شرعي أصيل لا يسع أحدًا من المسلمين مخالفته، وهذا مجمع عليه بين علماء المسلمين دون خلاف.',
+                detail: 'أمر الله عباده المؤمنين بطاعته وطاعة رسوله صلى الله عليه وسلم، وجعل هذه الطاعة شرطًا لكمال الإيمان ودخول الجنة، وحذّر من معصيتهما ومخالفة أمرهما. وقد أجمعت الأمة على وجوب طاعة الله ورسوله فيما ثبت من الأوامر والنواهي بالنصوص الصحيحة الصريحة، وهذا أصل قطعي لا يتطرق إليه خلاف معتبر، وإنما وقع الاجتهاد الفقهي في فهم بعض النصوص وتطبيقها لا في أصل وجوب الطاعة ذاته.',
+                evidences: [
+                    { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا أَطِيعُوا اللَّهَ وَأَطِيعُوا الرَّسُولَ وَأُولِي الْأَمْرِ مِنْكُمْ.', source: 'سورة النساء، آية 59' },
+                    { text: 'مَنْ أَطَاعَنِي فَقَدْ أَطَاعَ اللَّهَ وَمَنْ عَصَانِي فَقَدْ عَصَى اللَّهَ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 163, category: 'hajj', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الإحرام لأداء نسك الحج أو العمرة؟',
+                shortAnswer: 'الإحرام ركن من أركان الحج والعمرة لا يصح النسك بدونه، وهو نية الدخول في النسك مقترنة بالتلبية، وهذا الحكم مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'الإحرام هو نية الدخول في نسك الحج أو العمرة، وهو أول أركان النسك الذي يترتب عليه دخول المحرم في أحكام الإحرام من اجتناب محظوراته، ولا يصح حج ولا عمرة بدون هذه النية المقترنة بالعمل كالتلبية ولبس ثياب الإحرام للرجل. وقد أجمع الفقهاء على ركنية الإحرام وأنه لا يصح النسك بدونه، وإنما اختلفوا في بعض تفاصيل المواقيت المكانية والزمانية وصفة الإحرام دون أصل ركنيته المتفق عليها.',
+                evidences: [
+                    { text: 'وَأَتِمُّوا الْحَجَّ وَالْعُمْرَةَ لِلَّهِ.', source: 'سورة البقرة، آية 196' }
+                ]
+            },
+            {
+                id: 164, category: 'akhlaq', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الإحسان إلى الجار وعدم إيذائه؟',
+                shortAnswer: 'الإحسان إلى الجار وكف الأذى عنه واجب شرعي أوصى به النبي صلى الله عليه وسلم، وحذّر من إيذاء الجار أشد التحذير، وهذا الأصل مجمع عليه بين علماء المسلمين.',
+                detail: 'أوصى الله بالجار في كتابه الكريم، وأكثر النبي صلى الله عليه وسلم من الوصية بحق الجار حتى ظن الصحابة أنه سيورثه، وحذّر من إيذاء الجار وجعله منافيًا لكمال الإيمان. وقد أجمع علماء المسلمين على وجوب كف الأذى عن الجار وأن ذلك من حقوقه المتفق عليها، واستحبوا الإحسان إليه بالمعروف زيادة على ذلك، وهذا الأصل لا يتطرق إليه خلاف معتبر بين أهل العلم.',
+                evidences: [
+                    { text: 'وَاعْبُدُوا اللَّهَ وَلَا تُشْرِكُوا بِهِ شَيْئًا... وَالْجَارِ ذِي الْقُرْبَى وَالْجَارِ الْجُنُبِ.', source: 'سورة النساء، آية 36' },
+                    { text: 'وَاللَّهِ لَا يُؤْمِنُ، وَاللَّهِ لَا يُؤْمِنُ، وَاللَّهِ لَا يُؤْمِنُ: الَّذِي لَا يَأْمَنُ جَارُهُ بَوَايِقَهُ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 165, category: 'usra', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الظلم بين الزوجين وإساءة العشرة الزوجية؟',
+                shortAnswer: 'ظلم أحد الزوجين للآخر وإساءة العشرة محرم شرعًا، وقد أمر الله بالمعاشرة بالمعروف بين الزوجين، وهذا الأصل مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'أمر الله الأزواج بالمعاشرة بالمعروف وحسن العشرة بين الزوجين، وحرّم الإضرار بأحدهما بالآخر سواء بالقول أو الفعل أو التقصير في الحقوق الواجبة. وقد أجمع علماء المسلمين على تحريم الظلم بين الزوجين وإساءة العشرة، وإنما اختلفوا في بعض تفاصيل الحقوق المتبادلة وتقديرها بحسب الأحوال والأعراف دون أصل تحريم الظلم المتفق عليه.',
+                evidences: [
+                    { text: 'وَعَاشِرُوهُنَّ بِالْمَعْرُوفِ.', source: 'سورة النساء، آية 19' },
+                    { text: 'خَيْرُكُمْ خَيْرُكُمْ لِأَهْلِهِ، وَأَنَا خَيْرُكُمْ لِأَهْلِي.', source: 'رواه الترمذي' }
+                ]
+            },
+            {
+                id: 166, category: 'muamalat', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم إيفاء الكيل والميزان عند البيع والشراء؟',
+                shortAnswer: 'إيفاء الكيل والميزان وعدم التطفيف فيهما واجب شرعي، والتطفيف من كبائر الذنوب المتوعد عليها بالويل، وهذا الأصل مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'أمر الله بإيفاء الكيل والميزان بالقسط عند المعاملة بين الناس، وتوعد المطففين الذين يستوفون حقوقهم كاملة ويبخسون حقوق غيرهم بالويل والعذاب الشديد. وقد أجمع الفقهاء على وجوب إيفاء الكيل والوزن وتحريم التطفيف فيهما بأي صورة من صور النقص أو الخداع، وهذا من الأصول القطعية التي لا يتطرق إليها خلاف معتبر بين علماء المسلمين.',
+                evidences: [
+                    { text: 'وَأَوْفُوا الْكَيْلَ إِذَا كِلْتُمْ وَزِنُوا بِالْقِسْطَاسِ الْمُسْتَقِيمِ.', source: 'سورة الإسراء، آية 35' },
+                    { text: 'وَيْلٌ لِلْمُطَفِّفِينَ.', source: 'سورة المطففين، آية 1' }
+                ]
+            },
+            {
+                id: 167, category: 'aqidah', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الشرك بالله في العبادة؟',
+                shortAnswer: 'الشرك بالله في العبادة هو أعظم الذنوب على الإطلاق وأشدها تحريمًا، ولا يغفره الله لمن مات عليه دون توبة، وهذا التحريم مجمع عليه بين جميع علماء المسلمين ولا خلاف فيه.',
+                detail: 'الشرك هو صرف شيء من حق الله الخالص لغيره من مخلوق أو وثن أو غيرهما، وهو أعظم ذنب عصي الله به، جعله الله ظلمًا عظيمًا وحرّم على صاحبه الجنة إن مات عليه دون توبة. وقد أجمعت الأمة إجماعًا قطعيًا على تحريم الشرك بجميع صوره وأنه أعظم الكبائر على الإطلاق، ولا يُعرف خلاف بين المسلمين في هذا الأصل الذي هو نقيض التوحيد الذي بُعث به جميع الأنبياء.',
+                evidences: [
+                    { text: 'إِنَّ اللَّهَ لَا يَغْفِرُ أَنْ يُشْرَكَ بِهِ وَيَغْفِرُ مَا دُونَ ذَلِكَ لِمَنْ يَشَاءُ.', source: 'سورة النساء، آية 48' },
+                    { text: 'إِنَّهُ مَنْ يُشْرِكْ بِاللَّهِ فَقَدْ حَرَّمَ اللَّهُ عَلَيْهِ الْجَنَّةَ.', source: 'سورة المائدة، آية 72' }
+                ]
+            },
+            {
+                id: 168, category: 'salah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم استقبال القبلة في صلاة الفريضة؟',
+                shortAnswer: 'استقبال القبلة شرط من شروط صحة الصلاة المفروضة لمن كان قادرًا عليه، فلا تصح صلاة من صلى إلى غير القبلة عمدًا وهو قادر على استقبالها، وهذا الحكم مجمع عليه بين علماء المسلمين.',
+                detail: 'أمر الله باستقبال المسجد الحرام في الصلاة، وجعل الفقهاء استقبال القبلة شرطًا من شروط صحة الصلاة المفروضة لا تصح بدونه لمن كان قادرًا عليه عالمًا بجهتها. وقد أجمعت الأمة على هذا الشرط إجماعًا قطعيًا، وإنما استثنوا من ذلك حالات العجز كالخوف الشديد أو النافلة في السفر على الراحلة، وكذلك اجتهاد المخطئ في تحري الجهة مع بذل الوسع، وهذا لا يمس أصل الشرطية المتفق عليها.',
+                evidences: [
+                    { text: 'فَوَلِّ وَجْهَكَ شَطْرَ الْمَسْجِدِ الْحَرَامِ وَحَيْثُ مَا كُنْتُمْ فَوَلُّوا وُجُوهَكُمْ شَطْرَهُ.', source: 'سورة البقرة، آية 144' }
+                ]
+            },
+            {
+                id: 169, category: 'usra', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم نكاح المحارم من النسب والرضاع والمصاهرة؟',
+                shortAnswer: 'نكاح المحارم محرم تحريمًا قاطعًا بنص القرآن الكريم، سواء أكانت المحرمية بالنسب أم الرضاع أم المصاهرة، وهذا التحريم مجمع عليه بين علماء المسلمين قاطبة ولا خلاف فيه.',
+                detail: 'حرّم الله في كتابه الكريم نكاح أصناف من النساء بالتفصيل، منهن الأمهات والبنات والأخوات والعمات والخالات وبنات الأخ وبنات الأخت من النسب، وكذلك المحرمات بالرضاع اللاتي يُلحقن بالنسب، والمحرمات بالمصاهرة كزوجة الأب وأم الزوجة وزوجة الابن. وقد أجمعت الأمة على تحريم نكاح جميع هؤلاء إجماعًا قطعيًا لا يتطرق إليه خلاف، وهذا من أوضح المسائل الشرعية المتفق عليها بين المسلمين.',
+                evidences: [
+                    { text: 'حُرِّمَتْ عَلَيْكُمْ أُمَّهَاتُكُمْ وَبَنَاتُكُمْ وَأَخَوَاتُكُمْ وَعَمَّاتُكُمْ وَخَالَاتُكُمْ.', source: 'سورة النساء، آية 23' }
+                ]
+            },
+            {
+                id: 170, category: 'akhlaq', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم العدل والقسط بين الناس في الأقوال والأفعال؟',
+                shortAnswer: 'العدل واجب شرعي عام أمر الله به في جميع شؤون الحياة، ولو كان على النفس أو الأقارب، وهذا الأصل مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'أمر الله بالعدل أمرًا عامًا شاملًا لكل مناحي الحياة من الحكم والشهادة والمعاملة وغيرها، وأوجبه ولو كان على النفس أو الوالدين أو الأقربين، وجعله أقرب للتقوى حتى مع الأعداء. وقد أجمع علماء المسلمين على وجوب العدل وتحريم الجور والمحاباة في الحقوق، وهذا من الأصول الكلية القطعية التي بُنيت عليها الشريعة الإسلامية، ولا يُعرف خلاف بين المسلمين في وجوبه.',
+                evidences: [
+                    { text: 'إِنَّ اللَّهَ يَأْمُرُ بِالْعَدْلِ وَالْإِحْسَانِ.', source: 'سورة النحل، آية 90' },
+                    { text: 'كُونُوا قَوَّامِينَ بِالْقِسْطِ شُهَدَاءَ لِلَّهِ وَلَوْ عَلَى أَنْفُسِكُمْ أَوِ الْوَالِدَيْنِ وَالْأَقْرَبِينَ.', source: 'سورة النساء، آية 135' }
+                ]
+            },
+            {
+                id: 171, category: 'siyam', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الأكل والشرب متعمدًا في نهار رمضان بغير عذر شرعي؟',
+                shortAnswer: 'الأكل والشرب متعمدًا في نهار رمضان بغير عذر شرعي من كبائر الذنوب المحرمة، ويفسد الصيام ويوجب القضاء، وهذا التحريم مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'فرض الله الإمساك عن الأكل والشرب وسائر المفطرات من طلوع الفجر إلى غروب الشمس على الصائم القادر المقيم، ومن تعمد الإفطار بأكل أو شرب دون عذر شرعي معتبر فقد ارتكب كبيرة عظيمة وأفسد صيامه ووجب عليه القضاء. وقد أجمع الفقهاء على تحريم هذا الفعل وبطلان الصيام به، وإنما اختلفوا في وجوب الكفارة المغلظة معه أم القضاء فقط، وهذا خلاف فرعي لا يمس أصل التحريم المتفق عليه.',
+                evidences: [
+                    { text: 'فَمَنْ شَهِدَ مِنْكُمُ الشَّهْرَ فَلْيَصُمْهُ.', source: 'سورة البقرة، آية 185' },
+                    { text: 'ثُمَّ أَتِمُّوا الصِّيَامَ إِلَى اللَّيْلِ.', source: 'سورة البقرة، آية 187' }
+                ]
+            },
+            {
+                id: 172, category: 'zakah', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم منع الزكاة الواجبة مع القدرة على أدائها؟',
+                shortAnswer: 'منع الزكاة الواجبة مع القدرة على أدائها من كبائر الذنوب المحرمة تحريمًا قاطعًا، وقد قاتل الصحابة رضي الله عنهم مانعي الزكاة، وهذا التحريم مجمع عليه بين علماء المسلمين.',
+                detail: 'الزكاة فريضة محكمة ثابتة بالكتاب والسنة وإجماع الأمة، ومنعها مع القدرة على أدائها والإقرار بوجوبها معصية كبيرة توعّد الله عليها بعذاب أليم يوم القيامة. وقد أجمع الصحابة رضي الله عنهم في عهد أبي بكر الصديق على قتال مانعي الزكاة لعدم التفريق بينها وبين الصلاة في الفرضية، وهذا إجماع تاريخي ثابت يؤكد قطعية هذا الحكم الذي لا خلاف فيه بين المسلمين.',
+                evidences: [
+                    { text: 'وَالَّذِينَ يَكْنِزُونَ الذَّهَبَ وَالْفِضَّةَ وَلَا يُنْفِقُونَهَا فِي سَبِيلِ اللَّهِ فَبَشِّرْهُمْ بِعَذَابٍ أَلِيمٍ.', source: 'سورة التوبة، آية 34' }
+                ]
+            },
+            {
+                id: 173, category: 'akhlaq', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم كتمان أسرار الناس وعدم إفشائها؟',
+                shortAnswer: 'كتمان أسرار الناس التي يُؤتمن عليها الإنسان واجب شرعي من باب الأمانة، وإفشاؤها خيانة محرمة، وهذا الأصل مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'عدّ الإسلام السر المؤتمن عليه أمانة يجب حفظها وعدم إفشائها إلا بإذن صاحبها أو لضرورة شرعية معتبرة كدرء مفسدة عظيمة، وجعل إفشاءه من صور خيانة الأمانة المحرمة. وقد أجمع علماء المسلمين على وجوب كتمان الأسرار المؤتمنة وتحريم إفشائها بغير حق، فهذا من فروع وجوب أداء الأمانة الثابت بالنص والإجماع، ولا خلاف بين أهل العلم في أصل هذا الحكم.',
+                evidences: [
+                    { text: 'إِنَّ اللَّهَ يَأْمُرُكُمْ أَنْ تُؤَدُّوا الْأَمَانَاتِ إِلَى أَهْلِهَا.', source: 'سورة النساء، آية 58' },
+                    { text: 'إِذَا حَدَّثَ الرَّجُلُ بِالْحَدِيثِ ثُمَّ الْتَفَتَ فَهِيَ أَمَانَةٌ.', source: 'رواه الترمذي' }
+                ]
+            },
+            {
+                id: 174, category: 'muamalat', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم أكل مال اليتيم ظلمًا وعدوانًا؟',
+                shortAnswer: 'أكل مال اليتيم ظلمًا من أكبر الكبائر المحرمة تحريمًا قاطعًا، وقد شبّه الله ذلك بأكل النار في البطن، وهذا التحريم مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'حرّم الله أكل أموال اليتامى ظلمًا وعدوانًا تحريمًا شديدًا لضعف اليتيم وعجزه عن الدفاع عن حقه، وشبّه فعل من يأكل ماله ظلمًا بأنه يأكل نارًا تتأجج في بطنه عقوبة له. وقد أجمع علماء المسلمين على تحريم هذا الفعل تحريمًا قطعيًا وعدّوه من الموبقات السبع التي حذّر منها النبي صلى الله عليه وسلم، ولا يُعرف خلاف بين أهل العلم في حرمة الاعتداء على مال اليتيم.',
+                evidences: [
+                    { text: 'إِنَّ الَّذِينَ يَأْكُلُونَ أَمْوَالَ الْيَتَامَى ظُلْمًا إِنَّمَا يَأْكُلُونَ فِي بُطُونِهِمْ نَارًا.', source: 'سورة النساء، آية 10' },
+                    { text: 'اجْتَنِبُوا السَّبْعَ الْمُوبِقَاتِ... وَأَكْلَ مَالِ الْيَتِيمِ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 175, category: 'tahara', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم التيمم لمن عدم الماء أو عجز عن استعماله؟',
+                shortAnswer: 'التيمم بدل شرعي عن الوضوء والغسل لمن عدم الماء أو عجز عن استعماله لمرض ونحوه، وهو واجب في حقه ليصلي به، وهذا الحكم مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'رخّص الله للمسلم إذا لم يجد الماء أو عجز عن استعماله لمرض يضره أن يتيمم بالصعيد الطيب رفعًا للحرج وتيسيرًا عليه في أداء الصلاة. وقد أجمعت الأمة على مشروعية التيمم ووجوبه في حق من توفرت فيه شروطه كبدل عن الطهارة المائية، وإنما اختلف الفقهاء في بعض تفاصيل صفته وما يُتيمم به من أنواع التراب دون أصل مشروعيته ووجوبه الثابت بالنص القرآني الصريح.',
+                evidences: [
+                    { text: 'فَلَمْ تَجِدُوا مَاءً فَتَيَمَّمُوا صَعِيدًا طَيِّبًا.', source: 'سورة المائدة، آية 6' }
+                ]
+            },
+            {
+                id: 176, category: 'akhlaq', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الرحمة بالضعفاء واليتامى والمساكين؟',
+                shortAnswer: 'الرحمة بالضعفاء واليتامى والمساكين والإحسان إليهم من الأخلاق الواجبة التي حث عليها الإسلام، وقسوة القلب عليهم مذمومة، وهذا الأصل مجمع عليه بين علماء المسلمين.',
+                detail: 'حثّ الإسلام على الرحمة بالضعفاء من اليتامى والمساكين وذوي الحاجة، وجعل الإحسان إليهم من علامات الإيمان الصادق، وذمّ من يقسو قلبه عليهم ويدفعهم عن حقوقهم. وقد أجمع علماء المسلمين على وجوب الرفق بهؤلاء الفئات وتحريم قهرهم وإذلالهم، وهذا من الأصول الأخلاقية القطعية التي بُنيت عليها مقاصد الشريعة في حفظ الضعفاء، ولا خلاف بين أهل العلم في وجوبها.',
+                evidences: [
+                    { text: 'أَرَأَيْتَ الَّذِي يُكَذِّبُ بِالدِّينِ، فَذَلِكَ الَّذِي يَدُعُّ الْيَتِيمَ.', source: 'سورة الماعون، الآيتان 1-2' },
+                    { text: 'مَنْ لَا يَرْحَمُ لَا يُرْحَمُ.', source: 'متفق عليه' }
+                ]
+            },
+            {
+                id: 177, category: 'muamalat', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الميسر (القمار) بجميع صوره؟',
+                shortAnswer: 'الميسر (القمار) محرم تحريمًا قاطعًا بجميع صوره وأشكاله، وقد قرنه الله بالخمر والأنصاب والأزلام وسماه رجسًا من عمل الشيطان، وهذا التحريم مجمع عليه بين علماء المسلمين.',
+                detail: 'حرّم الله الميسر تحريمًا صريحًا لما فيه من أكل لأموال الناس بالباطل واعتماد على الحظ دون عمل مشروع، وما يورثه من عداوة وبغضاء بين المتقامرين وصد عن ذكر الله والصلاة. وقد أجمع علماء المسلمين على تحريم القمار بجميع صوره القديمة والمستحدثة التي يُراهن فيها المال على نتيجة غير محققة، وهذا من المحرمات القطعية التي لا يتطرق إليها خلاف معتبر بين أهل العلم.',
+                evidences: [
+                    { text: 'إِنَّمَا الْخَمْرُ وَالْمَيْسِرُ وَالْأَنْصَابُ وَالْأَزْلَامُ رِجْسٌ مِنْ عَمَلِ الشَّيْطَانِ فَاجْتَنِبُوهُ.', source: 'سورة المائدة، آية 90' }
+                ]
+            },
+            {
+                id: 178, category: 'aqidah', ruling: 'wajib', rulingLabel: 'واجب',
+                question: 'ما حكم الإيمان بأن القرآن الكريم كلام الله المنزل على نبيه محمد؟',
+                shortAnswer: 'الإيمان بأن القرآن الكريم كلام الله تعالى المنزل على نبيه محمد صلى الله عليه وسلم واجب أصيل من أصول الإيمان، وهذا مجمع عليه بين علماء المسلمين قاطبة ولا خلاف فيه.',
+                detail: 'القرآن الكريم هو المعجزة الخالدة والكتاب المنزل من عند الله على خاتم أنبيائه ورسله محمد صلى الله عليه وسلم بواسطة جبريل عليه السلام، والإيمان بهذه الحقيقة ركن من أركان الإيمان بالكتب السماوية. وقد أجمعت الأمة إجماعًا قطعيًا على أن القرآن كلام الله حقيقة لا مجاز، محفوظ من التحريف والتبديل بضمان إلهي، وهذا من أعظم المسائل العقدية المتفق عليها التي لا يجوز الشك فيها أو التردد.',
+                evidences: [
+                    { text: 'إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ.', source: 'سورة الحجر، آية 9' },
+                    { text: 'وَإِنَّهُ لَتَنْزِيلُ رَبِّ الْعَالَمِينَ، نَزَلَ بِهِ الرُّوحُ الْأَمِينُ، عَلَى قَلْبِكَ لِتَكُونَ مِنَ الْمُنْذِرِينَ.', source: 'سورة الشعراء، الآيات 192-194' }
+                ]
+            },
+            {
+                id: 179, category: 'muamalat', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الاحتكار وحبس السلع عن الناس انتظارًا لغلاء الأسعار؟',
+                shortAnswer: 'احتكار السلع التي يحتاجها الناس بقصد رفع أسعارها والإضرار بهم محرم شرعًا، وقد جاء الوعيد الشديد في حق المحتكر، وهذا التحريم مجمع عليه بين علماء المسلمين.',
+                detail: 'الاحتكار هو حبس السلع الضرورية التي يحتاجها الناس عن التداول انتظارًا لارتفاع أسعارها إضرارًا بالمشترين، وقد نهى النبي صلى الله عليه وسلم عن هذا الفعل ووصف فاعله بالخاطئ الآثم. وقد أجمع الفقهاء على تحريم احتكار قوت الناس وما يحتاجونه من ضروريات الحياة بقصد الإضرار بهم، وإنما اختلفوا في تفاصيل تحديد السلع المحتكرة والمدة الزمنية المعتبرة دون أصل التحريم الثابت بالنص النبوي الصريح.',
+                evidences: [
+                    { text: 'لَا يَحْتَكِرُ إِلَّا خَاطِئٌ.', source: 'رواه مسلم' }
+                ]
+            },
+            {
+                id: 180, category: 'akhlaq', ruling: 'haram', rulingLabel: 'محرم',
+                question: 'ما حكم الحسد وتمني زوال نعمة الآخرين؟',
+                shortAnswer: 'الحسد بمعنى تمني زوال نعمة الغير محرم شرعًا وخُلق مذموم، وقد أمر الله بالاستعاذة من شر الحاسد، وهذا الأصل مجمع عليه بين علماء المسلمين ولا خلاف فيه.',
+                detail: 'الحسد المذموم شرعًا هو تمني زوال النعمة عن الغير سواء انتقلت إلى الحاسد أم لا، وهو خُلق ذميم يورث العداوة والبغضاء ويأكل الحسنات كما تأكل النار الحطب. وقد أمر الله بالاستعاذة من شر الحاسد إذا حسد، وأجمع علماء المسلمين على تحريم هذا النوع من الحسد، أما الغبطة وهي تمني مثل نعمة الغير دون زوالها عنه فهي محمودة ولا خلاف في جوازها، وهذا تفريق متفق عليه بين أهل العلم.',
+                evidences: [
+                    { text: 'وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ.', source: 'سورة الفلق، آية 5' },
+                    { text: 'إِيَّاكُمْ وَالْحَسَدَ، فَإِنَّ الْحَسَدَ يَأْكُلُ الْحَسَنَاتِ كَمَا تَأْكُلُ النَّارُ الْحَطَبَ.', source: 'رواه أبو داود' }
+                ]
             }
         ];
 
@@ -8121,10 +9007,28 @@
             if (e.key === 'Enter') searchFatwa();
         });
 
-        window.addEventListener('DOMContentLoaded', () => {
+        // تنبيه أداء: كانت switchAzkarCategory('sabah') و renderFatwaGrid(fatwaDatabase)
+        // تُستدعيان هنا مباشرة عند تحميل الصفحة، فتُنشئان عشرات البطاقات (كل بطاقة
+        // معها تأثير ضبابي backdrop-filter) حتى لو لم يزر المستخدم قسمي "الأذكار"
+        // أو "الفتاوى" إطلاقًا، مما يزاحم بقية أعمال التحميل الأول ويُبطئ أولى
+        // عمليات التنقل. الآن يتم بناؤهما فقط عند فتح كل قسم فعليًا لأول مرة
+        // (نفس نمط "القرآن الكريم" و"الإذاعات" و"مواعظ" أعلاه) — المحتوى المعروض
+        // للمستخدم عند زيارته لهذين القسمين يبقى كما هو دون أي تغيير.
+        let azkarDefaultLoaded = false;
+        function ensureAzkarDefaultLoaded() {
+            if (azkarDefaultLoaded) return;
+            azkarDefaultLoaded = true;
             switchAzkarCategory('sabah', null);
-            fetchPrayerTimesData();
+        }
+        let fatwaGridLoaded = false;
+        function ensureFatwaGridLoaded() {
+            if (fatwaGridLoaded) return;
+            fatwaGridLoaded = true;
             renderFatwaGrid(fatwaDatabase);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchPrayerTimesData();
             // نحمّل مسبقًا مواقيت كل المدن الموجودة في القائمة في الخلفية
             // (بعد جلب مدينة المستخدم الحالية أولًا) حتى تعمل الصفحة والعداد
             // لأي دولة من القائمة حتى عند انقطاع الإنترنت لاحقًا.
@@ -8212,6 +9116,8 @@
                 link: { label: 'أدعية وأذكار رمضان', action: () => { switchPage('azkar', null); setTimeout(() => switchAzkarCategory('jawami', null), 60); } } },
             { id: 'badr', name: 'ذكرى غزوة بدر الكبرى', icon: 'fa-flag', month: 9, day: 17 },
             { id: 'fath-makkah', name: 'ذكرى فتح مكة المكرمة', icon: 'fa-flag', month: 9, day: 20 },
+            { id: 'ramadan-last-ten', name: 'العشر الأواخر من رمضان', icon: 'fa-mosque', month: 9, day: 21,
+                link: { label: 'أدعية وأذكار رمضان', action: () => { switchPage('azkar', null); setTimeout(() => switchAzkarCategory('jawami', null), 60); } } },
             { id: 'eid-fitr', name: 'عيد الفطر المبارك', icon: 'fa-gift', month: 10, day: 1,
                 link: { label: 'تكبيرات وأدعية العيد', action: () => { switchPage('azkar', null); setTimeout(() => switchAzkarCategory('jawami', null), 60); } } },
             { id: 'shawwal-sittah', name: 'صيام الست من شوال', icon: 'fa-calendar-check', month: 10, day: 2 },
@@ -8223,131 +9129,160 @@
             { id: 'tashreeq', name: 'أيام التشريق', icon: 'fa-kaaba', month: 12, day: 11 }
         ];
 
+        // بطاقات التهنئة تُتاح فقط للأعياد وشهر رمضان
+        const GREETING_CARD_OCCASION_IDS = ['ramadan-start', 'eid-fitr', 'eid-adha'];
+        function occasionHasGreetingCard(occId) {
+            return GREETING_CARD_OCCASION_IDS.includes(occId);
+        }
+
         // أحداث إسلامية تاريخية قصيرة تُعرض حسب التاريخ الهجري "حدث في مثل هذا اليوم"
         // تركز هذه القائمة على الفتوحات والمعارك وتاريخ ولادة ووفاة القادة والفاتحين المسلمين عبر التاريخ الإسلامي
         const islamicHistoryEvents = [
             // محرم
-            { month: 1, day: 1, year: '1هـ', text: 'هجرة النبي صلى الله عليه وسلم من مكة إلى المدينة المنورة سنة 1هـ، وبها بدأ التأريخ بالتقويم الهجري.' },
-            { month: 1, day: 2, year: '897هـ', text: 'سقوط غرناطة آخر معاقل المسلمين في الأندلس سنة 897هـ، بتسليم السلطان أبي عبدالله الصغير المدينة، فانتهى الوجود السياسي الإسلامي في الأندلس بعد قرابة ثمانية قرون.' },
-            { month: 1, day: 3, year: '24هـ', text: 'بيعة عثمان بن عفان رضي الله عنه بالخلافة بعد مشورة الصحابة الستة، ليصبح ثالث الخلفاء الراشدين سنة 24هـ.' },
-            { month: 1, day: 5, year: '12هـ', text: 'معركة اليمامة التي انتصر فيها المسلمون بقيادة خالد بن الوليد رضي الله عنه على مسيلمة الكذاب سنة 12هـ، وانتهت بها حروب الردة.' },
-            { month: 1, day: 6, year: '21هـ', text: 'فتح الإسكندرية عاصمة مصر البيزنطية على يد عمرو بن العاص رضي الله عنه سنة 21هـ، فاكتمل بذلك فتح مصر.' },
-            { month: 1, day: 10, year: '61هـ', text: 'استشهاد الحسين بن علي بن أبي طالب رضي الله عنهما في كربلاء سنة 61هـ.' },
-            { month: 1, day: 15, year: '15هـ', text: 'معركة القادسية الفاصلة بين المسلمين والفرس سنة 15هـ، وكانت مفتاحًا لفتح بلاد فارس.' },
-            { month: 1, day: 20, year: '500هـ', text: 'وفاة الأمير يوسف بن تاشفين قائد المرابطين وبطل معركة الزلاقة سنة 500هـ، بعد أن قضى معظم حياته مجاهدًا في الأندلس والمغرب.' },
+            { month: 1, day: 1, year: '1هـ', fullDate: '1 محرم 1هـ', text: 'هجرة النبي صلى الله عليه وسلم من مكة إلى المدينة المنورة سنة 1هـ، وبها بدأ التأريخ بالتقويم الهجري.' },
+            { month: 1, day: 2, year: '897هـ', fullDate: '2 محرم 897هـ', text: 'سقوط غرناطة آخر معاقل المسلمين في الأندلس سنة 897هـ، بتسليم السلطان أبي عبدالله الصغير المدينة، فانتهى الوجود السياسي الإسلامي في الأندلس بعد قرابة ثمانية قرون.' },
+            { month: 1, day: 3, year: '24هـ', fullDate: '3 محرم 24هـ', text: 'بيعة عثمان بن عفان رضي الله عنه بالخلافة بعد مشورة الصحابة الستة، ليصبح ثالث الخلفاء الراشدين سنة 24هـ.' },
+            { month: 1, day: 5, year: '12هـ', fullDate: '5 محرم 12هـ', text: 'معركة اليمامة التي انتصر فيها المسلمون بقيادة خالد بن الوليد رضي الله عنه على مسيلمة الكذاب سنة 12هـ، وانتهت بها حروب الردة.' },
+            { month: 1, day: 6, year: '21هـ', fullDate: '6 محرم 21هـ', text: 'فتح الإسكندرية عاصمة مصر البيزنطية على يد عمرو بن العاص رضي الله عنه سنة 21هـ، فاكتمل بذلك فتح مصر.' },
+            { month: 1, day: 10, year: '61هـ', fullDate: '10 محرم 61هـ', text: 'استشهاد الحسين بن علي بن أبي طالب رضي الله عنهما في كربلاء سنة 61هـ.' },
+            { month: 1, day: 15, year: '15هـ', fullDate: '15 محرم 15هـ', text: 'معركة القادسية الفاصلة بين المسلمين والفرس سنة 15هـ، وكانت مفتاحًا لفتح بلاد فارس.' },
+            { month: 1, day: 20, year: '500هـ', fullDate: '20 محرم 500هـ', text: 'وفاة الأمير يوسف بن تاشفين قائد المرابطين وبطل معركة الزلاقة سنة 500هـ، بعد أن قضى معظم حياته مجاهدًا في الأندلس والمغرب.' },
             // صفر
-            { month: 2, day: 1, year: '213هـ', text: 'فتح جزيرة كريت على يد القائد أبي حفص عمر البلّوطي سنة 213هـ، وأسس بها إمارة إسلامية استمرت أكثر من قرن.' },
-            { month: 2, day: 4, year: '656هـ', text: 'سقوط بغداد على يد جيوش المغول في 4 صفر سنة 656هـ، وانتهاء الخلافة العباسية فيها.' },
-            { month: 2, day: 7, year: '974هـ', text: 'وفاة السلطان سليمان القانوني أثناء حصاره قلعة سيجيتفار في المجر سنة 974هـ، بعد أن قاد جيشه بنفسه حتى آخر أيامه.' },
-            { month: 2, day: 9, year: '38هـ', text: 'معركة النهروان بين جيش أمير المؤمنين علي بن أبي طالب رضي الله عنه والخوارج سنة 38هـ.' },
-            { month: 2, day: 12, year: '11هـ', text: 'وفاة النبي صلى الله عليه وسلم سنة 11هـ، وكانت من أعظم المصائب التي ألمّت بالأمة الإسلامية.' },
-            { month: 2, day: 13, year: '11هـ', text: 'مبايعة أبي بكر الصديق رضي الله عنه بالخلافة في سقيفة بني ساعدة سنة 11هـ، أول الخلفاء الراشدين بعد وفاة النبي صلى الله عليه وسلم.' },
-            { month: 2, day: 14, year: '609هـ', text: 'معركة العقاب (لاس نافاس دي تولوسة) في الأندلس سنة 609هـ، هُزم فيها الموحدون بقيادة محمد الناصر أمام تحالف الممالك النصرانية.' },
-            { month: 2, day: 20, year: '7هـ', text: 'غزوة خيبر وفتح حصونها سنة 7هـ، وفيها كانت راية النبي صلى الله عليه وسلم مع علي بن أبي طالب رضي الله عنه.' },
-            { month: 2, day: 27, year: '589هـ', text: 'وفاة القائد صلاح الدين الأيوبي في دمشق سنة 589هـ، محرر بيت المقدس ومؤسس الدولة الأيوبية.' },
-            { month: 2, day: 28, year: '50هـ', text: 'وفاة الحسن بن علي بن أبي طالب رضي الله عنهما سنة 50هـ، الذي تنازل عن الخلافة توحيدًا لكلمة المسلمين.' },
+            { month: 2, day: 1, year: '213هـ', fullDate: '1 صفر 213هـ', text: 'فتح جزيرة كريت على يد القائد أبي حفص عمر البلّوطي سنة 213هـ، وأسس بها إمارة إسلامية استمرت أكثر من قرن.' },
+            { month: 2, day: 1, year: '478هـ', fullDate: '1 صفر 478هـ', text: 'سقوط مدينة طليطلة بيد ألفونسو السادس ملك قشتالة سنة 478هـ، بعد حصار دام قرابة تسعة أشهر، وكانت من أكبر النكبات على المسلمين في الأندلس.' },
+            { month: 2, day: 4, year: '656هـ', fullDate: '4 صفر 656هـ', text: 'سقوط بغداد على يد جيوش المغول في 4 صفر سنة 656هـ، وانتهاء الخلافة العباسية فيها.' },
+            { month: 2, day: 7, year: '974هـ', fullDate: '7 صفر 974هـ', text: 'وفاة السلطان سليمان القانوني أثناء حصاره قلعة سيجيتفار في المجر سنة 974هـ، بعد أن قاد جيشه بنفسه حتى آخر أيامه.' },
+            { month: 2, day: 9, year: '38هـ', fullDate: '9 صفر 38هـ', text: 'معركة النهروان بين جيش أمير المؤمنين علي بن أبي طالب رضي الله عنه والخوارج سنة 38هـ.' },
+            { month: 2, day: 10, year: '99هـ', fullDate: '10 صفر 99هـ', text: 'تولي عمر بن عبد العزيز رضي الله عنه الخلافة سنة 99هـ، الذي عُدّ لعدله خامس الخلفاء الراشدين.' },
+            { month: 2, day: 12, year: '11هـ', fullDate: '12 صفر 11هـ', text: 'وفاة النبي صلى الله عليه وسلم سنة 11هـ، وكانت من أعظم المصائب التي ألمّت بالأمة الإسلامية.' },
+            { month: 2, day: 13, year: '11هـ', fullDate: '13 صفر 11هـ', text: 'مبايعة أبي بكر الصديق رضي الله عنه بالخلافة في سقيفة بني ساعدة سنة 11هـ، أول الخلفاء الراشدين بعد وفاة النبي صلى الله عليه وسلم.' },
+            { month: 2, day: 13, year: '303هـ', fullDate: '13 صفر 303هـ', text: 'وفاة الإمام أحمد بن شعيب النسائي سنة 303هـ، صاحب "السنن" أحد كتب الحديث الستة المعتمدة.' },
+            { month: 2, day: 14, year: '609هـ', fullDate: '14 صفر 609هـ', text: 'معركة العقاب (لاس نافاس دي تولوسة) في الأندلس سنة 609هـ، هُزم فيها الموحدون بقيادة محمد الناصر أمام تحالف الممالك النصرانية.' },
+            { month: 2, day: 20, year: '7هـ', fullDate: '20 صفر 7هـ', text: 'غزوة خيبر وفتح حصونها سنة 7هـ، وفيها كانت راية النبي صلى الله عليه وسلم مع علي بن أبي طالب رضي الله عنه.' },
+            { month: 2, day: 27, year: '589هـ', fullDate: '27 صفر 589هـ', text: 'وفاة القائد صلاح الدين الأيوبي في دمشق سنة 589هـ، محرر بيت المقدس ومؤسس الدولة الأيوبية.' },
+            { month: 2, day: 28, year: '50هـ', fullDate: '28 صفر 50هـ', text: 'وفاة الحسن بن علي بن أبي طالب رضي الله عنهما سنة 50هـ، الذي تنازل عن الخلافة توحيدًا لكلمة المسلمين.' },
             // ربيع الأول
-            { month: 3, day: 1, year: '16هـ', text: 'فتح المدائن (طيسفون) عاصمة الفرس على يد سعد بن أبي وقاص رضي الله عنه سنة 16هـ، فسقطت بذلك عاصمة الإمبراطورية الفارسية.' },
-            { month: 3, day: 4, year: '886هـ', text: 'وفاة السلطان محمد الفاتح فاتح القسطنطينية سنة 886هـ، تاركًا دولة عثمانية عظمى امتدت في ثلاث قارات.' },
-            { month: 3, day: 5, year: '41هـ', text: 'تنازل الحسن بن علي رضي الله عنهما عن الخلافة لمعاوية بن أبي سفيان توحيدًا لكلمة المسلمين، وسُمي ذلك العام بعام الجماعة سنة 41هـ.' },
-            { month: 3, day: 6, year: '726هـ', text: 'فتح السلطان أورخان غازي مدينة بورصة سنة 726هـ، واتخذها العثمانيون عاصمة أولى لدولتهم.' },
-            { month: 3, day: 10, year: '465هـ', text: 'وفاة السلطان ألب أرسلان السلجوقي بطل معركة ملاذكرد سنة 465هـ، اغتيل غدرًا بعد عودته من إحدى حملاته.' },
-            { month: 3, day: 12, year: 'عام الفيل', text: 'مولد النبي محمد صلى الله عليه وسلم بمكة المكرمة في عام الفيل.' },
-            { month: 3, day: 12, year: '132هـ', text: 'مبايعة أبي العباس السفاح في الكوفة أول خلفاء بني العباس سنة 132هـ، بداية عهد الدولة العباسية.' },
-            { month: 3, day: 14, year: '64هـ', text: 'وفاة يزيد بن معاوية سنة 64هـ.' },
-            { month: 3, day: 16, year: '316هـ', text: 'إعلان الأمير عبد الرحمن الناصر نفسه خليفة للمسلمين في الأندلس سنة 316هـ، فبلغت الدولة الأموية هناك أوج عزها.' },
+            { month: 3, day: 1, year: '16هـ', fullDate: '1 ربيع الأول 16هـ', text: 'فتح المدائن (طيسفون) عاصمة الفرس على يد سعد بن أبي وقاص رضي الله عنه سنة 16هـ، فسقطت بذلك عاصمة الإمبراطورية الفارسية.' },
+            { month: 3, day: 4, year: '886هـ', fullDate: '4 ربيع الأول 886هـ', text: 'وفاة السلطان محمد الفاتح فاتح القسطنطينية سنة 886هـ، تاركًا دولة عثمانية عظمى امتدت في ثلاث قارات.' },
+            { month: 3, day: 5, year: '41هـ', fullDate: '5 ربيع الأول 41هـ', text: 'تنازل الحسن بن علي رضي الله عنهما عن الخلافة لمعاوية بن أبي سفيان توحيدًا لكلمة المسلمين، وسُمي ذلك العام بعام الجماعة سنة 41هـ.' },
+            { month: 3, day: 6, year: '726هـ', fullDate: '6 ربيع الأول 726هـ', text: 'فتح السلطان أورخان غازي مدينة بورصة سنة 726هـ، واتخذها العثمانيون عاصمة أولى لدولتهم.' },
+            { month: 3, day: 10, year: '465هـ', fullDate: '10 ربيع الأول 465هـ', text: 'وفاة السلطان ألب أرسلان السلجوقي بطل معركة ملاذكرد سنة 465هـ، اغتيل غدرًا بعد عودته من إحدى حملاته.' },
+            { month: 3, day: 12, year: 'عام الفيل', fullDate: '12 ربيع الأول عام الفيلهـ', text: 'مولد النبي محمد صلى الله عليه وسلم بمكة المكرمة في عام الفيل.' },
+            { month: 3, day: 12, year: '132هـ', fullDate: '12 ربيع الأول 132هـ', text: 'مبايعة أبي العباس السفاح في الكوفة أول خلفاء بني العباس سنة 132هـ، بداية عهد الدولة العباسية.' },
+            { month: 3, day: 12, year: '241هـ', fullDate: '12 ربيع الأول 241هـ', text: 'وفاة الإمام أحمد بن حنبل سنة 241هـ ببغداد، صاحب المذهب الحنبلي ورابع الأئمة الأربعة، وصاحب كتاب "المسند" الشهير.' },
+            { month: 3, day: 14, year: '64هـ', fullDate: '14 ربيع الأول 64هـ', text: 'وفاة يزيد بن معاوية سنة 64هـ.' },
+            { month: 3, day: 14, year: '179هـ', fullDate: '14 ربيع الأول 179هـ', text: 'وفاة الإمام مالك بن أنس سنة 179هـ بالمدينة المنورة، إمام دار الهجرة وصاحب المذهب المالكي وثاني الأئمة الأربعة.' },
+            { month: 3, day: 16, year: '316هـ', fullDate: '16 ربيع الأول 316هـ', text: 'إعلان الأمير عبد الرحمن الناصر نفسه خليفة للمسلمين في الأندلس سنة 316هـ، فبلغت الدولة الأموية هناك أوج عزها.' },
             // ربيع الآخر
-            { month: 4, day: 1, year: '37هـ', text: 'بداية وقعة صفين بين علي بن أبي طالب ومعاوية بن أبي سفيان رضي الله عنهما سنة 37هـ.' },
-            { month: 4, day: 1, year: '945هـ', text: 'معركة بريفيزا البحرية سنة 945هـ، انتصر فيها الأسطول العثماني بقيادة خير الدين بربروس على أساطيل التحالف الأوروبي.' },
-            { month: 4, day: 5, year: '16هـ', text: 'معركة جلولاء بقيادة القعقاع بن عمرو التميمي سنة 16هـ، طاردت فلول جيش الفرس بعد سقوط المدائن.' },
-            { month: 4, day: 20, year: '16هـ', text: 'فتح بيت المقدس على يد الفاروق عمر بن الخطاب رضي الله عنه سنة 16هـ، الذي قدم بنفسه لتسلّم مفاتيح المدينة.' },
-            { month: 4, day: 23, year: '421هـ', text: 'وفاة السلطان محمود الغزنوي سنة 421هـ، الذي وسّع حدود الإسلام في بلاد الهند.' },
-            { month: 4, day: 25, year: '583هـ', text: 'معركة حطين الفاصلة سنة 583هـ، انتصر فيها القائد صلاح الدين الأيوبي على الصليبيين، وكانت مقدمة لتحرير بيت المقدس.' },
+            { month: 4, day: 1, year: '37هـ', fullDate: '1 ربيع الآخر 37هـ', text: 'بداية وقعة صفين بين علي بن أبي طالب ومعاوية بن أبي سفيان رضي الله عنهما سنة 37هـ.' },
+            { month: 4, day: 1, year: '945هـ', fullDate: '1 ربيع الآخر 945هـ', text: 'معركة بريفيزا البحرية سنة 945هـ، انتصر فيها الأسطول العثماني بقيادة خير الدين بربروس على أساطيل التحالف الأوروبي.' },
+            { month: 4, day: 5, year: '16هـ', fullDate: '5 ربيع الآخر 16هـ', text: 'معركة جلولاء بقيادة القعقاع بن عمرو التميمي سنة 16هـ، طاردت فلول جيش الفرس بعد سقوط المدائن.' },
+            { month: 4, day: 20, year: '16هـ', fullDate: '20 ربيع الآخر 16هـ', text: 'فتح بيت المقدس على يد الفاروق عمر بن الخطاب رضي الله عنه سنة 16هـ، الذي قدم بنفسه لتسلّم مفاتيح المدينة.' },
+            { month: 4, day: 21, year: '297هـ', fullDate: '21 ربيع الآخر 297هـ', text: 'إعلان قيام الدولة الفاطمية في إفريقية (تونس حاليًا) سنة 297هـ، ومبايعة عبيد الله المهدي بالخلافة.' },
+            { month: 4, day: 23, year: '421هـ', fullDate: '23 ربيع الآخر 421هـ', text: 'وفاة السلطان محمود الغزنوي سنة 421هـ، الذي وسّع حدود الإسلام في بلاد الهند.' },
+            { month: 4, day: 25, year: '583هـ', fullDate: '25 ربيع الآخر 583هـ', text: 'معركة حطين الفاصلة سنة 583هـ، انتصر فيها القائد صلاح الدين الأيوبي على الصليبيين، وكانت مقدمة لتحرير بيت المقدس.' },
             // جمادى الأولى
-            { month: 5, day: 1, year: '8هـ', text: 'غزوة مؤتة بين المسلمين والروم سنة 8هـ، استشهد فيها القادة زيد بن حارثة وجعفر بن أبي طالب وعبدالله بن رواحة رضي الله عنهم.' },
-            { month: 5, day: 4, year: '953هـ', text: 'وفاة القائد البحري خير الدين بربروس سنة 953هـ، الذي جعل من الأسطول العثماني القوة الأولى في البحر المتوسط.' },
-            { month: 5, day: 10, year: '138هـ', text: 'دخول عبد الرحمن الداخل قرطبة وتأسيسه الإمارة الأموية في الأندلس سنة 138هـ.' },
-            { month: 5, day: 10, year: '93هـ', text: 'فتح القائد محمد بن القاسم الثقفي مدينة الديبل وبلاد السند سنة 93هـ، وهو دون العشرين من عمره.' },
-            { month: 5, day: 17, year: '73هـ', text: 'مقتل عبدالله بن الزبير رضي الله عنهما في مكة سنة 73هـ، بعد أن بويع بالخلافة في الحجاز وأجزاء من العالم الإسلامي سنوات.' },
-            { month: 5, day: 18, year: '642هـ', text: 'معركة الحرْبِيّة (غزة) سنة 642هـ، هزم فيها الأيوبيون والخوارزمية الصليبيين هزيمة ساحقة ثبّتت بها بيت المقدس بيد المسلمين.' },
-            { month: 5, day: 20, year: '857هـ', text: 'فتح القسطنطينية على يد السلطان محمد الفاتح سنة 857هـ، تحقيقًا لبشارة النبي صلى الله عليه وسلم.' },
-            { month: 5, day: 23, year: '13هـ', text: 'معركة فِحل في الأردن سنة 13هـ، مهدت لفتح دمشق وبلاد الشام.' },
-            { month: 5, day: 28, year: '13هـ', text: 'معركة أجنادين في بلاد الشام سنة 13هـ، من أولى معارك فتح الشام الكبرى بقيادة خالد بن الوليد.' },
-            { month: 5, day: 30, year: '986هـ', text: 'معركة وادي المخازن (ملوك الثلاثة) في المغرب سنة 986هـ، انتصر فيها السلطان السعدي عبدالملك المعتصم على الغزو البرتغالي.' },
+            { month: 5, day: 1, year: '8هـ', fullDate: '1 جمادى الأولى 8هـ', text: 'غزوة مؤتة بين المسلمين والروم سنة 8هـ، استشهد فيها القادة زيد بن حارثة وجعفر بن أبي طالب وعبدالله بن رواحة رضي الله عنهم.' },
+            { month: 5, day: 4, year: '953هـ', fullDate: '4 جمادى الأولى 953هـ', text: 'وفاة القائد البحري خير الدين بربروس سنة 953هـ، الذي جعل من الأسطول العثماني القوة الأولى في البحر المتوسط.' },
+            { month: 5, day: 10, year: '138هـ', fullDate: '10 جمادى الأولى 138هـ', text: 'دخول عبد الرحمن الداخل قرطبة وتأسيسه الإمارة الأموية في الأندلس سنة 138هـ.' },
+            { month: 5, day: 10, year: '93هـ', fullDate: '10 جمادى الأولى 93هـ', text: 'فتح القائد محمد بن القاسم الثقفي مدينة الديبل وبلاد السند سنة 93هـ، وهو دون العشرين من عمره.' },
+            { month: 5, day: 17, year: '73هـ', fullDate: '17 جمادى الأولى 73هـ', text: 'مقتل عبدالله بن الزبير رضي الله عنهما في مكة سنة 73هـ، بعد أن بويع بالخلافة في الحجاز وأجزاء من العالم الإسلامي سنوات.' },
+            { month: 5, day: 17, year: '690هـ', fullDate: '17 جمادى الأولى 690هـ', text: 'فتح عكا آخر معاقل الصليبيين الكبرى على ساحل فلسطين، على يد السلطان الأشرف خليل بن قلاوون سنة 690هـ، فانتهت بذلك الحروب الصليبية في بلاد الشام.' },
+            { month: 5, day: 18, year: '642هـ', fullDate: '18 جمادى الأولى 642هـ', text: 'معركة الحرْبِيّة (غزة) سنة 642هـ، هزم فيها الأيوبيون والخوارزمية الصليبيين هزيمة ساحقة ثبّتت بها بيت المقدس بيد المسلمين.' },
+            { month: 5, day: 20, year: '857هـ', fullDate: '20 جمادى الأولى 857هـ', text: 'فتح القسطنطينية على يد السلطان محمد الفاتح سنة 857هـ، تحقيقًا لبشارة النبي صلى الله عليه وسلم.' },
+            { month: 5, day: 23, year: '13هـ', fullDate: '23 جمادى الأولى 13هـ', text: 'معركة فِحل في الأردن سنة 13هـ، مهدت لفتح دمشق وبلاد الشام.' },
+            { month: 5, day: 28, year: '13هـ', fullDate: '28 جمادى الأولى 13هـ', text: 'معركة أجنادين في بلاد الشام سنة 13هـ، من أولى معارك فتح الشام الكبرى بقيادة خالد بن الوليد.' },
+            { month: 5, day: 30, year: '986هـ', fullDate: '30 جمادى الأولى 986هـ', text: 'معركة وادي المخازن (ملوك الثلاثة) في المغرب سنة 986هـ، انتصر فيها السلطان السعدي عبدالملك المعتصم على الغزو البرتغالي.' },
             // جمادى الآخرة
-            { month: 6, day: 1, year: '28هـ', text: 'فتح جزيرة قبرص على يد معاوية بن أبي سفيان سنة 28هـ في خلافة عثمان بن عفان رضي الله عنه، أول غزوة بحرية إسلامية كبرى.' },
-            { month: 6, day: 3, year: '193هـ', text: 'وفاة الخليفة هارون الرشيد سنة 193هـ، الذي بلغت الدولة العباسية في عهده أوج ازدهارها.' },
-            { month: 6, day: 10, year: '36هـ', text: 'وقعة الجمل بين علي بن أبي طالب رضي الله عنه وأم المؤمنين عائشة رضي الله عنها سنة 36هـ.' },
-            { month: 6, day: 11, year: '132هـ', text: 'معركة الزاب الكبرى في العراق سنة 132هـ، هُزم فيها آخر الخلفاء الأمويين مروان بن محمد، فسقطت الدولة الأموية في المشرق وقامت الدولة العباسية.' },
-            { month: 6, day: 14, year: '212هـ', text: 'بداية فتح صقلية على يد القائد أسد بن الفرات سنة 212هـ.' },
-            { month: 6, day: 15, year: '96هـ', text: 'وفاة الخليفة الوليد بن عبد الملك سنة 96هـ، الذي شهدت خلافته فتح الأندلس والسند.' },
-            { month: 6, day: 22, year: '13هـ', text: 'وفاة الصدّيق أبي بكر رضي الله عنه سنة 13هـ، أول الخلفاء الراشدين بعد النبي صلى الله عليه وسلم.' },
-            { month: 6, day: 23, year: '13هـ', text: 'تولي عمر بن الخطاب رضي الله عنه الخلافة بعد وفاة أبي بكر الصديق رضي الله عنه سنة 13هـ.' },
-            { month: 6, day: 26, year: '539هـ', text: 'فتح القائد عماد الدين زنكي مدينة الرها (أول إمارات الصليبيين) سنة 539هـ، أول نصر إسلامي كبير على الصليبيين.' },
+            { month: 6, day: 1, year: '28هـ', fullDate: '1 جمادى الآخرة 28هـ', text: 'فتح جزيرة قبرص على يد معاوية بن أبي سفيان سنة 28هـ في خلافة عثمان بن عفان رضي الله عنه، أول غزوة بحرية إسلامية كبرى.' },
+            { month: 6, day: 3, year: '193هـ', fullDate: '3 جمادى الآخرة 193هـ', text: 'وفاة الخليفة هارون الرشيد سنة 193هـ، الذي بلغت الدولة العباسية في عهده أوج ازدهارها.' },
+            { month: 6, day: 10, year: '36هـ', fullDate: '10 جمادى الآخرة 36هـ', text: 'وقعة الجمل بين علي بن أبي طالب رضي الله عنه وأم المؤمنين عائشة رضي الله عنها سنة 36هـ.' },
+            { month: 6, day: 11, year: '132هـ', fullDate: '11 جمادى الآخرة 132هـ', text: 'معركة الزاب الكبرى في العراق سنة 132هـ، هُزم فيها آخر الخلفاء الأمويين مروان بن محمد، فسقطت الدولة الأموية في المشرق وقامت الدولة العباسية.' },
+            { month: 6, day: 14, year: '212هـ', fullDate: '14 جمادى الآخرة 212هـ', text: 'بداية فتح صقلية على يد القائد أسد بن الفرات سنة 212هـ.' },
+            { month: 6, day: 14, year: '505هـ', fullDate: '14 جمادى الآخرة 505هـ', text: 'وفاة الإمام أبي حامد الغزالي سنة 505هـ في مدينة طوس، الملقب بحجة الإسلام، صاحب كتاب "إحياء علوم الدين".' },
+            { month: 6, day: 15, year: '96هـ', fullDate: '15 جمادى الآخرة 96هـ', text: 'وفاة الخليفة الوليد بن عبد الملك سنة 96هـ، الذي شهدت خلافته فتح الأندلس والسند.' },
+            { month: 6, day: 22, year: '13هـ', fullDate: '22 جمادى الآخرة 13هـ', text: 'وفاة الصدّيق أبي بكر رضي الله عنه سنة 13هـ، أول الخلفاء الراشدين بعد النبي صلى الله عليه وسلم.' },
+            { month: 6, day: 23, year: '13هـ', fullDate: '23 جمادى الآخرة 13هـ', text: 'تولي عمر بن الخطاب رضي الله عنه الخلافة بعد وفاة أبي بكر الصديق رضي الله عنه سنة 13هـ.' },
+            { month: 6, day: 26, year: '539هـ', fullDate: '26 جمادى الآخرة 539هـ', text: 'فتح القائد عماد الدين زنكي مدينة الرها (أول إمارات الصليبيين) سنة 539هـ، أول نصر إسلامي كبير على الصليبيين.' },
             // رجب
-            { month: 7, day: 1, year: '92هـ', text: 'عبور طارق بن زياد إلى الأندلس سنة 92هـ، وبداية الفتح الإسلامي لها.' },
-            { month: 7, day: 1, year: '676هـ', text: 'وفاة السلطان الظاهر بيبرس البندقداري سنة 676هـ، الذي أتم طرد الصليبيين من معظم الشام وأوقف زحف المغول.' },
-            { month: 7, day: 2, year: '920هـ', text: 'معركة جالديران بين العثمانيين بقيادة السلطان سليم الأول والصفويين سنة 920هـ.' },
-            { month: 7, day: 5, year: '15هـ', text: 'معركة اليرموك الفاصلة سنة 15هـ، وبها فُتحت بلاد الشام وانهارت قوة الروم فيها.' },
-            { month: 7, day: 8, year: '932هـ', text: 'معركة بانيبت الأولى في الهند سنة 932هـ، انتصر فيها الأمير ظهير الدين بابر وأسس بها الدولة المغولية الإسلامية في الهند.' },
-            { month: 7, day: 9, year: '218هـ', text: 'وفاة الخليفة المأمون سنة 218هـ، الذي عُرف باهتمامه الكبير بالعلم والفتوحات.' },
-            { month: 7, day: 10, year: '9هـ', text: 'غزوة تبوك سنة 9هـ، وهي آخر غزوات النبي صلى الله عليه وسلم بنفسه.' },
-            { month: 7, day: 12, year: '479هـ', text: 'معركة الزلاقة في الأندلس سنة 479هـ، هزم فيها يوسف بن تاشفين وجيشه المرابطي ملك قشتالة ألفونسو السادس.' },
-            { month: 7, day: 19, year: '92هـ', text: 'معركة وادي لكة بقيادة طارق بن زياد سنة 92هـ، هُزم فيها ملك القوط رودريك، ففتحت أبواب الأندلس أمام المسلمين.' },
-            { month: 7, day: 20, year: '13هـ', text: 'فتح دمشق سنة 13هـ على يد القائدين أبي عبيدة بن الجراح وخالد بن الوليد رضي الله عنهما، بعد حصار دام أكثر من شهر.' },
-            { month: 7, day: 22, year: '60هـ', text: 'وفاة معاوية بن أبي سفيان رضي الله عنه سنة 60هـ، مؤسس الدولة الأموية.' },
-            { month: 7, day: 24, year: '101هـ', text: 'وفاة الخليفة العادل عمر بن عبد العزيز رضي الله عنه سنة 101هـ، الذي عُدّ لعدله خامس الخلفاء الراشدين.' },
-            { month: 7, day: 25, year: '922هـ', text: 'معركة مرج دابق قرب حلب سنة 922هـ، انتصر فيها السلطان سليم الأول على المماليك، ومهدت لضم بلاد الشام إلى الدولة العثمانية.' },
-            { month: 7, day: 27, year: '583هـ', text: 'استرداد صلاح الدين الأيوبي مدينة بيت المقدس من الصليبيين سنة 583هـ، بعد قرابة قرن من احتلالهم لها.' },
-            { month: 7, day: 27, year: '835هـ', text: 'مولد السلطان محمد الفاتح فاتح القسطنطينية سنة 835هـ.' },
+            { month: 7, day: 1, year: '92هـ', fullDate: '1 رجب 92هـ', text: 'عبور طارق بن زياد إلى الأندلس سنة 92هـ، وبداية الفتح الإسلامي لها.' },
+            { month: 7, day: 1, year: '676هـ', fullDate: '1 رجب 676هـ', text: 'وفاة السلطان الظاهر بيبرس البندقداري سنة 676هـ، الذي أتم طرد الصليبيين من معظم الشام وأوقف زحف المغول.' },
+            { month: 7, day: 2, year: '920هـ', fullDate: '2 رجب 920هـ', text: 'معركة جالديران بين العثمانيين بقيادة السلطان سليم الأول والصفويين سنة 920هـ.' },
+            { month: 7, day: 2, year: '725هـ', fullDate: '2 رجب 725هـ', text: 'خروج الرحالة ابن بطوطة من طنجة سنة 725هـ قاصدًا الحج، في رحلة استمرت نحو 29 عامًا طاف خلالها معظم بلاد العالم الإسلامي وما وراءها.' },
+            { month: 7, day: 5, year: '15هـ', fullDate: '5 رجب 15هـ', text: 'معركة اليرموك الفاصلة سنة 15هـ، وبها فُتحت بلاد الشام وانهارت قوة الروم فيها.' },
+            { month: 7, day: 8, year: '932هـ', fullDate: '8 رجب 932هـ', text: 'معركة بانيبت الأولى في الهند سنة 932هـ، انتصر فيها الأمير ظهير الدين بابر وأسس بها الدولة المغولية الإسلامية في الهند.' },
+            { month: 7, day: 9, year: '218هـ', fullDate: '9 رجب 218هـ', text: 'وفاة الخليفة المأمون سنة 218هـ، الذي عُرف باهتمامه الكبير بالعلم والفتوحات.' },
+            { month: 7, day: 10, year: '9هـ', fullDate: '10 رجب 9هـ', text: 'غزوة تبوك سنة 9هـ، وهي آخر غزوات النبي صلى الله عليه وسلم بنفسه.' },
+            { month: 7, day: 12, year: '479هـ', fullDate: '12 رجب 479هـ', text: 'معركة الزلاقة في الأندلس سنة 479هـ، هزم فيها يوسف بن تاشفين وجيشه المرابطي ملك قشتالة ألفونسو السادس.' },
+            { month: 7, day: 13, year: '279هـ', fullDate: '13 رجب 279هـ', text: 'وفاة الإمام الترمذي سنة 279هـ في بلدة ترمذ، صاحب كتاب "الجامع" (سنن الترمذي) أحد كتب الحديث الستة المعتمدة.' },
+            { month: 7, day: 19, year: '92هـ', fullDate: '19 رجب 92هـ', text: 'معركة وادي لكة بقيادة طارق بن زياد سنة 92هـ، هُزم فيها ملك القوط رودريك، ففتحت أبواب الأندلس أمام المسلمين.' },
+            { month: 7, day: 20, year: '13هـ', fullDate: '20 رجب 13هـ', text: 'فتح دمشق سنة 13هـ على يد القائدين أبي عبيدة بن الجراح وخالد بن الوليد رضي الله عنهما، بعد حصار دام أكثر من شهر.' },
+            { month: 7, day: 22, year: '60هـ', fullDate: '22 رجب 60هـ', text: 'وفاة معاوية بن أبي سفيان رضي الله عنه سنة 60هـ، مؤسس الدولة الأموية.' },
+            { month: 7, day: 24, year: '101هـ', fullDate: '24 رجب 101هـ', text: 'وفاة الخليفة العادل عمر بن عبد العزيز رضي الله عنه سنة 101هـ، الذي عُدّ لعدله خامس الخلفاء الراشدين.' },
+            { month: 7, day: 25, year: '922هـ', fullDate: '25 رجب 922هـ', text: 'معركة مرج دابق قرب حلب سنة 922هـ، انتصر فيها السلطان سليم الأول على المماليك، ومهدت لضم بلاد الشام إلى الدولة العثمانية.' },
+            { month: 7, day: 25, year: '261هـ', fullDate: '25 رجب 261هـ', text: 'وفاة الإمام مسلم بن الحجاج سنة 261هـ في نيسابور، صاحب "صحيح مسلم" ثاني أصح كتب الحديث بعد صحيح البخاري.' },
+            { month: 7, day: 27, year: '583هـ', fullDate: '27 رجب 583هـ', text: 'استرداد صلاح الدين الأيوبي مدينة بيت المقدس من الصليبيين سنة 583هـ، بعد قرابة قرن من احتلالهم لها.' },
+            { month: 7, day: 27, year: '835هـ', fullDate: '27 رجب 835هـ', text: 'مولد السلطان محمد الفاتح فاتح القسطنطينية سنة 835هـ.' },
+            { month: 7, day: 27, year: '', text: 'الإسراء والمعراج، حيث أُسري بالنبي صلى الله عليه وسلم من المسجد الحرام إلى المسجد الأقصى، ثم عُرج به إلى السماوات العلا، وفُرضت فيها الصلوات الخمس.' },
+            { month: 7, day: 30, year: '204هـ', fullDate: '30 رجب 204هـ', text: 'وفاة الإمام الشافعي سنة 204هـ بمصر، صاحب المذهب الشافعي وثالث الأئمة الأربعة، ومؤسس علم أصول الفقه.' },
             // شعبان
-            { month: 8, day: 1, year: '13هـ', text: 'معركة البويب بين المسلمين بقيادة المثنى بن حارثة الشيباني والفرس سنة 13هـ، من أوائل الانتصارات في فتح العراق.' },
-            { month: 8, day: 1, year: '145هـ', text: 'شروع الخليفة أبي جعفر المنصور في بناء مدينة بغداد لتكون عاصمة الدولة العباسية سنة 145هـ.' },
-            { month: 8, day: 1, year: '94هـ', text: 'فتح القائد قتيبة بن مسلم الباهلي مدينة سمرقند سنة 94هـ، ومهّد بذلك لدخول الإسلام إلى بلاد ما وراء النهر.' },
-            { month: 8, day: 2, year: '726هـ', text: 'وفاة عثمان بن أرطغرل مؤسس الدولة العثمانية سنة 726هـ، بعد أن أرسى دعائم دولة امتدت قرونًا.' },
-            { month: 8, day: 6, year: '223هـ', text: 'فتح الخليفة المعتصم بالله مدينة عمورية الحصينة عند الروم سنة 223هـ، تلبيةً لاستغاثة امرأة مسلمة.' },
-            { month: 8, day: 15, year: '791هـ', text: 'استشهاد السلطان مراد الأول في معركة كوسوفو سنة 791هـ، بعد أن حقق فيها العثمانيون نصرًا على تحالف البلقان.' },
-            { month: 8, day: 16, year: '927هـ', text: 'فتح السلطان سليمان القانوني مدينة بلغراد سنة 927هـ، أول فتوحاته الكبرى في أوروبا.' },
-            { month: 8, day: 17, year: '358هـ', text: 'تأسيس القائد جوهر الصقلي مدينة القاهرة سنة 358هـ، لتصبح عاصمة الدولة الفاطمية.' },
-            { month: 8, day: 22, year: '492هـ', text: 'سقوط بيت المقدس بيد الحملة الصليبية الأولى سنة 492هـ، وبقي تحت احتلالهم قرابة تسعين عامًا حتى استرده صلاح الدين الأيوبي.' },
+            { month: 8, day: 1, year: '13هـ', fullDate: '1 شعبان 13هـ', text: 'معركة البويب بين المسلمين بقيادة المثنى بن حارثة الشيباني والفرس سنة 13هـ، من أوائل الانتصارات في فتح العراق.' },
+            { month: 8, day: 1, year: '145هـ', fullDate: '1 شعبان 145هـ', text: 'شروع الخليفة أبي جعفر المنصور في بناء مدينة بغداد لتكون عاصمة الدولة العباسية سنة 145هـ.' },
+            { month: 8, day: 1, year: '94هـ', fullDate: '1 شعبان 94هـ', text: 'فتح القائد قتيبة بن مسلم الباهلي مدينة سمرقند سنة 94هـ، ومهّد بذلك لدخول الإسلام إلى بلاد ما وراء النهر.' },
+            { month: 8, day: 2, year: '726هـ', fullDate: '2 شعبان 726هـ', text: 'وفاة عثمان بن أرطغرل مؤسس الدولة العثمانية سنة 726هـ، بعد أن أرسى دعائم دولة امتدت قرونًا.' },
+            { month: 8, day: 6, year: '223هـ', fullDate: '6 شعبان 223هـ', text: 'فتح الخليفة المعتصم بالله مدينة عمورية الحصينة عند الروم سنة 223هـ، تلبيةً لاستغاثة امرأة مسلمة.' },
+            { month: 8, day: 15, year: '791هـ', fullDate: '15 شعبان 791هـ', text: 'استشهاد السلطان مراد الأول في معركة كوسوفو سنة 791هـ، بعد أن حقق فيها العثمانيون نصرًا على تحالف البلقان.' },
+            { month: 8, day: 15, year: '2هـ', fullDate: '15 شعبان 2هـ', text: 'تحويل القبلة من المسجد الأقصى إلى المسجد الحرام سنة 2هـ، استجابةً لأمر الله تعالى في سورة البقرة.' },
+            { month: 8, day: 16, year: '927هـ', fullDate: '16 شعبان 927هـ', text: 'فتح السلطان سليمان القانوني مدينة بلغراد سنة 927هـ، أول فتوحاته الكبرى في أوروبا.' },
+            { month: 8, day: 17, year: '358هـ', fullDate: '17 شعبان 358هـ', text: 'تأسيس القائد جوهر الصقلي مدينة القاهرة سنة 358هـ، لتصبح عاصمة الدولة الفاطمية.' },
+            { month: 8, day: 22, year: '492هـ', fullDate: '22 شعبان 492هـ', text: 'سقوط بيت المقدس بيد الحملة الصليبية الأولى سنة 492هـ، وبقي تحت احتلالهم قرابة تسعين عامًا حتى استرده صلاح الدين الأيوبي.' },
             // رمضان
-            { month: 9, day: 1, year: '96هـ', text: 'مقتل القائد قتيبة بن مسلم الباهلي سنة 96هـ في فتنة داخلية بين جنده.' },
-            { month: 9, day: 1, year: '865هـ', text: 'فتح السلطان محمد الفاتح إمبراطورية طرابزون سنة 865هـ، آخر بقايا الدولة البيزنطية في الأناضول.' },
-            { month: 9, day: 2, year: '702هـ', text: 'معركة مرج الصُّفَّر قرب دمشق سنة 702هـ، حقق فيها السلطان الناصر محمد بن قلاوون نصرًا حاسمًا أنهى أطماع المغول في بلاد الشام.' },
-            { month: 9, day: 7, year: '567هـ', text: 'إسقاط صلاح الدين الأيوبي للخلافة الفاطمية في مصر سنة 567هـ، وإعادتها إلى الخلافة العباسية، وقيام الدولة الأيوبية.' },
-            { month: 9, day: 8, year: '21هـ', text: 'معركة نهاوند "فتح الفتوح" بين المسلمين والفرس سنة 21هـ، أنهت بها قوة الفرس نهائيًا.' },
-            { month: 9, day: 10, year: '485هـ', text: 'اغتيال الوزير نظام الملك السلجوقي سنة 485هـ، بعد أن خدم الدولة السلجوقية عقودًا طويلة.' },
+            { month: 9, day: 1, year: '96هـ', fullDate: '1 رمضان 96هـ', text: 'مقتل القائد قتيبة بن مسلم الباهلي سنة 96هـ في فتنة داخلية بين جنده.' },
+            { month: 9, day: 1, year: '865هـ', fullDate: '1 رمضان 865هـ', text: 'فتح السلطان محمد الفاتح إمبراطورية طرابزون سنة 865هـ، آخر بقايا الدولة البيزنطية في الأناضول.' },
+            { month: 9, day: 1, year: '428هـ', fullDate: '1 رمضان 428هـ', text: 'وفاة الطبيب والفيلسوف ابن سينا سنة 428هـ، الملقب بالشيخ الرئيس، صاحب موسوعة "القانون في الطب" التي ظلت مرجعًا في أوروبا لقرون.' },
+            { month: 9, day: 2, year: '702هـ', fullDate: '2 رمضان 702هـ', text: 'معركة مرج الصُّفَّر قرب دمشق سنة 702هـ، حقق فيها السلطان الناصر محمد بن قلاوون نصرًا حاسمًا أنهى أطماع المغول في بلاد الشام.' },
+            { month: 9, day: 7, year: '567هـ', fullDate: '7 رمضان 567هـ', text: 'إسقاط صلاح الدين الأيوبي للخلافة الفاطمية في مصر سنة 567هـ، وإعادتها إلى الخلافة العباسية، وقيام الدولة الأيوبية.' },
+            { month: 9, day: 7, year: '361هـ', fullDate: '7 رمضان 361هـ', text: 'افتتاح الجامع الأزهر للصلاة بالقاهرة سنة 361هـ، بعد أن أمر بإنشائه القائد جوهر الصقلي، ليصبح من أقدم الجوامع والمنارات العلمية في العالم الإسلامي.' },
+            { month: 9, day: 8, year: '21هـ', fullDate: '8 رمضان 21هـ', text: 'معركة نهاوند "فتح الفتوح" بين المسلمين والفرس سنة 21هـ، أنهت بها قوة الفرس نهائيًا.' },
+            { month: 9, day: 10, year: '485هـ', fullDate: '10 رمضان 485هـ', text: 'اغتيال الوزير نظام الملك السلجوقي سنة 485هـ، بعد أن خدم الدولة السلجوقية عقودًا طويلة.' },
             { month: 9, day: 10, year: '', text: 'وفاة أم المؤمنين خديجة بنت خويلد رضي الله عنها، في العام الذي عُرف بعام الحزن لوفاتها ووفاة عمّ النبي أبي طالب.' },
-            { month: 9, day: 15, year: '549هـ', text: 'دخول نور الدين محمود زنكي مدينة دمشق سنة 549هـ، فوحّد بها الشام تمهيدًا لمواجهة الصليبيين.' },
-            { month: 9, day: 17, year: '2هـ', text: 'غزوة بدر الكبرى سنة 2هـ، أول معركة فاصلة بين المسلمين والمشركين، وانتصر فيها المسلمون رغم قلة عددهم وعتادهم.' },
-            { month: 9, day: 18, year: '21هـ', text: 'وفاة القائد خالد بن الوليد رضي الله عنه سنة 21هـ في حمص، الذي لقّبه النبي صلى الله عليه وسلم بسيف الله المسلول، ولم يُهزم في معركة قط.' },
-            { month: 9, day: 19, year: '40هـ', text: 'إصابة أمير المؤمنين علي بن أبي طالب رضي الله عنه سنة 40هـ، ثم استشهاده بعدها بأيام قليلة.' },
-            { month: 9, day: 20, year: '8هـ', text: 'فتح مكة المكرمة سنة 8هـ، ودخل الناس في دين الله أفواجًا بعد هذا الفتح العظيم.' },
-            { month: 9, day: 25, year: '658هـ', text: 'معركة عين جالوت سنة 658هـ، وفيها انتصر المسلمون بقيادة سيف الدين قطز على جيوش المغول.' },
-            { month: 9, day: 27, year: '114هـ', text: 'استشهاد القائد عبد الرحمن الغافقي في معركة بلاط الشهداء (تور) سنة 114هـ، بعد أن قاد الفتوحات الإسلامية إلى عمق فرنسا.' },
+            { month: 9, day: 15, year: '549هـ', fullDate: '15 رمضان 549هـ', text: 'دخول نور الدين محمود زنكي مدينة دمشق سنة 549هـ، فوحّد بها الشام تمهيدًا لمواجهة الصليبيين.' },
+            { month: 9, day: 17, year: '2هـ', fullDate: '17 رمضان 2هـ', text: 'غزوة بدر الكبرى سنة 2هـ، أول معركة فاصلة بين المسلمين والمشركين، وانتصر فيها المسلمون رغم قلة عددهم وعتادهم.' },
+            { month: 9, day: 17, year: '58هـ', fullDate: '17 رمضان 58هـ', text: 'وفاة أم المؤمنين عائشة بنت أبي بكر رضي الله عنها سنة 58هـ، ودُفنت بالبقيع.' },
+            { month: 9, day: 18, year: '21هـ', fullDate: '18 رمضان 21هـ', text: 'وفاة القائد خالد بن الوليد رضي الله عنه سنة 21هـ في حمص، الذي لقّبه النبي صلى الله عليه وسلم بسيف الله المسلول، ولم يُهزم في معركة قط.' },
+            { month: 9, day: 19, year: '40هـ', fullDate: '19 رمضان 40هـ', text: 'إصابة أمير المؤمنين علي بن أبي طالب رضي الله عنه سنة 40هـ، ثم استشهاده بعدها بأيام قليلة.' },
+            { month: 9, day: 20, year: '8هـ', fullDate: '20 رمضان 8هـ', text: 'فتح مكة المكرمة سنة 8هـ، ودخل الناس في دين الله أفواجًا بعد هذا الفتح العظيم.' },
+            { month: 9, day: 22, year: '273هـ', fullDate: '22 رمضان 273هـ', text: 'وفاة الإمام محمد بن يزيد بن ماجه سنة 273هـ، صاحب "سنن ابن ماجه" أحد كتب الحديث الستة المعتمدة.' },
+            { month: 9, day: 25, year: '658هـ', fullDate: '25 رمضان 658هـ', text: 'معركة عين جالوت سنة 658هـ، وفيها انتصر المسلمون بقيادة سيف الدين قطز على جيوش المغول.' },
+            { month: 9, day: 25, year: '808هـ', fullDate: '25 رمضان 808هـ', text: 'وفاة المؤرخ والعلامة عبد الرحمن ابن خلدون سنة 808هـ بالقاهرة، صاحب "المقدمة" الشهيرة التي عُدّ بها رائدًا لعلم الاجتماع.' },
+            { month: 9, day: 27, year: '114هـ', fullDate: '27 رمضان 114هـ', text: 'استشهاد القائد عبد الرحمن الغافقي في معركة بلاط الشهداء (تور) سنة 114هـ، بعد أن قاد الفتوحات الإسلامية إلى عمق فرنسا.' },
             // شوال
-            { month: 10, day: 1, year: '485هـ', text: 'وفاة السلطان ملك شاه السلجوقي سنة 485هـ، الذي بلغت الدولة السلجوقية في عهده أقصى اتساعها.' },
-            { month: 10, day: 5, year: '5هـ', text: 'غزوة الخندق (الأحزاب) سنة 5هـ، حفر فيها المسلمون خندقًا حول المدينة بمشورة سلمان الفارسي رضي الله عنه.' },
-            { month: 10, day: 6, year: '8هـ', text: 'غزوة حنين بعد فتح مكة سنة 8هـ، انتصر فيها المسلمون على قبيلتي هوازن وثقيف بعد ابتلاء أول بالفرار.' },
-            { month: 10, day: 7, year: '3هـ', text: 'غزوة أُحد سنة 3هـ، وفيها استشهد سيد الشهداء حمزة بن عبد المطلب رضي الله عنه.' },
-            { month: 10, day: 9, year: '926هـ', text: 'تولي السلطان سليمان القانوني عرش الدولة العثمانية سنة 926هـ، في عصر بلغت فيه الدولة أوج اتساعها.' },
-            { month: 10, day: 11, year: '569هـ', text: 'وفاة القائد نور الدين محمود زنكي سنة 569هـ، الذي وحّد الشام تمهيدًا لتحرير بيت المقدس.' },
-            { month: 10, day: 15, year: '86هـ', text: 'وفاة الخليفة عبد الملك بن مروان سنة 86هـ، الذي أعاد توحيد الدولة الأموية بعد الفتنة.' },
-            { month: 10, day: 21, year: '926هـ', text: 'وفاة السلطان سليم الأول سنة 926هـ، الذي ضم مصر والشام والحجاز إلى الدولة العثمانية وأنهى دولة المماليك.' },
+            { month: 10, day: 1, year: '485هـ', fullDate: '1 شوال 485هـ', text: 'وفاة السلطان ملك شاه السلجوقي سنة 485هـ، الذي بلغت الدولة السلجوقية في عهده أقصى اتساعها.' },
+            { month: 10, day: 1, year: '256هـ', fullDate: '1 شوال 256هـ', text: 'وفاة الإمام محمد بن إسماعيل البخاري ليلة عيد الفطر سنة 256هـ، صاحب "صحيح البخاري" الذي يُعدّ أصح كتاب بعد كتاب الله عند جمهور العلماء.' },
+            { month: 10, day: 5, year: '5هـ', fullDate: '5 شوال 5هـ', text: 'غزوة الخندق (الأحزاب) سنة 5هـ، حفر فيها المسلمون خندقًا حول المدينة بمشورة سلمان الفارسي رضي الله عنه.' },
+            { month: 10, day: 6, year: '8هـ', fullDate: '6 شوال 8هـ', text: 'غزوة حنين بعد فتح مكة سنة 8هـ، انتصر فيها المسلمون على قبيلتي هوازن وثقيف بعد ابتلاء أول بالفرار.' },
+            { month: 10, day: 7, year: '3هـ', fullDate: '7 شوال 3هـ', text: 'غزوة أُحد سنة 3هـ، وفيها استشهد سيد الشهداء حمزة بن عبد المطلب رضي الله عنه.' },
+            { month: 10, day: 9, year: '926هـ', fullDate: '9 شوال 926هـ', text: 'تولي السلطان سليمان القانوني عرش الدولة العثمانية سنة 926هـ، في عصر بلغت فيه الدولة أوج اتساعها.' },
+            { month: 10, day: 11, year: '569هـ', fullDate: '11 شوال 569هـ', text: 'وفاة القائد نور الدين محمود زنكي سنة 569هـ، الذي وحّد الشام تمهيدًا لتحرير بيت المقدس.' },
+            { month: 10, day: 15, year: '86هـ', fullDate: '15 شوال 86هـ', text: 'وفاة الخليفة عبد الملك بن مروان سنة 86هـ، الذي أعاد توحيد الدولة الأموية بعد الفتنة.' },
+            { month: 10, day: 16, year: '275هـ', fullDate: '16 شوال 275هـ', text: 'وفاة الإمام أبي داود السجستاني سنة 275هـ بالبصرة، صاحب "سنن أبي داود" أحد كتب الحديث الستة المعتمدة.' },
+            { month: 10, day: 21, year: '926هـ', fullDate: '21 شوال 926هـ', text: 'وفاة السلطان سليم الأول سنة 926هـ، الذي ضم مصر والشام والحجاز إلى الدولة العثمانية وأنهى دولة المماليك.' },
             // ذو القعدة
-            { month: 11, day: 1, year: '43هـ', text: 'وفاة القائد عمرو بن العاص رضي الله عنه فاتح مصر سنة 43هـ.' },
-            { month: 11, day: 4, year: '647هـ', text: 'معركة المنصورة في مصر سنة 647هـ، هزم فيها المسلمون الحملة الصليبية السابعة بقيادة لويس التاسع، ووقع في الأسر.' },
-            { month: 11, day: 5, year: '133هـ', text: 'معركة نهر طلاس بين المسلمين والصينيين سنة 133هـ، انتصر فيها المسلمون وامتد بها الإسلام إلى آسيا الوسطى.' },
-            { month: 11, day: 10, year: '6هـ', text: 'صلح الحديبية بين المسلمين وقريش سنة 6هـ، الذي كان فتحًا مبينًا مهّد لفتح مكة.' },
-            { month: 11, day: 10, year: '658هـ', text: 'مقتل السلطان سيف الدين قطز غيلة بعد عودته منتصرًا من عين جالوت سنة 658هـ، وتولى الحكم من بعده الظاهر بيبرس.' },
-            { month: 11, day: 13, year: '932هـ', text: 'معركة موهاكش في المجر سنة 932هـ، حقق فيها السلطان سليمان القانوني نصرًا ساحقًا فتح به أبواب أوروبا الوسطى.' },
-            { month: 11, day: 15, year: '463هـ', text: 'معركة ملاذكرد بين السلاجقة بقيادة السلطان ألب أرسلان والروم البيزنطيين سنة 463هـ، ففتحت أبواب الأناضول أمام المسلمين.' },
+            { month: 11, day: 1, year: '43هـ', fullDate: '1 ذو القعدة 43هـ', text: 'وفاة القائد عمرو بن العاص رضي الله عنه فاتح مصر سنة 43هـ.' },
+            { month: 11, day: 4, year: '647هـ', fullDate: '4 ذو القعدة 647هـ', text: 'معركة المنصورة في مصر سنة 647هـ، هزم فيها المسلمون الحملة الصليبية السابعة بقيادة لويس التاسع، ووقع في الأسر.' },
+            { month: 11, day: 5, year: '133هـ', fullDate: '5 ذو القعدة 133هـ', text: 'معركة نهر طلاس بين المسلمين والصينيين سنة 133هـ، انتصر فيها المسلمون وامتد بها الإسلام إلى آسيا الوسطى.' },
+            { month: 11, day: 10, year: '6هـ', fullDate: '10 ذو القعدة 6هـ', text: 'صلح الحديبية بين المسلمين وقريش سنة 6هـ، الذي كان فتحًا مبينًا مهّد لفتح مكة.' },
+            { month: 11, day: 10, year: '658هـ', fullDate: '10 ذو القعدة 658هـ', text: 'مقتل السلطان سيف الدين قطز غيلة بعد عودته منتصرًا من عين جالوت سنة 658هـ، وتولى الحكم من بعده الظاهر بيبرس.' },
+            { month: 11, day: 13, year: '932هـ', fullDate: '13 ذو القعدة 932هـ', text: 'معركة موهاكش في المجر سنة 932هـ، حقق فيها السلطان سليمان القانوني نصرًا ساحقًا فتح به أبواب أوروبا الوسطى.' },
+            { month: 11, day: 15, year: '463هـ', fullDate: '15 ذو القعدة 463هـ', text: 'معركة ملاذكرد بين السلاجقة بقيادة السلطان ألب أرسلان والروم البيزنطيين سنة 463هـ، ففتحت أبواب الأناضول أمام المسلمين.' },
+            { month: 11, day: 20, year: '728هـ', fullDate: '20 ذو القعدة 728هـ', text: 'وفاة شيخ الإسلام ابن تيمية سنة 728هـ سجينًا في قلعة دمشق، بعد حياة حافلة بالعلم والتصنيف والمناظرة.' },
             // ذو الحجة
-            { month: 12, day: 1, year: '929هـ', text: 'فتح جزيرة رودس من فرسان القديس يوحنا سنة 929هـ على يد السلطان سليمان القانوني.' },
-            { month: 12, day: 6, year: '798هـ', text: 'معركة نيقوبولس في البلقان سنة 798هـ، هزم فيها السلطان بايزيد الأول تحالفًا صليبيًا أوروبيًا كبيرًا.' },
-            { month: 12, day: 18, year: '35هـ', text: 'استشهاد ذي النورين عثمان بن عفان رضي الله عنه سنة 35هـ.' },
-            { month: 12, day: 26, year: '23هـ', text: 'إصابة الفاروق عمر بن الخطاب رضي الله عنه بطعنة غادرة أثناء صلاة الفجر سنة 23هـ، واستشهد رضي الله عنه بعدها بأيام قليلة.' },
-            { month: 12, day: 29, year: '922هـ', text: 'معركة الريدانية قرب القاهرة سنة 922هـ، أتم فيها السلطان سليم الأول فتح مصر وضمها للدولة العثمانية.' }
+            { month: 12, day: 1, year: '929هـ', fullDate: '1 ذو الحجة 929هـ', text: 'فتح جزيرة رودس من فرسان القديس يوحنا سنة 929هـ على يد السلطان سليمان القانوني.' },
+            { month: 12, day: 6, year: '798هـ', fullDate: '6 ذو الحجة 798هـ', text: 'معركة نيقوبولس في البلقان سنة 798هـ، هزم فيها السلطان بايزيد الأول تحالفًا صليبيًا أوروبيًا كبيرًا.' },
+            { month: 12, day: 18, year: '35هـ', fullDate: '18 ذو الحجة 35هـ', text: 'استشهاد ذي النورين عثمان بن عفان رضي الله عنه سنة 35هـ.' },
+            { month: 12, day: 25, year: '35هـ', fullDate: '25 ذو الحجة 35هـ', text: 'بيعة أمير المؤمنين علي بن أبي طالب رضي الله عنه بالخلافة بعد استشهاد عثمان بن عفان رضي الله عنه سنة 35هـ، ليصبح رابع الخلفاء الراشدين.' },
+            { month: 12, day: 26, year: '23هـ', fullDate: '26 ذو الحجة 23هـ', text: 'إصابة الفاروق عمر بن الخطاب رضي الله عنه بطعنة غادرة أثناء صلاة الفجر سنة 23هـ، واستشهد رضي الله عنه بعدها بأيام قليلة.' },
+            { month: 12, day: 29, year: '922هـ', fullDate: '29 ذو الحجة 922هـ', text: 'معركة الريدانية قرب القاهرة سنة 922هـ، أتم فيها السلطان سليم الأول فتح مصر وضمها للدولة العثمانية.' }
         ];
 
         let currentUpcomingOccasions = [];
@@ -8423,12 +9358,13 @@
                 item.onclick = () => openOccasionModal(idx);
                 const remainingText = occ.diffDays <= 0 ? 'اليوم' : `بعد ${occ.diffDays} يوم`;
                 const bellActive = reminders[occ.id] ? 'active-reminder' : '';
+                const canGreet = occasionHasGreetingCard(occ.id);
                 const wrap = document.createElement('div');
                 wrap.innerHTML = `
                     <span class="occasion-name"><i class="fa-solid ${occ.icon}"></i>${occ.name}</span>
                     <div class="occasion-actions">
                         <button class="occasion-icon-btn ${bellActive}" title="تفعيل تذكير"><i class="fa-solid fa-bell"></i></button>
-                        <button class="occasion-icon-btn" title="بطاقة تهنئة"><i class="fa-solid fa-share-nodes"></i></button>
+                        ${canGreet ? `<button class="occasion-icon-btn" title="بطاقة تهنئة"><i class="fa-solid fa-share-nodes"></i></button>` : ''}
                         <span class="occasion-remaining">${remainingText}</span>
                     </div>
                 `;
@@ -8436,7 +9372,7 @@
                 const bellBtn = item.querySelector('.occasion-icon-btn[title="تفعيل تذكير"]');
                 const shareBtn = item.querySelector('.occasion-icon-btn[title="بطاقة تهنئة"]');
                 bellBtn.onclick = (e) => { e.stopPropagation(); toggleOccasionReminder(occ.id, bellBtn); };
-                shareBtn.onclick = (e) => { e.stopPropagation(); openGreetingCard(occ.name); };
+                if (shareBtn) shareBtn.onclick = (e) => { e.stopPropagation(); openGreetingCard(occ.name); };
                 list.appendChild(item);
             });
 
@@ -8462,7 +9398,7 @@
                     </div>
                     ${occ.link ? `<button class="btn-primary" style="width:100%; margin-top:18px; justify-content:center;" id="occasion-link-btn"><i class="fa-solid fa-arrow-left"></i> ${occ.link.label}</button>` : ''}
                     <div class="app-modal-actions" style="margin-top:16px;">
-                        <button class="btn-action" id="occ-greeting-btn"><i class="fa-solid fa-share-nodes"></i> بطاقة تهنئة</button>
+                        ${occasionHasGreetingCard(occ.id) ? `<button class="btn-action" id="occ-greeting-btn"><i class="fa-solid fa-share-nodes"></i> بطاقة تهنئة</button>` : ''}
                         <button class="btn-action" id="occ-reminder-toggle-btn"><i class="fa-solid fa-bell"></i> <span id="occ-reminder-toggle-text">تفعيل التذكير</span></button>
                     </div>
                 </div>
@@ -8472,7 +9408,8 @@
             if (occ.link) {
                 document.getElementById('occasion-link-btn').onclick = () => { closeAppModal(); occ.link.action(); };
             }
-            document.getElementById('occ-greeting-btn').onclick = () => openGreetingCard(occ.name);
+            const greetingBtn = document.getElementById('occ-greeting-btn');
+            if (greetingBtn) greetingBtn.onclick = () => openGreetingCard(occ.name);
             const reminderBtn = document.getElementById('occ-reminder-toggle-btn');
             reminderBtn.onclick = () => toggleOccasionReminder(occ.id, reminderBtn, true);
             updateReminderButtonState(occ.id, reminderBtn, true);
@@ -8822,11 +9759,19 @@
 
         function showOnThisDayEvent(match) {
             document.getElementById('on-this-day-text').textContent = match.text;
-            const h = currentOtdHijri;
             const card = document.getElementById('on-this-day-card');
-            if (card && h) {
-                const bgIndex = ((h.day - 1) % 6) + 1;
+            if (card) {
+                const bgIndex = ((match.day - 1) % 6) + 1;
                 card.className = 'otd-card dm-bg-' + bgIndex;
+            }
+            const badge = document.getElementById('on-this-day-badge');
+            if (badge) {
+                // نعرض التاريخ الهجري الكامل الحقيقي للحدث من fullDate
+                const approxGregorian = hijriToApproxGregorian(parseInt(match.year.replace('هـ', '')), match.month, match.day);
+                badge.innerHTML =
+                    `<i class="fa-solid fa-moon"></i> ${match.fullDate}`
+                    + `<span style="opacity:.6;">•</span>`
+                    + `<i class="fa-regular fa-calendar"></i> ${gregorianFullFormatter.format(approxGregorian)}م`;
             }
         }
 
@@ -8843,14 +9788,6 @@
                 currentOtdIndex = Math.floor(Math.random() * islamicHistoryEvents.length);
             }
             showOnThisDayEvent(islamicHistoryEvents[currentOtdIndex]);
-
-            const badge = document.getElementById('on-this-day-badge');
-            if (badge) {
-                badge.innerHTML =
-                    `<i class="fa-solid fa-moon"></i> ${h.day} ${hijriMonthNames[h.month - 1]} ${h.year}هـ`
-                    + `<span style="opacity:.6;">•</span>`
-                    + `<i class="fa-regular fa-calendar"></i> ${gregorianFullFormatter.format(now)}م`;
-            }
         }
 
         function nextOnThisDayEvent() {
