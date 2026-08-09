@@ -4474,6 +4474,9 @@
                     artist: subtitle,
                     album: 'منصة القرآن والسنة',
                     artwork: [
+                        // نسخة PNG أولاً: بعض إصدارات أندرويد/كروم لا تعرض أيقونة SVG بشكل
+                        // موثوق داخل إشعار الوسائط في الشريط العلوي، بينما PNG مدعومة دائمًا.
+                        { src: 'apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
                         { src: 'icon.svg', sizes: '96x96', type: 'image/svg+xml' },
                         { src: 'icon.svg', sizes: '192x192', type: 'image/svg+xml' },
                         { src: 'icon.svg', sizes: '512x512', type: 'image/svg+xml' }
