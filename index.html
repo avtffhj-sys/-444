@@ -1812,6 +1812,56 @@
         .murshid-quick-row span:hover { border-color: var(--primary); color: var(--primary); }
         .murshid-note { max-width: 800px; margin: 20px auto 0; font-size: 0.78rem; color: var(--text-muted); text-align: center; line-height: 1.8; }
 
+        /* ---------- حساب المستخدم: نموذج الدخول/التسجيل وصفحة "حسابي" ---------- */
+        .account-form { display: flex; flex-direction: column; gap: 14px; }
+        .account-form input {
+            width: 100%; padding: 13px 16px; border-radius: 12px; border: 1px solid var(--border-color);
+            background: var(--bg-glass); color: var(--text-main); font-size: 0.9rem; font-family: inherit;
+        }
+        .account-form input:focus { outline: none; border-color: var(--primary); }
+        .account-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+        .account-tab {
+            flex: 1; text-align: center; padding: 10px; border-radius: 12px; cursor: pointer; font-weight: 700;
+            font-size: 0.85rem; border: 1px solid var(--border-color); color: var(--text-muted);
+        }
+        .account-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .account-error { color: #ef4444; font-size: 0.8rem; font-weight: 700; min-height: 1em; }
+        .account-profile-card { display: flex; align-items: center; gap: 14px; padding: 6px 0 18px; }
+        .account-avatar {
+            width: 56px; height: 56px; border-radius: 50%; background: var(--glow); color: var(--primary);
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;
+        }
+        .account-name { font-weight: 800; font-size: 1.05rem; }
+        .account-email { font-size: 0.78rem; color: var(--text-muted); }
+        #account-btn.logged-in { color: var(--primary); border-color: var(--primary); }
+        .account-last-read-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 26px; }
+        .account-last-read-card {
+            background: var(--bg-glass); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px;
+            cursor: pointer; transition: border-color var(--transition-speed);
+        }
+        .account-last-read-card:hover { border-color: var(--primary); }
+        .account-last-read-card .lbl { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+        .account-last-read-card .val { font-weight: 800; font-size: 0.95rem; }
+        .account-list-item {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            background: var(--bg-glass); border: 1px solid var(--border-color); border-radius: 14px;
+            padding: 12px 16px; margin-bottom: 10px;
+        }
+        .account-list-item .txt { font-size: 0.85rem; font-weight: 600; line-height: 1.7; }
+        .account-list-item .sub { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+        .account-list-item .del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; flex-shrink: 0; }
+        .account-list-item .del-btn:hover { color: #ef4444; }
+        .account-empty { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 30px 10px; }
+        .fav-star-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; }
+        .fav-star-btn.active { color: #f59e0b; }
+        .surah-fav-btn {
+            width: 36px; height: 36px; border-radius: 10px; background: var(--border-color);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            transition: all 0.25s ease;
+        }
+        .surah-fav-btn:hover { background: var(--primary); color: #fff; transform: scale(1.08); }
+        .surah-fav-btn.active { background: #f59e0b; color: #fff; }
+
     /* =========================================================================
        تحسينات شاملة لعرض الموقع على شاشات الهواتف بمختلف أحجامها
        الهدف: أن يظهر كل عنصر بحجم واضح ومناسب دون تكدّس أو خروج عن الشاشة،
@@ -2370,6 +2420,7 @@
                 <h4 id="current-track-title" style="font-size: 1rem; font-weight: 900; color: var(--primary);" data-i18n="player_title">منصة القرآن والسنة</h4>
                 <span id="current-track-subtitle" style="font-size: 0.75rem; color: var(--text-muted); display: none;"></span>
             </div>
+            <button class="fav-star-btn" id="player-fav-btn" onclick="toggleFavoriteCurrentSurah()" title="أضف السورة الحالية إلى المفضلة" style="display:none; margin-inline-start:4px;"><i class="fa-solid fa-star"></i></button>
         </div>
 
         <div class="player-center-area">
@@ -2432,6 +2483,7 @@
             <a href="#" onclick="switchPage('sounds', event)" class="nav-item" data-target="sounds"><i class="fa-solid fa-microphone-lines"></i><span data-i18n="nav_sounds">مواعظ</span></a>
             <a href="#" onclick="switchPage('alerts', event)" class="nav-item" data-target="alerts"><i class="fa-solid fa-bell"></i><span data-i18n="nav_alerts">التنبيهات</span></a>
             <a href="#" onclick="switchPage('about', event)" class="nav-item" data-target="about"><i class="fa-solid fa-circle-info"></i><span data-i18n="nav_about">من نحن</span></a>
+            <a href="#" onclick="switchPage('account', event)" class="nav-item" data-target="account"><i class="fa-solid fa-user"></i><span data-i18n="nav_account">حسابي</span></a>
         </nav>
         <span class="scroll-hint-fade" aria-hidden="true"></span>
         <span class="scroll-hint-arrow" aria-hidden="true"><i class="fa-solid fa-chevron-left"></i></span>
@@ -2463,6 +2515,7 @@
             </div>
 
             <button class="tool-btn" id="mode-toggle-btn" title="تبديل الوضع الليلي والنهاري"><i class="fa-solid fa-moon"></i></button>
+            <button class="tool-btn" id="account-btn" onclick="openAccountModal()" title="حسابي"><i class="fa-solid fa-user"></i></button>
         </div>
     </header>
 
@@ -2775,6 +2828,7 @@
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                     <h3 id="hadith-title" style="color: var(--primary); margin: 0;">صحيح البخاري - حديث رقم (1)</h3>
                     <div style="display: flex; align-items: center; gap: 8px;">
+                        <button class="fav-star-btn" id="hadith-fav-btn" onclick="toggleFavoriteCurrentHadith()" title="أضف إلى المفضلة"><i class="fa-solid fa-star"></i></button>
                         <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-text-height"></i> حجم الخط</span>
                         <button class="btn-action" style="padding: 8px 16px; font-size: 1.1rem; font-weight: 900;" onclick="changeHadithFontSize(-1)" title="تصغير الخط">A-</button>
                         <button class="btn-action" style="padding: 8px 16px; font-size: 1.1rem; font-weight: 900;" onclick="changeHadithFontSize(1)" title="تكبير الخط">A+</button>
@@ -3119,6 +3173,56 @@
             </div>
         </section>
 
+        <!-- حسابي: تعرض للمستخدم المسجَّل ملخص حسابه، آخر ما قرأه/استمع إليه، مفضلته وملاحظاته.
+             لغير المسجَّل تعرض دعوة لتسجيل الدخول أو إنشاء حساب. -->
+        <section id="page-account" class="page-view">
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-user"></i><span>حسابي</span></div>
+            </div>
+
+            <div id="account-page-logged-out" class="glass-panel" style="padding:40px 24px; text-align:center; display:none;">
+                <i class="fa-solid fa-user-lock" style="font-size:2.4rem; color:var(--primary); margin-bottom:16px;"></i>
+                <h3 style="margin-bottom:10px; font-size:1.15rem;">سجّل الدخول للاستفادة من حسابك</h3>
+                <p style="color:var(--text-muted); margin-bottom:20px; line-height:1.9;">أنشئ حسابًا مجانيًا لحفظ آخر سورة استمعت إليها، آخر حديث قرأته، والمفضلة والملاحظات، ومزامنتها بين أجهزتك.</p>
+                <button class="btn-primary" onclick="openAccountModal()"><i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول / إنشاء حساب</button>
+            </div>
+
+            <div id="account-page-logged-in" style="display:none;">
+                <div class="glass-panel" style="padding:22px 24px; margin-bottom:26px;">
+                    <div class="account-profile-card">
+                        <div class="account-avatar"><i class="fa-solid fa-user"></i></div>
+                        <div>
+                            <div class="account-name" id="account-page-name">—</div>
+                            <div class="account-email" id="account-page-email">—</div>
+                        </div>
+                        <button class="btn-action" style="margin-inline-start:auto;" onclick="accountLogout()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</button>
+                    </div>
+                </div>
+
+                <div class="rafiq-section-sub"><i class="fa-solid fa-clock-rotate-left"></i> آخر ما تابعته</div>
+                <div class="account-last-read-grid">
+                    <div class="account-last-read-card" id="account-last-surah-card" onclick="resumeLastSurah()">
+                        <div class="lbl"><i class="fa-solid fa-book-quran"></i> آخر سورة استمعت إليها</div>
+                        <div class="val" id="account-last-surah-val">لم تستمع إلى شيء بعد</div>
+                    </div>
+                    <div class="account-last-read-card" id="account-last-hadith-card" onclick="resumeLastHadith()">
+                        <div class="lbl"><i class="fa-solid fa-scroll"></i> آخر حديث قرأته</div>
+                        <div class="val" id="account-last-hadith-val">لم تقرأ حديثًا بعد</div>
+                    </div>
+                </div>
+
+                <div class="rafiq-section-sub"><i class="fa-solid fa-star"></i> المفضلة</div>
+                <div id="account-favorites-list"><div class="account-empty">لا توجد عناصر في المفضلة بعد. اضغط أيقونة النجمة عند أي سورة أو حديث لإضافته هنا.</div></div>
+
+                <div class="rafiq-section-sub"><i class="fa-solid fa-note-sticky"></i> ملاحظاتي</div>
+                <div class="account-form" style="margin-bottom:16px; flex-direction:row;">
+                    <input type="text" id="account-note-input" placeholder="أضف ملاحظة جديدة..." maxlength="500">
+                    <button class="btn-primary" onclick="accountAddNoteFromPage()"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div id="account-notes-list"><div class="account-empty">لا توجد ملاحظات بعد.</div></div>
+            </div>
+        </section>
+
     </div>
 
     <div class="toast-notification" id="toast">تم النسخ بنجاح</div>
@@ -3171,6 +3275,10 @@
         const BACKEND_BASE_URL = (
             location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:"
         ) ? "http://localhost:5000" : PRODUCTION_BACKEND_URL;
+        /* نقطة نهاية خدمة حساب المستخدم (تسجيل/دخول/مزامنة)، تعتمد على نفس الخادم
+           الخلفي المستخدم أصلًا لـ "مرشد" والفتاوى (fatwa_api_server.py)، لذا لا حاجة
+           لتعديل سياسة CSP أعلاه — راجع ملف account_api_server.py المرفق لدمج المسارات. */
+        const ACCOUNT_API_ENDPOINT = BACKEND_BASE_URL + "/api/account";
 
         /* ============================================================
            أدوات الأمان الأساسية: تعقيم المدخلات (Input Sanitization)
@@ -3855,6 +3963,7 @@
                 titleDisplay.textContent = `الأربعون النووية - الحديث رقم (${hadithNum}): ${item.title}`;
                 currentHadithNum = hadithNum;
                 numInput.value = hadithNum;
+                recordLastHadith(book, hadithNum, titleDisplay.textContent);
                 return;
             }
 
@@ -3917,6 +4026,7 @@
                     titleDisplay.textContent = `${bookNames[book]} - حديث رقم (${hadithNum})`;
                     currentHadithNum = parseInt(hadithNum);
                     numInput.value = currentHadithNum;
+                    recordLastHadith(book, currentHadithNum, titleDisplay.textContent);
                 } else {
                     showOfflineFallback();
                 }
@@ -4132,7 +4242,7 @@
                 logo_subtitle: "المنصة الإسلامية الشاملة والمتطورة",
                 nav_home: "الرئيسية", nav_quran: "القرآن الكريم", nav_tafseer: "التفسير",
                 nav_hadith: "الحديث", nav_azkar: "الأذكار", nav_fatwa: "الفتاوى",
-                nav_rafiq: "الرفيق الروحي", nav_murshid: "مرشد", nav_radio: "الإذاعات", nav_sounds: "مواعظ", nav_alerts: "التنبيهات", nav_about: "من نحن",
+                nav_rafiq: "الرفيق الروحي", nav_murshid: "مرشد", nav_radio: "الإذاعات", nav_sounds: "مواعظ", nav_alerts: "التنبيهات", nav_about: "من نحن", nav_account: "حسابي",
                 hero_badge: "المنصة الرقمية المتطورة لعام 2026",
                 hero_title: "وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا",
                 hero_desc: "استمتع بتجربة إسلامية متكاملة تدمج أروع التلاوات الصوتية، موسوعة الأحاديث النبوية، الأذكار التفاعلية الذكية، ومواقيت الصلاة.",
@@ -4156,7 +4266,7 @@
                 logo_subtitle: "The Comprehensive, Advanced Islamic Platform",
                 nav_home: "Home", nav_quran: "The Noble Qur'an", nav_tafseer: "Tafseer",
                 nav_hadith: "Hadith", nav_azkar: "Adhkar", nav_fatwa: "Fatwas",
-                nav_rafiq: "Spiritual Companion", nav_murshid: "Murshid", nav_radio: "Radio Stations", nav_sounds: "Sermons", nav_alerts: "Alerts", nav_about: "About Us",
+                nav_rafiq: "Spiritual Companion", nav_murshid: "Murshid", nav_radio: "Radio Stations", nav_sounds: "Sermons", nav_alerts: "Alerts", nav_about: "About Us", nav_account: "My Account",
                 hero_badge: "The Advanced Digital Platform for 2026",
                 hero_title: "And recite the Qur'an with slow, measured recitation.",
                 hero_desc: "Enjoy a complete Islamic experience combining beautiful recitations, an encyclopedia of Prophetic Hadith, smart interactive Adhkar, and prayer times.",
@@ -4180,7 +4290,7 @@
                 logo_subtitle: "La plateforme islamique complète et avancée",
                 nav_home: "Accueil", nav_quran: "Le Noble Coran", nav_tafseer: "Tafsir",
                 nav_hadith: "Hadith", nav_azkar: "Invocations", nav_fatwa: "Fatwas",
-                nav_rafiq: "Compagnon spirituel", nav_murshid: "Murshid", nav_radio: "Radios", nav_sounds: "Sermons", nav_alerts: "Alertes", nav_about: "À propos",
+                nav_rafiq: "Compagnon spirituel", nav_murshid: "Murshid", nav_radio: "Radios", nav_sounds: "Sermons", nav_alerts: "Alertes", nav_about: "À propos", nav_account: "Mon compte",
                 hero_badge: "La plateforme numérique avancée pour 2026",
                 hero_title: "Et récite le Coran lentement et clairement.",
                 hero_desc: "Profitez d'une expérience islamique complète alliant de magnifiques récitations, une encyclopédie du Hadith prophétique, des invocations interactives intelligentes et les horaires de prière.",
@@ -4204,7 +4314,7 @@
                 logo_subtitle: "La plataforma islámica integral y avanzada",
                 nav_home: "Inicio", nav_quran: "El Sagrado Corán", nav_tafseer: "Tafsir",
                 nav_hadith: "Hadiz", nav_azkar: "Adhkar", nav_fatwa: "Fatuas",
-                nav_rafiq: "Compañero espiritual", nav_murshid: "Murshid", nav_radio: "Radios", nav_sounds: "Sermones", nav_alerts: "Alertas", nav_about: "Sobre nosotros",
+                nav_rafiq: "Compañero espiritual", nav_murshid: "Murshid", nav_radio: "Radios", nav_sounds: "Sermones", nav_alerts: "Alertas", nav_about: "Sobre nosotros", nav_account: "Mi cuenta",
                 hero_badge: "La plataforma digital avanzada para 2026",
                 hero_title: "Y recita el Corán con calma y claridad.",
                 hero_desc: "Disfruta de una experiencia islámica completa que combina hermosas recitaciones, una enciclopedia del Hadiz profético, adhkar interactivos inteligentes y los horarios de oración.",
@@ -4228,7 +4338,7 @@
                 logo_subtitle: "Die umfassende und fortschrittliche islamische Plattform",
                 nav_home: "Startseite", nav_quran: "Der edle Koran", nav_tafseer: "Tafsir",
                 nav_hadith: "Hadith", nav_azkar: "Adhkar", nav_fatwa: "Fatwas",
-                nav_rafiq: "Spiritueller Begleiter", nav_murshid: "Murshid", nav_radio: "Radiosender", nav_sounds: "Predigten", nav_alerts: "Hinweise", nav_about: "Über uns",
+                nav_rafiq: "Spiritueller Begleiter", nav_murshid: "Murshid", nav_radio: "Radiosender", nav_sounds: "Predigten", nav_alerts: "Hinweise", nav_about: "Über uns", nav_account: "Mein Konto",
                 hero_badge: "Die fortschrittliche digitale Plattform für 2026",
                 hero_title: "Und trage den Koran in klarer, gemessener Weise vor.",
                 hero_desc: "Genießen Sie ein umfassendes islamisches Erlebnis mit wunderschönen Rezitationen, einer Enzyklopädie der prophetischen Hadithe, intelligenten interaktiven Adhkar und Gebetszeiten.",
@@ -4252,7 +4362,7 @@
                 logo_subtitle: "全面而先进的伊斯兰平台",
                 nav_home: "首页", nav_quran: "古兰经", nav_tafseer: "古兰经注释",
                 nav_hadith: "圣训", nav_azkar: "祈颂词", nav_fatwa: "教法判例",
-                nav_rafiq: "心灵伙伴", nav_murshid: "穆尔希德", nav_radio: "电台", nav_sounds: "讲道", nav_alerts: "提醒", nav_about: "关于我们",
+                nav_rafiq: "心灵伙伴", nav_murshid: "穆尔希德", nav_radio: "电台", nav_sounds: "讲道", nav_alerts: "提醒", nav_about: "关于我们", nav_account: "我的账户",
                 hero_badge: "2026年先进数字平台",
                 hero_title: "你应当从容不迫地诵读古兰经。",
                 hero_desc: "享受完整的伊斯兰体验,融合优美的诵读、圣训百科全书、智能互动祈颂词和礼拜时间。",
@@ -4276,7 +4386,7 @@
                 logo_subtitle: "Всеобъемлющая и современная исламская платформа",
                 nav_home: "Главная", nav_quran: "Благородный Коран", nav_tafseer: "Тафсир",
                 nav_hadith: "Хадисы", nav_azkar: "Азкары", nav_fatwa: "Фетвы",
-                nav_rafiq: "Духовный спутник", nav_murshid: "Муршид", nav_radio: "Радиостанции", nav_sounds: "Проповеди", nav_alerts: "Уведомления", nav_about: "О нас",
+                nav_rafiq: "Духовный спутник", nav_murshid: "Муршид", nav_radio: "Радиостанции", nav_sounds: "Проповеди", nav_alerts: "Уведомления", nav_about: "О нас", nav_account: "Мой аккаунт",
                 hero_badge: "Современная цифровая платформа на 2026 год",
                 hero_title: "И читай Коран размеренно и чётко.",
                 hero_desc: "Насладитесь всесторонним исламским опытом, объединяющим прекрасные чтения, энциклопедию пророческих хадисов, умные интерактивные азкары и время молитв.",
@@ -5700,6 +5810,7 @@
 
             playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
             updateNowPlaying(`سورة ${name}`, `${reciter.name} (${moshaf.name || ''})`);
+            recordLastSurah(index, name, reciter.name);
 
             // إن كانت هذه السورة محفوظة محليًا للاستماع بدون إنترنت، نشغّلها مباشرة من
             // النسخة المحفوظة (Blob) دون أي اتصال بالشبكة، تمامًا كما تعمل المواعظ المحفوظة
@@ -5953,6 +6064,9 @@
                     </div>
                     <div class="surah-actions">
                         ${isAvailable ? '' : '<span class="surah-unavailable-badge">غير متوفرة بهذه الرواية</span>'}
+                        <button class="fav-star-btn surah-fav-btn ${isFavorited('surah', 'surah-' + i) ? 'active' : ''}" title="أضف إلى المفضلة">
+                            <i class="fa-solid fa-star"></i>
+                        </button>
                         <button class="surah-download-btn" title="تحميل مباشر للسورة">
                             <i class="fa-solid fa-download"></i>
                         </button>
@@ -5962,6 +6076,12 @@
                         <i class="fa-solid fa-circle-play" style="color:var(--primary); font-size:1.4rem;"></i>
                     </div>
                 `;
+
+                card.querySelector('.surah-fav-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleFavorite('surah', 'surah-' + i, `سورة ${name}`, reciter.name);
+                    e.currentTarget.classList.toggle('active', isFavorited('surah', 'surah-' + i));
+                });
 
                 card.querySelector('.surah-download-btn').addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -10774,6 +10894,362 @@
             if (e.key === 'Enter') sendMurshidMessage();
         });
 
+        /* ============================================================
+           حساب المستخدم: تسجيل / دخول / خروج، ومزامنة (آخر سورة، آخر
+           حديث، المفضلة، الملاحظات) مع الخادم الخلفي عبر ACCOUNT_API_ENDPOINT.
+           يعمل الموقع بشكل طبيعي كاملًا دون تسجيل دخول أيضًا (وضع بلا حساب)؛
+           هذا القسم إضافة اختيارية فوق كل الميزات الحالية ولا يُبطل شيئًا منها.
+        ============================================================ */
+        let accountToken = null;
+        let accountUser = null; // { id, name, email }
+        let accountData = { favorites: [], notes: [], lastSurah: null, lastHadith: null };
+        let accountSyncTimer = null;
+
+        try {
+            accountToken = localStorage.getItem('account_token') || null;
+            accountUser = JSON.parse(localStorage.getItem('account_user') || 'null');
+        } catch (e) {}
+
+        function accountHeaders() {
+            const h = { 'Content-Type': 'application/json' };
+            if (accountToken) h['Authorization'] = 'Bearer ' + accountToken;
+            return h;
+        }
+
+        function isLoggedIn() { return !!accountToken; }
+
+        async function initAccountSystem() {
+            updateAccountButtonUI();
+            if (!isLoggedIn()) { renderAccountPage(); return; }
+            try {
+                const res = await fetch(ACCOUNT_API_ENDPOINT + '/data', { headers: accountHeaders() });
+                if (res.status === 401) { accountLogout(true); return; }
+                const parsed = await res.json();
+                if (res.ok && parsed) {
+                    accountData = {
+                        favorites: parsed.favorites || [],
+                        notes: parsed.notes || [],
+                        lastSurah: parsed.lastSurah || null,
+                        lastHadith: parsed.lastHadith || null
+                    };
+                }
+            } catch (e) {
+                console.log('account-data-fetch-failed', e);
+            }
+            renderAccountPage();
+            updateFavoriteButtonsState();
+        }
+
+        function updateAccountButtonUI() {
+            const btn = document.getElementById('account-btn');
+            if (!btn) return;
+            btn.classList.toggle('logged-in', isLoggedIn());
+            btn.title = isLoggedIn() ? ('حسابي: ' + (accountUser?.name || '')) : 'تسجيل الدخول / إنشاء حساب';
+        }
+
+        /* ---------- نافذة تسجيل الدخول / إنشاء الحساب (تستخدم نظام app-modal العام) ---------- */
+        function openAccountModal() {
+            const modalBox = document.getElementById('app-modal-box');
+            if (isLoggedIn()) {
+                modalBox.innerHTML = `
+                    <div class="app-modal-header">
+                        <h3><i class="fa-solid fa-user"></i> حسابي</h3>
+                        <button class="app-modal-close" onclick="closeAppModal()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="app-modal-body">
+                        <div class="account-profile-card">
+                            <div class="account-avatar"><i class="fa-solid fa-user"></i></div>
+                            <div>
+                                <div class="account-name">${escapeHtml(accountUser?.name || '')}</div>
+                                <div class="account-email">${escapeHtml(accountUser?.email || '')}</div>
+                            </div>
+                        </div>
+                        <div class="app-modal-actions">
+                            <button class="btn-primary" onclick="closeAppModal(); switchPage('account', null)"><i class="fa-solid fa-gauge"></i> عرض حسابي بالكامل</button>
+                            <button class="btn-action" onclick="accountLogout()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</button>
+                        </div>
+                    </div>`;
+                document.getElementById('app-modal-overlay').classList.add('open');
+                return;
+            }
+            modalBox.innerHTML = `
+                <div class="app-modal-header">
+                    <h3><i class="fa-solid fa-user"></i> حسابي</h3>
+                    <button class="app-modal-close" onclick="closeAppModal()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="app-modal-body">
+                    <div class="account-tabs">
+                        <div class="account-tab active" id="account-tab-login" onclick="switchAccountTab('login')">تسجيل الدخول</div>
+                        <div class="account-tab" id="account-tab-register" onclick="switchAccountTab('register')">حساب جديد</div>
+                    </div>
+                    <form class="account-form" id="account-form-login" onsubmit="return handleAccountLogin(event)">
+                        <input type="email" id="login-email" placeholder="البريد الإلكتروني" required autocomplete="email">
+                        <input type="password" id="login-password" placeholder="كلمة المرور" required autocomplete="current-password">
+                        <div class="account-error" id="login-error"></div>
+                        <button class="btn-primary" type="submit" style="justify-content:center;"><i class="fa-solid fa-right-to-bracket"></i> دخول</button>
+                    </form>
+                    <form class="account-form" id="account-form-register" style="display:none;" onsubmit="return handleAccountRegister(event)">
+                        <input type="text" id="register-name" placeholder="الاسم" required minlength="2" maxlength="60">
+                        <input type="email" id="register-email" placeholder="البريد الإلكتروني" required autocomplete="email">
+                        <input type="password" id="register-password" placeholder="كلمة المرور (٦ أحرف على الأقل)" required minlength="6" autocomplete="new-password">
+                        <div class="account-error" id="register-error"></div>
+                        <button class="btn-primary" type="submit" style="justify-content:center;"><i class="fa-solid fa-user-plus"></i> إنشاء حساب</button>
+                    </form>
+                </div>`;
+            document.getElementById('app-modal-overlay').classList.add('open');
+        }
+
+        function switchAccountTab(tab) {
+            document.getElementById('account-tab-login').classList.toggle('active', tab === 'login');
+            document.getElementById('account-tab-register').classList.toggle('active', tab === 'register');
+            document.getElementById('account-form-login').style.display = tab === 'login' ? 'flex' : 'none';
+            document.getElementById('account-form-register').style.display = tab === 'register' ? 'flex' : 'none';
+        }
+
+        async function handleAccountLogin(e) {
+            e.preventDefault();
+            const email = sanitizeTextInput(document.getElementById('login-email').value, 120);
+            const password = document.getElementById('login-password').value;
+            const errEl = document.getElementById('login-error');
+            errEl.textContent = '';
+            try {
+                const res = await fetch(ACCOUNT_API_ENDPOINT + '/login', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const parsed = await res.json();
+                if (!res.ok || !parsed.token) { errEl.textContent = parsed.error === 'invalid_credentials' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة' : 'تعذّر تسجيل الدخول، حاول مرة أخرى'; return false; }
+                accountToken = parsed.token;
+                accountUser = parsed.user;
+                try { localStorage.setItem('account_token', accountToken); localStorage.setItem('account_user', JSON.stringify(accountUser)); } catch (e2) {}
+                closeAppModal();
+                showToast(`مرحبًا بك، ${accountUser.name}`);
+                await initAccountSystem();
+            } catch (err) {
+                errEl.textContent = 'تعذّر الاتصال بالخادم، تحقق من اتصالك وحاول مرة أخرى';
+            }
+            return false;
+        }
+
+        async function handleAccountRegister(e) {
+            e.preventDefault();
+            const name = sanitizeTextInput(document.getElementById('register-name').value, 60);
+            const email = sanitizeTextInput(document.getElementById('register-email').value, 120);
+            const password = document.getElementById('register-password').value;
+            const errEl = document.getElementById('register-error');
+            errEl.textContent = '';
+            if (password.length < 6) { errEl.textContent = 'كلمة المرور يجب ألا تقل عن ٦ أحرف'; return false; }
+            try {
+                const res = await fetch(ACCOUNT_API_ENDPOINT + '/register', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const parsed = await res.json();
+                if (!res.ok || !parsed.token) { errEl.textContent = parsed.error === 'email_taken' ? 'هذا البريد الإلكتروني مستخدم من قبل' : 'تعذّر إنشاء الحساب، حاول مرة أخرى'; return false; }
+                accountToken = parsed.token;
+                accountUser = parsed.user;
+                try { localStorage.setItem('account_token', accountToken); localStorage.setItem('account_user', JSON.stringify(accountUser)); } catch (e2) {}
+                closeAppModal();
+                showToast(`تم إنشاء حسابك بنجاح، مرحبًا بك ${accountUser.name}`);
+                await initAccountSystem();
+            } catch (err) {
+                errEl.textContent = 'تعذّر الاتصال بالخادم، تحقق من اتصالك وحاول مرة أخرى';
+            }
+            return false;
+        }
+
+        async function accountLogout(silent) {
+            try { if (accountToken) await fetch(ACCOUNT_API_ENDPOINT + '/logout', { method: 'POST', headers: accountHeaders() }); } catch (e) {}
+            accountToken = null;
+            accountUser = null;
+            accountData = { favorites: [], notes: [], lastSurah: null, lastHadith: null };
+            try { localStorage.removeItem('account_token'); localStorage.removeItem('account_user'); } catch (e) {}
+            updateAccountButtonUI();
+            renderAccountPage();
+            updateFavoriteButtonsState();
+            if (!silent) showToast('تم تسجيل الخروج');
+            closeAppModal();
+        }
+
+        /* ---------- مزامنة البيانات مع الخادم (مُهدَّأة/مؤجَّلة قليلًا لتقليل عدد الطلبات) ---------- */
+        function queueAccountSync() {
+            if (!isLoggedIn()) return;
+            if (accountSyncTimer) clearTimeout(accountSyncTimer);
+            accountSyncTimer = setTimeout(async () => {
+                try {
+                    await fetch(ACCOUNT_API_ENDPOINT + '/data', {
+                        method: 'PUT', headers: accountHeaders(), body: JSON.stringify(accountData)
+                    });
+                } catch (e) { console.log('account-sync-failed', e); }
+            }, 600);
+        }
+
+        /* ---------- المفضلة ---------- */
+        function isFavorited(type, id) {
+            return accountData.favorites.some(f => f.type === type && f.id === id);
+        }
+
+        function toggleFavorite(type, id, title, meta) {
+            if (!isLoggedIn()) { showToast('سجّل الدخول أولًا لإضافة عناصر إلى المفضلة'); openAccountModal(); return; }
+            const idx = accountData.favorites.findIndex(f => f.type === type && f.id === id);
+            if (idx >= 0) {
+                accountData.favorites.splice(idx, 1);
+                showToast('تمت الإزالة من المفضلة');
+            } else {
+                accountData.favorites.unshift({ type, id, title, meta: meta || '', addedAt: Date.now() });
+                showToast('تمت الإضافة إلى المفضلة');
+            }
+            queueAccountSync();
+            updateFavoriteButtonsState();
+            renderAccountFavoritesList();
+        }
+
+        function toggleFavoriteCurrentSurah() {
+            if (!accountData.lastSurah) return;
+            const s = accountData.lastSurah;
+            toggleFavorite('surah', 'surah-' + s.index, `سورة ${s.name}`, s.reciterName || '');
+        }
+
+        function toggleFavoriteCurrentHadith() {
+            const titleEl = document.getElementById('hadith-title');
+            if (!titleEl || !titleEl.textContent) return;
+            const id = 'hadith-' + (document.getElementById('hadith-book-select')?.value || '') + '-' + (currentHadithNum || 1);
+            toggleFavorite('hadith', id, titleEl.textContent, '');
+        }
+
+        function updateFavoriteButtonsState() {
+            const playerBtn = document.getElementById('player-fav-btn');
+            if (playerBtn) {
+                if (accountData.lastSurah) {
+                    playerBtn.style.display = '';
+                    playerBtn.classList.toggle('active', isFavorited('surah', 'surah-' + accountData.lastSurah.index));
+                } else {
+                    playerBtn.style.display = 'none';
+                }
+            }
+            const hadithBtn = document.getElementById('hadith-fav-btn');
+            if (hadithBtn) {
+                const id = 'hadith-' + (document.getElementById('hadith-book-select')?.value || '') + '-' + (currentHadithNum || 1);
+                hadithBtn.classList.toggle('active', isFavorited('hadith', id));
+            }
+            if (currentReciter && currentMoshaf && typeof renderSurahsGrid === 'function') {
+                renderSurahsGrid(currentReciter, currentMoshaf);
+            }
+        }
+
+        function removeFavoriteById(type, id) {
+            accountData.favorites = accountData.favorites.filter(f => !(f.type === type && f.id === id));
+            queueAccountSync();
+            updateFavoriteButtonsState();
+            renderAccountFavoritesList();
+        }
+
+        /* ---------- الملاحظات ---------- */
+        function accountAddNoteFromPage() {
+            const input = document.getElementById('account-note-input');
+            const text = sanitizeTextInput(input.value, 500);
+            if (!text) return;
+            if (!isLoggedIn()) { showToast('سجّل الدخول أولًا لإضافة ملاحظات'); openAccountModal(); return; }
+            accountData.notes.unshift({ id: 'note-' + Date.now(), text, addedAt: Date.now() });
+            input.value = '';
+            queueAccountSync();
+            renderAccountNotesList();
+        }
+
+        function deleteAccountNote(id) {
+            accountData.notes = accountData.notes.filter(n => n.id !== id);
+            queueAccountSync();
+            renderAccountNotesList();
+        }
+
+        /* ---------- تتبّع "آخر ما تابعته" (يُستدعى من مشغّل السور ومن عارض الحديث) ---------- */
+        function recordLastSurah(index, name, reciterName) {
+            accountData.lastSurah = { index, name, reciterName: reciterName || '', at: Date.now() };
+            if (isLoggedIn()) queueAccountSync();
+            updateFavoriteButtonsState();
+            renderAccountLastRead();
+        }
+
+        function recordLastHadith(book, num, title) {
+            accountData.lastHadith = { book, num, title, at: Date.now() };
+            if (isLoggedIn()) queueAccountSync();
+            updateFavoriteButtonsState();
+            renderAccountLastRead();
+        }
+
+        function resumeLastSurah() {
+            if (!accountData.lastSurah) return;
+            switchPage('quran', null);
+            showToast(`استكمل من صفحة القرآن اختيار سورة ${accountData.lastSurah.name}`);
+        }
+
+        function resumeLastHadith() {
+            if (!accountData.lastHadith) return;
+            switchPage('hadith', null);
+            const bookSelect = document.getElementById('hadith-book-select');
+            const numInput = document.getElementById('hadith-number-input');
+            if (bookSelect) bookSelect.value = accountData.lastHadith.book;
+            if (numInput) numInput.value = accountData.lastHadith.num;
+            fetchHadithFromApi(accountData.lastHadith.num);
+        }
+
+        /* ---------- عرض صفحة "حسابي" ---------- */
+        function renderAccountPage() {
+            const loggedOutEl = document.getElementById('account-page-logged-out');
+            const loggedInEl = document.getElementById('account-page-logged-in');
+            if (!loggedOutEl || !loggedInEl) return;
+            if (!isLoggedIn()) {
+                loggedOutEl.style.display = '';
+                loggedInEl.style.display = 'none';
+                return;
+            }
+            loggedOutEl.style.display = 'none';
+            loggedInEl.style.display = '';
+            document.getElementById('account-page-name').textContent = accountUser?.name || '';
+            document.getElementById('account-page-email').textContent = accountUser?.email || '';
+            renderAccountLastRead();
+            renderAccountFavoritesList();
+            renderAccountNotesList();
+        }
+
+        function renderAccountLastRead() {
+            const surahVal = document.getElementById('account-last-surah-val');
+            const hadithVal = document.getElementById('account-last-hadith-val');
+            if (surahVal) surahVal.textContent = accountData.lastSurah ? `سورة ${accountData.lastSurah.name}` : 'لم تستمع إلى شيء بعد';
+            if (hadithVal) hadithVal.textContent = accountData.lastHadith ? accountData.lastHadith.title : 'لم تقرأ حديثًا بعد';
+        }
+
+        function renderAccountFavoritesList() {
+            const list = document.getElementById('account-favorites-list');
+            if (!list) return;
+            if (!accountData.favorites.length) {
+                list.innerHTML = '<div class="account-empty">لا توجد عناصر في المفضلة بعد. اضغط أيقونة النجمة عند أي سورة أو حديث لإضافته هنا.</div>';
+                return;
+            }
+            list.innerHTML = accountData.favorites.map(f => `
+                <div class="account-list-item">
+                    <div>
+                        <div class="txt"><i class="fa-solid ${f.type === 'surah' ? 'fa-book-quran' : 'fa-scroll'}" style="color:var(--primary); margin-inline-end:6px;"></i>${escapeHtml(f.title)}</div>
+                        ${f.meta ? `<div class="sub">${escapeHtml(f.meta)}</div>` : ''}
+                    </div>
+                    <button class="del-btn" onclick="removeFavoriteById('${f.type}','${f.id}')" title="إزالة"><i class="fa-solid fa-trash"></i></button>
+                </div>`).join('');
+        }
+
+        function renderAccountNotesList() {
+            const list = document.getElementById('account-notes-list');
+            if (!list) return;
+            if (!accountData.notes.length) {
+                list.innerHTML = '<div class="account-empty">لا توجد ملاحظات بعد.</div>';
+                return;
+            }
+            list.innerHTML = accountData.notes.map(n => `
+                <div class="account-list-item">
+                    <div class="txt">${escapeHtml(n.text)}</div>
+                    <button class="del-btn" onclick="deleteAccountNote('${n.id}')" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                </div>`).join('');
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             renderTodayDualDate();
             renderMiniCalendar();
@@ -10789,6 +11265,7 @@
             const copyrightYearEl = document.getElementById('about-copyright-year');
             if (copyrightYearEl) copyrightYearEl.textContent = new Date().getFullYear();
             initScrollHints();
+            initAccountSystem();
         });
 
         // ========= مؤشرات التمرير الخفيفة (سهم "يوجد المزيد") =========
