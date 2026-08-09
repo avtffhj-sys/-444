@@ -1377,41 +1377,6 @@
 
         .toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
 
-        /* شريط تقدّم تنزيل الملفات الصوتية (المواعظ وسور القرآن الكريم) على الهاتف:
-           يظهر أثناء أي عملية تنزيل (مباشر أو حفظ بدون إنترنت) ويعرض اسم الملف
-           ونسبة التحميل وحجمه، ويختفي تلقائيًا عند اكتمال العملية. */
-        .download-progress-bar {
-            position: fixed;
-            left: 50%;
-            bottom: 20px;
-            transform: translateX(-50%) translateY(20px);
-            width: min(94%, 420px);
-            background: var(--bg-glass);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--primary);
-            border-radius: 14px;
-            padding: 12px 16px;
-            z-index: 2100;
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease, visibility 0.3s;
-        }
-
-        .download-progress-bar.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
-
-        .download-progress-info { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.85rem; color: var(--text-main); }
-        .download-progress-info i { color: var(--primary); }
-        .download-progress-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .download-progress-percent { flex-shrink: 0; color: var(--primary); font-weight: 800; }
-
-        .download-progress-track { margin-top: 8px; height: 6px; border-radius: 6px; background: var(--border-color); overflow: hidden; }
-        .download-progress-fill { height: 100%; width: 0%; background: var(--primary); border-radius: 6px; transition: width 0.2s ease; }
-        .download-progress-fill.indeterminate { width: 100% !important; animation: downloadProgressPulse 1.2s ease-in-out infinite; }
-        @keyframes downloadProgressPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-
-        .download-progress-size { margin-top: 6px; font-size: 0.72rem; color: var(--text-muted); text-align: center; }
-
         @media (max-width: 1024px) {
             .hero-section { grid-template-columns: 1fr; }
             .nav-links { display: none; }
@@ -3112,17 +3077,6 @@
     </div>
 
     <div class="toast-notification" id="toast">تم النسخ بنجاح</div>
-
-    <!-- شريط تقدّم تنزيل الملفات الصوتية (يظهر عند تنزيل أي موعظة أو سورة، أو حفظها للاستماع بدون إنترنت) -->
-    <div class="download-progress-bar" id="download-progress-bar">
-        <div class="download-progress-info">
-            <i class="fa-solid fa-download"></i>
-            <span class="download-progress-name" id="download-progress-name"></span>
-            <span class="download-progress-percent" id="download-progress-percent">0%</span>
-        </div>
-        <div class="download-progress-track"><div class="download-progress-fill" id="download-progress-fill"></div></div>
-        <div class="download-progress-size" id="download-progress-size"></div>
-    </div>
 
     <!-- نافذة منبثقة عامة: عداد المناسبات + بطاقة التهنئة -->
     <div class="app-modal-overlay" id="app-modal-overlay" onclick="closeAppModalOnOverlay(event)">
@@ -5362,9 +5316,13 @@
         });
 
         /* ============================================================
-           شريط تقدّم التنزيل: يُستخدم عند تنزيل أي موعظة أو سورة من القرآن
-           الكريم (تنزيل مباشر أو حفظ للاستماع بدون إنترنت)، ويعرض اسم
-           الملف ونسبة التحميل وحجمه بشكل حي أثناء تقدّم العملية.
+           إشعارات تقدّم التنزيل: تُستخدم عند تنزيل أي موعظة أو سورة من
+           القرآن الكريم (تنزيل مباشر أو حفظ للاستماع بدون إنترنت). بدل
+           عرض شريط تقدّم داخل صفحات الموقع، تُعرض نسبة التحميل وحجم
+           الملف كإشعار حقيقي في شريط إشعارات الهاتف (أعلى الشاشة) عبر
+           Service Worker المسجَّل أصلًا في الموقع لإشعارات التحديثات،
+           ويُحدَّث نفس الإشعار (بنفس المعرّف/tag) مع تقدّم التحميل بدل
+           فتح إشعار جديد في كل مرة.
         ============================================================ */
         function formatBytes(bytes) {
             if (!isFinite(bytes) || bytes <= 0) return '';
@@ -5373,69 +5331,69 @@
             return `${(bytes / (1024 * 1024)).toFixed(1)} ميجابايت`;
         }
 
-        // يضبط ارتفاع شريط التنزيل ليبقى فوق شريط المشغل الصوتي السفلي إن كان ظاهرًا،
-        // حتى لا يتداخل الشريطان فوق بعضهما على شاشات الهواتف
-        function positionDownloadProgressBar() {
-            const bar = document.getElementById('download-progress-bar');
-            if (!bar) return;
-            const player = document.querySelector('.global-audio-player.player-visible');
-            const offset = player ? player.getBoundingClientRect().height : 0;
-            bar.style.bottom = `calc(${offset}px + 20px + env(safe-area-inset-bottom))`;
-        }
-        window.addEventListener('resize', positionDownloadProgressBar);
+        const DOWNLOAD_NOTIFICATION_TAG = 'quran-sunnah-download-progress';
+        let downloadNotifyPermissionAsked = false;
 
-        function showDownloadProgressBar(title) {
-            const bar = document.getElementById('download-progress-bar');
-            if (!bar) return;
-            document.getElementById('download-progress-name').textContent = title || '';
-            document.getElementById('download-progress-percent').textContent = '0%';
-            const fill = document.getElementById('download-progress-fill');
-            fill.style.width = '0%';
-            fill.classList.remove('indeterminate');
-            document.getElementById('download-progress-size').textContent = '';
-            positionDownloadProgressBar();
-            bar.classList.add('show');
-        }
-
-        function updateDownloadProgressBar(loaded, total) {
-            const fill = document.getElementById('download-progress-fill');
-            const percentEl = document.getElementById('download-progress-percent');
-            const sizeEl = document.getElementById('download-progress-size');
-            if (!fill) return;
-            if (total > 0) {
-                const pct = Math.min(100, Math.round((loaded / total) * 100));
-                fill.classList.remove('indeterminate');
-                fill.style.width = pct + '%';
-                percentEl.textContent = pct + '%';
-                sizeEl.textContent = `${formatBytes(loaded)} / ${formatBytes(total)}`;
-            } else {
-                // بعض الخوادم لا ترسل حجم الملف الإجمالي (Content-Length)، فنعرض الحجم
-                // الذي تم تنزيله فعليًا مع مؤشر تحميل متحرك بدل نسبة مئوية غير معروفة
-                fill.classList.add('indeterminate');
-                percentEl.textContent = '';
-                sizeEl.textContent = formatBytes(loaded);
+        // يطلب إذن إشعارات الهاتف مرة واحدة فقط لكل جلسة (إن لم يكن قد تقرر
+        // مسبقًا)، حتى تظهر إشعارات التنزيل في شريط إشعارات الجهاز
+        async function ensureDownloadNotificationPermission() {
+            if (!('Notification' in window)) return false;
+            if (Notification.permission === 'granted') return true;
+            if (Notification.permission === 'denied' || downloadNotifyPermissionAsked) return false;
+            downloadNotifyPermissionAsked = true;
+            try {
+                const perm = await Notification.requestPermission();
+                return perm === 'granted';
+            } catch (e) {
+                return false;
             }
         }
 
-        function hideDownloadProgressBar(delayMs = 800) {
-            const bar = document.getElementById('download-progress-bar');
-            if (!bar) return;
-            setTimeout(() => {
-                bar.classList.remove('show');
-                document.getElementById('download-progress-fill')?.classList.remove('indeterminate');
-            }, delayMs);
+        // يعرض/يحدّث إشعار التنزيل الحقيقي في شريط إشعارات الهاتف عبر تسجيل
+        // الـ Service Worker الحالي للموقع (نفس الآلية المستخدمة أصلًا لإشعارات
+        // التحديثات في هذا الملف)، دون أي واجهة داخل صفحة الموقع نفسها
+        async function showDownloadNotification(title, body) {
+            if (!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                if (!reg || !reg.showNotification) return;
+                await reg.showNotification(title, {
+                    body,
+                    tag: DOWNLOAD_NOTIFICATION_TAG,
+                    renotify: false,
+                    silent: true,
+                    requireInteraction: false,
+                    icon: 'apple-touch-icon.png'
+                });
+            } catch (e) { /* تجاهل بصمت إن تعذّر عرض إشعار النظام */ }
+        }
+
+        let lastDownloadNotifyAt = 0;
+        // يُحدّث نص إشعار التنزيل بالنسبة المئوية وحجم الملف، مع تحديد وتيرة
+        // التحديث (نصف ثانية كحد أقصى) حتى لا تُثقل التحديثات المتكررة جدًا
+        // على النظام أثناء تنزيل الملفات الكبيرة
+        function updateDownloadNotification(title, loaded, total) {
+            const now = Date.now();
+            if (now - lastDownloadNotifyAt < 500 && loaded < total) return;
+            lastDownloadNotifyAt = now;
+            const body = total > 0
+                ? `${Math.min(100, Math.round((loaded / total) * 100))}% — ${formatBytes(loaded)} / ${formatBytes(total)}`
+                : `تم تنزيل ${formatBytes(loaded)}`;
+            showDownloadNotification(`جاري تنزيل: ${title}`, body);
         }
 
         // يجلب ملفًا صوتيًا مع تتبّع تقدّم التنزيل حيًا (نسبة مئوية + حجم الملف)
-        // عبر قراءة الاستجابة كتدفّق (Stream) بدل انتظارها دفعة واحدة، ثم يُرجع Blob
+        // عبر قراءة الاستجابة كتدفّق (Stream) بدل انتظارها دفعة واحدة، ويعرض
+        // التقدّم كإشعار على الهاتف بدل أي واجهة داخل الموقع، ثم يُرجع Blob
         // الملف الكامل بعد اكتمال القراءة. يُستخدم في التنزيل المباشر وفي الحفظ بدون إنترنت.
-        async function fetchWithProgress(url) {
+        async function fetchWithProgress(url, title) {
+            await ensureDownloadNotificationPermission();
             const response = await fetch(url);
             if (!response.ok) throw new Error('تعذر جلب الملف');
             if (!response.body || !response.body.getReader) {
-                // متصفح لا يدعم قراءة الاستجابة كتدفّق: نرجع للطريقة المعتادة دون شريط تقدّم حي
+                // متصفح لا يدعم قراءة الاستجابة كتدفّق: نرجع للطريقة المعتادة دون تحديث حي للنسبة
                 const blob = await response.blob();
-                updateDownloadProgressBar(blob.size, blob.size);
+                updateDownloadNotification(title, blob.size, blob.size);
                 return blob;
             }
             const totalStr = response.headers.get('Content-Length');
@@ -5448,16 +5406,14 @@
                 if (done) break;
                 chunks.push(value);
                 loaded += value.length;
-                updateDownloadProgressBar(loaded, total);
+                updateDownloadNotification(title, loaded, total);
             }
             return new Blob(chunks);
         }
 
         async function downloadAudioFile(url, filename) {
-            showToast("جاري بدء التحميل...");
-            showDownloadProgressBar(filename);
             try {
-                const blob = await fetchWithProgress(url);
+                const blob = await fetchWithProgress(url, filename);
                 const blobUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
@@ -5466,16 +5422,15 @@
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(blobUrl);
-                showToast("تم التحميل بنجاح");
+                showDownloadNotification(`اكتمل التنزيل: ${filename}`, 'تم حفظ الملف على جهازك بنجاح');
             } catch (e) {
+                showDownloadNotification(`تعذّر التنزيل: ${filename}`, 'تحقق من اتصالك بالإنترنت وحاول مجددًا');
                 const a = document.createElement('a');
                 a.href = url;
                 a.target = '_blank';
                 a.download = filename;
                 document.body.appendChild(a);
                 a.click();
-            } finally {
-                hideDownloadProgressBar();
             }
         }
 
@@ -5779,9 +5734,8 @@
             btn.classList.add('is-saving');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             showToast(`جاري حفظ سورة ${name} للاستماع بدون إنترنت...`);
-            showDownloadProgressBar(`سورة ${name}`);
             try {
-                const blob = await fetchWithProgress(url);
+                const blob = await fetchWithProgress(url, `سورة ${name}`);
                 await saveSurahOffline(url, blob, { name, reciter: reciterName });
                 btn.classList.remove('is-saving');
                 btn.classList.add('is-saved');
@@ -5792,8 +5746,6 @@
                 btn.classList.remove('is-saving');
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
                 showToast('تعذر الحفظ، تحقق من اتصالك بالإنترنت وحاول مجددًا');
-            } finally {
-                hideDownloadProgressBar();
             }
         }
 
@@ -6124,9 +6076,8 @@
             btn.classList.add('is-saving');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             showToast('جاري الحفظ للاستماع بدون إنترنت...');
-            showDownloadProgressBar(s.title);
             try {
-                const blob = await fetchWithProgress(s.url);
+                const blob = await fetchWithProgress(s.url, s.title);
                 await saveSoundOffline(s.url, blob, { title: s.title, sheikh: s.sheikh });
                 btn.classList.remove('is-saving');
                 btn.classList.add('is-saved');
@@ -6137,8 +6088,6 @@
                 btn.classList.remove('is-saving');
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
                 showToast('تعذر الحفظ، تحقق من اتصالك بالإنترنت وحاول مجددًا');
-            } finally {
-                hideDownloadProgressBar();
             }
         }
 
