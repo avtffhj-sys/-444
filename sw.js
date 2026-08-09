@@ -212,8 +212,22 @@ self.addEventListener('push', (event) => {
     event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// عند الضغط على الإشعار: التركيز على تبويب مفتوح للموقع إن وُجد، وإلا فتح تبويب جديد
+// عند الضغط على الإشعار: التركيز على تبويب مفتوح للموقع إن وُجد، وإلا فتح تبويب جديد.
+// حالة خاصة: إشعار تقدّم التنزيل (tag: quran-sunnah-download-progress) يحمل زر
+// إجراء "إلغاء التنزيل" (action: cancel-download)؛ عند الضغط عليه تحديدًا لا نفتح
+// أو نُركّز على أي تبويب، بل نُغلق الإشعار فقط ونُرسل رسالة لكل تبويبات الموقع
+// المفتوحة حتى تُلغي الصفحة عملية التحميل الجارية عبر AbortController الخاص بها.
 self.addEventListener('notificationclick', (event) => {
+    if (event.notification.tag === 'quran-sunnah-download-progress' && event.action === 'cancel-download') {
+        event.notification.close();
+        event.waitUntil(
+            self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+                clientList.forEach((client) => client.postMessage({ type: 'cancel-download' }));
+            })
+        );
+        return;
+    }
+
     event.notification.close();
     const targetUrl = (event.notification.data && event.notification.data.url) || './';
 

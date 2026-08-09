@@ -1377,6 +1377,51 @@
 
         .toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
 
+        /* شريط تقدّم التنزيل الظاهر داخل الصفحة، مع زر إلغاء فوري؛ يعمل كبديل
+           مضمون على كل الأجهزة والمتصفحات، بجانب زر الإلغاء في إشعار النظام
+           (الذي يعتمد على دعم المتصفح لأزرار إجراءات الإشعارات). */
+        .download-progress-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--primary);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 14px;
+            z-index: 2001;
+            font-weight: 600;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: min(92vw, 420px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease, visibility 0.3s;
+        }
+        .download-progress-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
+        .download-progress-toast .dl-progress-text { flex: 1; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .download-progress-toast .dl-cancel-btn {
+            background: transparent;
+            border: 1px solid currentColor;
+            color: inherit;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .download-progress-toast .dl-cancel-btn:hover { background: var(--glow); }
+        body.audio-active .download-progress-toast { bottom: calc(92px + env(safe-area-inset-bottom)); }
+        @media (max-width: 360px) {
+            body.audio-active .download-progress-toast { bottom: calc(126px + env(safe-area-inset-bottom)); }
+        }
+
         @media (max-width: 1024px) {
             .hero-section { grid-template-columns: 1fr; }
             .nav-links { display: none; }
@@ -3077,6 +3122,14 @@
     </div>
 
     <div class="toast-notification" id="toast">تم النسخ بنجاح</div>
+
+    <!-- شريط تقدّم التنزيل مع زر إلغاء فوري (سورة أو موعظة) -->
+    <div class="download-progress-toast" id="download-progress-toast">
+        <span class="dl-progress-text" id="download-progress-text"></span>
+        <button type="button" class="dl-cancel-btn" id="download-cancel-btn" onclick="cancelActiveDownload()">
+            <i class="fa-solid fa-xmark"></i> إلغاء
+        </button>
+    </div>
 
     <!-- نافذة منبثقة عامة: عداد المناسبات + بطاقة التهنئة -->
     <div class="app-modal-overlay" id="app-modal-overlay" onclick="closeAppModalOnOverlay(event)">
@@ -5332,7 +5385,14 @@
         }
 
         const DOWNLOAD_NOTIFICATION_TAG = 'quran-sunnah-download-progress';
+        const DOWNLOAD_CANCEL_ACTION = 'cancel-download';
         let downloadNotifyPermissionAsked = false;
+
+        // يتتبّع عملية التنزيل الجارية حاليًا (واحدة في كل مرة، لأنها تشارك نفس
+        // معرّف الإشعار) حتى يمكن إلغاؤها من زر الإلغاء داخل الصفحة أو من زر
+        // الإلغاء في إشعار النظام على الهاتف.
+        let activeDownload = null; // { controller, id, filename }
+        let activeDownloadId = 0;
 
         // يطلب إذن إشعارات الهاتف مرة واحدة فقط لكل جلسة (إن لم يكن قد تقرر
         // مسبقًا)، حتى تظهر إشعارات التنزيل في شريط إشعارات الجهاز
@@ -5351,8 +5411,10 @@
 
         // يعرض/يحدّث إشعار التنزيل الحقيقي في شريط إشعارات الهاتف عبر تسجيل
         // الـ Service Worker الحالي للموقع (نفس الآلية المستخدمة أصلًا لإشعارات
-        // التحديثات في هذا الملف)، دون أي واجهة داخل صفحة الموقع نفسها
-        async function showDownloadNotification(title, body) {
+        // التحديثات في هذا الملف). يضيف زر "إلغاء" ضمن الإشعار نفسه أثناء
+        // التنزيل (withCancelAction)، حتى يمكن إيقاف التحميل مباشرة من شريط
+        // إشعارات الهاتف دون فتح الموقع.
+        async function showDownloadNotification(title, body, withCancelAction) {
             if (!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;
             try {
                 const reg = await navigator.serviceWorker.ready;
@@ -5363,9 +5425,22 @@
                     renotify: false,
                     silent: true,
                     requireInteraction: false,
-                    icon: 'apple-touch-icon.png'
+                    icon: 'apple-touch-icon.png',
+                    actions: withCancelAction ? [{ action: DOWNLOAD_CANCEL_ACTION, title: 'إلغاء التنزيل' }] : []
                 });
             } catch (e) { /* تجاهل بصمت إن تعذّر عرض إشعار النظام */ }
+        }
+
+        // يغلق إشعار التنزيل الحالي (يُستخدم عند الإلغاء أو الاكتمال أو الخطأ
+        // قبل عرض إشعار نهائي جديد بنفس المعرّف)
+        async function closeDownloadNotification() {
+            if (!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                if (!reg || !reg.getNotifications) return;
+                const notes = await reg.getNotifications({ tag: DOWNLOAD_NOTIFICATION_TAG });
+                notes.forEach((n) => n.close());
+            } catch (e) { /* تجاهل */ }
         }
 
         let lastDownloadNotifyAt = 0;
@@ -5374,21 +5449,61 @@
         // على النظام أثناء تنزيل الملفات الكبيرة
         function updateDownloadNotification(title, loaded, total) {
             const now = Date.now();
-            if (now - lastDownloadNotifyAt < 500 && loaded < total) return;
+            const isDone = total > 0 && loaded >= total;
+            if (now - lastDownloadNotifyAt < 500 && !isDone) return;
             lastDownloadNotifyAt = now;
-            const body = total > 0
+            const percentText = total > 0
                 ? `${Math.min(100, Math.round((loaded / total) * 100))}% — ${formatBytes(loaded)} / ${formatBytes(total)}`
                 : `تم تنزيل ${formatBytes(loaded)}`;
-            showDownloadNotification(`جاري تنزيل: ${title}`, body);
+            showDownloadNotification(`جاري تنزيل: ${title}`, percentText, true);
+            updateDownloadProgressToast(title, total > 0 ? Math.min(100, Math.round((loaded / total) * 100)) : null, percentText);
+        }
+
+        // ========= شريط تقدّم التنزيل داخل الصفحة (بديل مضمون على كل الأجهزة) =========
+        function updateDownloadProgressToast(title, percent, detailText) {
+            const toast = document.getElementById('download-progress-toast');
+            const text = document.getElementById('download-progress-text');
+            if (!toast || !text) return;
+            text.textContent = percent !== null
+                ? `جاري تنزيل "${title}" — ${percent}%`
+                : `جاري تنزيل "${title}"${detailText ? ' — ' + detailText : ''}`;
+            toast.classList.add('show');
+        }
+
+        function hideDownloadProgressToast() {
+            const toast = document.getElementById('download-progress-toast');
+            if (toast) toast.classList.remove('show');
+        }
+
+        // يُستدعى من زر الإلغاء داخل الصفحة، ومن رسالة زر إلغاء إشعار النظام
+        // (عبر postMessage من الـ Service Worker) على حدٍّ سواء.
+        function cancelActiveDownload() {
+            if (activeDownload && activeDownload.controller) {
+                try { activeDownload.controller.abort(); } catch (e) { /* تجاهل */ }
+            }
+        }
+
+        // يستقبل رسالة من الـ Service Worker عند الضغط على زر "إلغاء التنزيل"
+        // داخل إشعار النظام على الهاتف (يتطلب أن يقوم sw.js بإعادة توجيه حدث
+        // notificationclick الخاص بهذا الإجراء كرسالة postMessage من هذا النوع
+        // إلى صفحات الموقع المفتوحة — راجع التعليق أسفل الملف لِـ sw.js).
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                const data = event && event.data;
+                if (data && data.type === DOWNLOAD_CANCEL_ACTION) {
+                    cancelActiveDownload();
+                }
+            });
         }
 
         // يجلب ملفًا صوتيًا مع تتبّع تقدّم التنزيل حيًا (نسبة مئوية + حجم الملف)
         // عبر قراءة الاستجابة كتدفّق (Stream) بدل انتظارها دفعة واحدة، ويعرض
-        // التقدّم كإشعار على الهاتف بدل أي واجهة داخل الموقع، ثم يُرجع Blob
-        // الملف الكامل بعد اكتمال القراءة. يُستخدم في التنزيل المباشر وفي الحفظ بدون إنترنت.
-        async function fetchWithProgress(url, title) {
+        // التقدّم كإشعار على الهاتف وكشريط داخل الصفحة، مع إمكانية الإلغاء في
+        // أي لحظة عبر AbortController، ثم يُرجع Blob الملف الكامل بعد اكتمال
+        // القراءة. يُستخدم في التنزيل المباشر وفي الحفظ بدون إنترنت.
+        async function fetchWithProgress(url, title, controller) {
             await ensureDownloadNotificationPermission();
-            const response = await fetch(url);
+            const response = await fetch(url, { signal: controller.signal });
             if (!response.ok) throw new Error('تعذر جلب الملف');
             if (!response.body || !response.body.getReader) {
                 // متصفح لا يدعم قراءة الاستجابة كتدفّق: نرجع للطريقة المعتادة دون تحديث حي للنسبة
@@ -5402,6 +5517,12 @@
             const chunks = [];
             let loaded = 0;
             while (true) {
+                if (controller.signal.aborted) {
+                    try { await reader.cancel(); } catch (e) { /* تجاهل */ }
+                    const abortErr = new Error('تم إلغاء التنزيل');
+                    abortErr.name = 'AbortError';
+                    throw abortErr;
+                }
                 const { done, value } = await reader.read();
                 if (done) break;
                 chunks.push(value);
@@ -5412,8 +5533,19 @@
         }
 
         async function downloadAudioFile(url, filename) {
+            // إلغاء أي تنزيل سابق ما زال جاريًا قبل بدء تنزيل جديد، لأن الإشعار
+            // وشريط التقدّم يعرضان عملية واحدة فقط في كل مرة
+            if (activeDownload && activeDownload.controller) {
+                try { activeDownload.controller.abort(); } catch (e) { /* تجاهل */ }
+            }
+            const controller = new AbortController();
+            const id = ++activeDownloadId;
+            activeDownload = { controller, id, filename };
+
             try {
-                const blob = await fetchWithProgress(url, filename);
+                const blob = await fetchWithProgress(url, filename, controller);
+                if (activeDownload && activeDownload.id === id) activeDownload = null;
+                hideDownloadProgressToast();
                 const blobUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
@@ -5422,9 +5554,16 @@
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(blobUrl);
-                showDownloadNotification(`اكتمل التنزيل: ${filename}`, 'تم حفظ الملف على جهازك بنجاح');
+                showDownloadNotification(`اكتمل التنزيل: ${filename}`, 'تم حفظ الملف على جهازك بنجاح', false);
             } catch (e) {
-                showDownloadNotification(`تعذّر التنزيل: ${filename}`, 'تحقق من اتصالك بالإنترنت وحاول مجددًا');
+                if (activeDownload && activeDownload.id === id) activeDownload = null;
+                hideDownloadProgressToast();
+                if (e && e.name === 'AbortError') {
+                    showDownloadNotification(`تم إلغاء التنزيل: ${filename}`, 'تم إيقاف التحميل بناءً على طلبك', false);
+                    return; // لا نفتح رابط تنزيل احتياطي إذا كان الإلغاء مقصودًا من المستخدم
+                }
+                await closeDownloadNotification();
+                showDownloadNotification(`تعذّر التنزيل: ${filename}`, 'تحقق من اتصالك بالإنترنت وحاول مجددًا', false);
                 const a = document.createElement('a');
                 a.href = url;
                 a.target = '_blank';
@@ -5731,11 +5870,27 @@
                 return;
             }
 
+            // إن كان الزر في حالة "جارٍ الحفظ" بالفعل، فالضغط عليه من جديد يُلغي عملية الحفظ الجارية
+            if (btn.classList.contains('is-saving')) {
+                if (btn._downloadController) { try { btn._downloadController.abort(); } catch (e) { /* تجاهل */ } }
+                return;
+            }
+
             btn.classList.add('is-saving');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.title = 'إلغاء الحفظ';
             showToast(`جاري حفظ سورة ${name} للاستماع بدون إنترنت...`);
+            if (activeDownload && activeDownload.controller) {
+                try { activeDownload.controller.abort(); } catch (e) { /* تجاهل */ }
+            }
+            const controller = new AbortController();
+            const id = ++activeDownloadId;
+            btn._downloadController = controller;
+            activeDownload = { controller, id, filename: `سورة ${name}` };
             try {
-                const blob = await fetchWithProgress(url, `سورة ${name}`);
+                const blob = await fetchWithProgress(url, `سورة ${name}`, controller);
+                if (activeDownload && activeDownload.id === id) activeDownload = null;
+                hideDownloadProgressToast();
                 await saveSurahOffline(url, blob, { name, reciter: reciterName });
                 btn.classList.remove('is-saving');
                 btn.classList.add('is-saved');
@@ -5743,9 +5898,18 @@
                 btn.title = 'محفوظ - اضغط للحذف';
                 showToast(`تم حفظ سورة ${name}، يمكنك الاستماع إليها الآن بدون إنترنت`);
             } catch (e) {
+                if (activeDownload && activeDownload.id === id) activeDownload = null;
+                hideDownloadProgressToast();
                 btn.classList.remove('is-saving');
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
-                showToast('تعذر الحفظ، تحقق من اتصالك بالإنترنت وحاول مجددًا');
+                btn.title = 'حفظ للاستماع بدون نت';
+                if (e && e.name === 'AbortError') {
+                    showToast(`تم إلغاء حفظ سورة ${name}`);
+                } else {
+                    showToast('تعذر الحفظ، تحقق من اتصالك بالإنترنت وحاول مجددًا');
+                }
+            } finally {
+                btn._downloadController = null;
             }
         }
 
@@ -6073,11 +6237,27 @@
                 return;
             }
 
+            // إن كان الزر في حالة "جارٍ الحفظ" بالفعل، فالضغط عليه من جديد يُلغي عملية الحفظ الجارية
+            if (btn.classList.contains('is-saving')) {
+                if (btn._downloadController) { try { btn._downloadController.abort(); } catch (e) { /* تجاهل */ } }
+                return;
+            }
+
             btn.classList.add('is-saving');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.title = 'إلغاء الحفظ';
             showToast('جاري الحفظ للاستماع بدون إنترنت...');
+            if (activeDownload && activeDownload.controller) {
+                try { activeDownload.controller.abort(); } catch (e) { /* تجاهل */ }
+            }
+            const controller = new AbortController();
+            const id = ++activeDownloadId;
+            btn._downloadController = controller;
+            activeDownload = { controller, id, filename: s.title };
             try {
-                const blob = await fetchWithProgress(s.url, s.title);
+                const blob = await fetchWithProgress(s.url, s.title, controller);
+                if (activeDownload && activeDownload.id === id) activeDownload = null;
+                hideDownloadProgressToast();
                 await saveSoundOffline(s.url, blob, { title: s.title, sheikh: s.sheikh });
                 btn.classList.remove('is-saving');
                 btn.classList.add('is-saved');
@@ -6085,9 +6265,18 @@
                 btn.title = 'محفوظ - اضغط للحذف';
                 showToast('تم الحفظ، يمكنك الآن الاستماع إليه بدون إنترنت');
             } catch (e) {
+                if (activeDownload && activeDownload.id === id) activeDownload = null;
+                hideDownloadProgressToast();
                 btn.classList.remove('is-saving');
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
-                showToast('تعذر الحفظ، تحقق من اتصالك بالإنترنت وحاول مجددًا');
+                btn.title = 'حفظ للاستماع بدون نت';
+                if (e && e.name === 'AbortError') {
+                    showToast('تم إلغاء عملية الحفظ');
+                } else {
+                    showToast('تعذر الحفظ، تحقق من اتصالك بالإنترنت وحاول مجددًا');
+                }
+            } finally {
+                btn._downloadController = null;
             }
         }
 
