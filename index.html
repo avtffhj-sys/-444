@@ -1279,31 +1279,66 @@
         .azkar-font-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             margin: 14px 0;
-            padding: 8px 14px;
-            border-radius: 14px;
+            padding: 8px 10px 8px 16px;
+            border-radius: 999px;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
             width: fit-content;
+            flex-wrap: wrap;
         }
         .azkar-font-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-        .azkar-font-btn {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
+        .azkar-font-stepper {
+            display: flex;
+            align-items: center;
+            gap: 2px;
             background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 3px;
+        }
+        .azkar-font-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            border: none;
+            background: transparent;
             color: var(--primary);
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background var(--transition-speed), color var(--transition-speed);
+            transition: background var(--transition-speed), color var(--transition-speed), transform 0.15s ease;
         }
-        .azkar-font-btn:hover { background: var(--primary); color: #fff; }
-        .azkar-font-reset { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); cursor: pointer; padding: 0 6px; text-decoration: underline; }
+        .azkar-font-btn:hover { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: #fff; }
+        .azkar-font-btn:active { transform: scale(0.9); }
+        .azkar-font-value {
+            min-width: 46px;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+            user-select: none;
+        }
+        .azkar-font-reset {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            border-radius: 999px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: background var(--transition-speed), color var(--transition-speed), border-color var(--transition-speed);
+        }
+        .azkar-font-reset:hover { background: var(--glow); color: var(--primary); border-color: var(--primary); }
 
         .zikr-count-btn {
             background: var(--primary);
@@ -1855,33 +1890,23 @@
         .tafseer-text-content { padding: 16px; line-height: 1.85; }
         .hadith-container { padding: 18px; line-height: 2.1; max-height: 58vh; }
 
-        /* قسم الأذكار - التصنيفات بشكل أفقي (تمرير جانبي) على الهاتف، وبطاقات الأذكار بشكل أفقي مُصغّر */
+        /* قسم الأذكار - التصنيفات في شبكة من ثلاثة أعمدة على الهاتف، وبطاقات الأذكار بشكل أفقي مُصغّر */
         .azkar-tabs {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            overscroll-behavior-x: contain;
-            -webkit-overflow-scrolling: touch;
-            scroll-snap-type: x proximity;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin-bottom: 18px;
-            padding: 2px 2px 8px;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            padding: 2px;
         }
-        .azkar-tabs::-webkit-scrollbar { display: none; }
         .azkar-tab-btn {
-            flex: 0 0 auto;
-            scroll-snap-align: start;
             flex-direction: column;
             justify-content: center;
-            width: auto;
-            min-width: 82px;
+            align-items: center;
+            min-width: 0;
             min-height: 68px;
-            padding: 10px 12px;
+            padding: 10px 6px;
             gap: 6px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             border-radius: 14px;
             text-align: center;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
@@ -1971,7 +1996,7 @@
         .rafiq-stats-row { grid-template-columns: repeat(3, 1fr); }
         .countdown-live-grid { grid-template-columns: repeat(4, 1fr); }
 
-        .azkar-tab-btn { min-width: 76px; min-height: 62px; font-size: 0.72rem; padding: 9px 10px; }
+        .azkar-tab-btn { min-width: 0; min-height: 62px; font-size: 0.68rem; padding: 9px 6px; }
         .azkar-tab-btn i { font-size: 1rem; }
         .azkar-grid { gap: 6px; }
         .zikr-card { padding: 7px; }
@@ -2010,7 +2035,7 @@
         .tool-btn { width: 30px; height: 30px; font-size: 0.8rem; }
         .toolbar { gap: 4px; }
 
-        .azkar-tab-btn { min-width: 70px; min-height: 58px; font-size: 0.68rem; }
+        .azkar-tab-btn { min-width: 0; min-height: 58px; font-size: 0.64rem; padding: 8px 4px; }
         .azkar-grid { gap: 5px; }
         .zikr-card { padding: 6px; }
         .zikr-text { font-size: calc(0.56rem * var(--zikr-font-scale)); }
@@ -2360,7 +2385,7 @@
             <a href="#" onclick="switchPage('murshid', event)" class="nav-item" data-target="murshid"><i class="fa-solid fa-comment-dots"></i><span data-i18n="nav_murshid">مرشد</span></a>
             <a href="#" onclick="switchPage('radio', event)" class="nav-item" data-target="radio"><i class="fa-solid fa-tower-broadcast"></i><span data-i18n="nav_radio">الإذاعات</span></a>
             <a href="#" onclick="switchPage('sounds', event)" class="nav-item" data-target="sounds"><i class="fa-solid fa-microphone-lines"></i><span data-i18n="nav_sounds">مواعظ</span></a>
-            <a href="#" onclick="switchPage('alerts', event)" class="nav-item" data-target="alerts"><i class="fa-solid fa-bell"></i><span>التنبيهات</span></a>
+            <a href="#" onclick="switchPage('alerts', event)" class="nav-item" data-target="alerts"><i class="fa-solid fa-bell"></i><span data-i18n="nav_alerts">التنبيهات</span></a>
             <a href="#" onclick="switchPage('about', event)" class="nav-item" data-target="about"><i class="fa-solid fa-circle-info"></i><span data-i18n="nav_about">من نحن</span></a>
         </nav>
         <span class="scroll-hint-fade" aria-hidden="true"></span>
@@ -2751,9 +2776,12 @@
             </div>
             <div class="azkar-font-controls">
                 <span class="azkar-font-label"><i class="fa-solid fa-text-height"></i> حجم الخط</span>
-                <button type="button" class="azkar-font-btn" onclick="changeZikrFontSize(-1)" title="تصغير الخط" aria-label="تصغير الخط"><i class="fa-solid fa-minus"></i></button>
-                <button type="button" class="azkar-font-btn" onclick="changeZikrFontSize(1)" title="تكبير الخط" aria-label="تكبير الخط"><i class="fa-solid fa-plus"></i></button>
-                <span class="azkar-font-reset" onclick="resetZikrFontSize()">إعادة تعيين</span>
+                <div class="azkar-font-stepper">
+                    <button type="button" class="azkar-font-btn" onclick="changeZikrFontSize(-1)" title="تصغير الخط" aria-label="تصغير الخط"><i class="fa-solid fa-minus"></i></button>
+                    <span class="azkar-font-value" id="zikr-font-value">100%</span>
+                    <button type="button" class="azkar-font-btn" onclick="changeZikrFontSize(1)" title="تكبير الخط" aria-label="تكبير الخط"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <button type="button" class="azkar-font-reset" onclick="resetZikrFontSize()" title="إعادة الضبط الافتراضي"><i class="fa-solid fa-arrow-rotate-left"></i> إعادة تعيين</button>
             </div>
             <div class="azkar-grid" id="azkar-container"></div>
         </section>
@@ -2903,7 +2931,7 @@
 
         <!-- التنبيهات: أبرز مزايا وخدمات المنصة -->
         <section id="page-alerts" class="page-view">
-            <div class="section-header"><div class="section-title"><i class="fa-solid fa-bell"></i><span>التنبيهات</span></div></div>
+            <div class="section-header"><div class="section-title"><i class="fa-solid fa-bell"></i><span data-i18n="title_alerts">التنبيهات</span></div></div>
 
             <div class="glass-panel" style="padding: 26px 30px; display:flex; flex-direction:column; gap:14px; align-items:flex-start;">
                 <div>
@@ -4051,7 +4079,7 @@
                 logo_subtitle: "المنصة الإسلامية الشاملة والمتطورة",
                 nav_home: "الرئيسية", nav_quran: "القرآن الكريم", nav_tafseer: "التفسير",
                 nav_hadith: "الحديث", nav_azkar: "الأذكار", nav_fatwa: "الفتاوى",
-                nav_rafiq: "الرفيق الروحي", nav_murshid: "مرشد", nav_radio: "الإذاعات", nav_about: "من نحن",
+                nav_rafiq: "الرفيق الروحي", nav_murshid: "مرشد", nav_radio: "الإذاعات", nav_sounds: "مواعظ", nav_alerts: "التنبيهات", nav_about: "من نحن",
                 hero_badge: "المنصة الرقمية المتطورة لعام 2026",
                 hero_title: "وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا",
                 hero_desc: "استمتع بتجربة إسلامية متكاملة تدمج أروع التلاوات الصوتية، موسوعة الأحاديث النبوية، الأذكار التفاعلية الذكية، ومواقيت الصلاة.",
@@ -4066,7 +4094,7 @@
                 title_azkar: "حصن المسلم - الأذكار والأدعية الكاملة",
                 title_fatwa: "فتاوى وأحكام شرعية", title_rafiq: "الرفيق الروحي التكيفي",
                 title_murshid: "مرشد - مساعدك الإسلامي الذكي",
-                title_radio: "إذاعات القرآن الكريم المباشرة", title_about: "من نحن"
+                title_radio: "إذاعات القرآن الكريم المباشرة", title_sounds: "مواعظ", title_alerts: "التنبيهات", title_about: "من نحن"
             },
             en: {
                 page_title: "Quran & Sunnah Platform | The Comprehensive Islamic Platform",
@@ -4075,7 +4103,7 @@
                 logo_subtitle: "The Comprehensive, Advanced Islamic Platform",
                 nav_home: "Home", nav_quran: "The Noble Qur'an", nav_tafseer: "Tafseer",
                 nav_hadith: "Hadith", nav_azkar: "Adhkar", nav_fatwa: "Fatwas",
-                nav_rafiq: "Spiritual Companion", nav_murshid: "Murshid", nav_radio: "Radio Stations", nav_about: "About Us",
+                nav_rafiq: "Spiritual Companion", nav_murshid: "Murshid", nav_radio: "Radio Stations", nav_sounds: "Sermons", nav_alerts: "Alerts", nav_about: "About Us",
                 hero_badge: "The Advanced Digital Platform for 2026",
                 hero_title: "And recite the Qur'an with slow, measured recitation.",
                 hero_desc: "Enjoy a complete Islamic experience combining beautiful recitations, an encyclopedia of Prophetic Hadith, smart interactive Adhkar, and prayer times.",
@@ -4090,7 +4118,7 @@
                 title_azkar: "Fortress of the Muslim - Complete Adhkar & Supplications",
                 title_fatwa: "Fatwas & Islamic Rulings", title_rafiq: "Adaptive Spiritual Companion",
                 title_murshid: "Murshid - Your Smart Islamic Assistant",
-                title_radio: "Live Qur'an Radio Stations", title_about: "About Us"
+                title_radio: "Live Qur'an Radio Stations", title_sounds: "Sermons", title_alerts: "Alerts", title_about: "About Us"
             },
             fr: {
                 page_title: "Plateforme du Coran et de la Sunna | La plateforme islamique complète",
@@ -4099,7 +4127,7 @@
                 logo_subtitle: "La plateforme islamique complète et avancée",
                 nav_home: "Accueil", nav_quran: "Le Noble Coran", nav_tafseer: "Tafsir",
                 nav_hadith: "Hadith", nav_azkar: "Invocations", nav_fatwa: "Fatwas",
-                nav_rafiq: "Compagnon spirituel", nav_murshid: "Murshid", nav_radio: "Radios", nav_about: "À propos",
+                nav_rafiq: "Compagnon spirituel", nav_murshid: "Murshid", nav_radio: "Radios", nav_sounds: "Sermons", nav_alerts: "Alertes", nav_about: "À propos",
                 hero_badge: "La plateforme numérique avancée pour 2026",
                 hero_title: "Et récite le Coran lentement et clairement.",
                 hero_desc: "Profitez d'une expérience islamique complète alliant de magnifiques récitations, une encyclopédie du Hadith prophétique, des invocations interactives intelligentes et les horaires de prière.",
@@ -4114,7 +4142,7 @@
                 title_azkar: "Forteresse du musulman - Invocations et supplications complètes",
                 title_fatwa: "Fatwas et jugements islamiques", title_rafiq: "Compagnon spirituel adaptatif",
                 title_murshid: "Murshid - Votre assistant islamique intelligent",
-                title_radio: "Radios coraniques en direct", title_about: "À propos de nous"
+                title_radio: "Radios coraniques en direct", title_sounds: "Sermons", title_alerts: "Alertes", title_about: "À propos de nous"
             },
             es: {
                 page_title: "Plataforma del Corán y la Sunna | La plataforma islámica integral",
@@ -4123,7 +4151,7 @@
                 logo_subtitle: "La plataforma islámica integral y avanzada",
                 nav_home: "Inicio", nav_quran: "El Sagrado Corán", nav_tafseer: "Tafsir",
                 nav_hadith: "Hadiz", nav_azkar: "Adhkar", nav_fatwa: "Fatuas",
-                nav_rafiq: "Compañero espiritual", nav_murshid: "Murshid", nav_radio: "Radios", nav_about: "Sobre nosotros",
+                nav_rafiq: "Compañero espiritual", nav_murshid: "Murshid", nav_radio: "Radios", nav_sounds: "Sermones", nav_alerts: "Alertas", nav_about: "Sobre nosotros",
                 hero_badge: "La plataforma digital avanzada para 2026",
                 hero_title: "Y recita el Corán con calma y claridad.",
                 hero_desc: "Disfruta de una experiencia islámica completa que combina hermosas recitaciones, una enciclopedia del Hadiz profético, adhkar interactivos inteligentes y los horarios de oración.",
@@ -4138,7 +4166,7 @@
                 title_azkar: "Fortaleza del musulmán - Adhkar y súplicas completas",
                 title_fatwa: "Fatuas y sentencias islámicas", title_rafiq: "Compañero espiritual adaptativo",
                 title_murshid: "Murshid - Tu asistente islámico inteligente",
-                title_radio: "Radios coránicas en vivo", title_about: "Sobre nosotros"
+                title_radio: "Radios coránicas en vivo", title_sounds: "Sermones", title_alerts: "Alertas", title_about: "Sobre nosotros"
             },
             de: {
                 page_title: "Koran- und Sunna-Plattform | Die umfassende islamische Plattform",
@@ -4147,7 +4175,7 @@
                 logo_subtitle: "Die umfassende und fortschrittliche islamische Plattform",
                 nav_home: "Startseite", nav_quran: "Der edle Koran", nav_tafseer: "Tafsir",
                 nav_hadith: "Hadith", nav_azkar: "Adhkar", nav_fatwa: "Fatwas",
-                nav_rafiq: "Spiritueller Begleiter", nav_murshid: "Murshid", nav_radio: "Radiosender", nav_about: "Über uns",
+                nav_rafiq: "Spiritueller Begleiter", nav_murshid: "Murshid", nav_radio: "Radiosender", nav_sounds: "Predigten", nav_alerts: "Hinweise", nav_about: "Über uns",
                 hero_badge: "Die fortschrittliche digitale Plattform für 2026",
                 hero_title: "Und trage den Koran in klarer, gemessener Weise vor.",
                 hero_desc: "Genießen Sie ein umfassendes islamisches Erlebnis mit wunderschönen Rezitationen, einer Enzyklopädie der prophetischen Hadithe, intelligenten interaktiven Adhkar und Gebetszeiten.",
@@ -4162,7 +4190,7 @@
                 title_azkar: "Festung des Muslims - Vollständige Adhkar und Bittgebete",
                 title_fatwa: "Fatwas und islamische Urteile", title_rafiq: "Adaptiver spiritueller Begleiter",
                 title_murshid: "Murshid - Dein intelligenter islamischer Assistent",
-                title_radio: "Live-Koran-Radiosender", title_about: "Über uns"
+                title_radio: "Live-Koran-Radiosender", title_sounds: "Predigten", title_alerts: "Hinweise", title_about: "Über uns"
             },
             zh: {
                 page_title: "古兰经与圣训平台 | 全面的伊斯兰平台",
@@ -4171,7 +4199,7 @@
                 logo_subtitle: "全面而先进的伊斯兰平台",
                 nav_home: "首页", nav_quran: "古兰经", nav_tafseer: "古兰经注释",
                 nav_hadith: "圣训", nav_azkar: "祈颂词", nav_fatwa: "教法判例",
-                nav_rafiq: "心灵伙伴", nav_murshid: "穆尔希德", nav_radio: "电台", nav_about: "关于我们",
+                nav_rafiq: "心灵伙伴", nav_murshid: "穆尔希德", nav_radio: "电台", nav_sounds: "讲道", nav_alerts: "提醒", nav_about: "关于我们",
                 hero_badge: "2026年先进数字平台",
                 hero_title: "你应当从容不迫地诵读古兰经。",
                 hero_desc: "享受完整的伊斯兰体验,融合优美的诵读、圣训百科全书、智能互动祈颂词和礼拜时间。",
@@ -4186,7 +4214,7 @@
                 title_azkar: "穆斯林堡垒 - 完整的祈颂词与祈祷词",
                 title_fatwa: "教法判例与伊斯兰裁决", title_rafiq: "自适应心灵伙伴",
                 title_murshid: "穆尔希德 - 您的智能伊斯兰助手",
-                title_radio: "古兰经实时电台", title_about: "关于我们"
+                title_radio: "古兰经实时电台", title_sounds: "讲道", title_alerts: "提醒", title_about: "关于我们"
             },
             ru: {
                 page_title: "Платформа Корана и Сунны | Всеобъемлющая исламская платформа",
@@ -4195,7 +4223,7 @@
                 logo_subtitle: "Всеобъемлющая и современная исламская платформа",
                 nav_home: "Главная", nav_quran: "Благородный Коран", nav_tafseer: "Тафсир",
                 nav_hadith: "Хадисы", nav_azkar: "Азкары", nav_fatwa: "Фетвы",
-                nav_rafiq: "Духовный спутник", nav_murshid: "Муршид", nav_radio: "Радиостанции", nav_about: "О нас",
+                nav_rafiq: "Духовный спутник", nav_murshid: "Муршид", nav_radio: "Радиостанции", nav_sounds: "Проповеди", nav_alerts: "Уведомления", nav_about: "О нас",
                 hero_badge: "Современная цифровая платформа на 2026 год",
                 hero_title: "И читай Коран размеренно и чётко.",
                 hero_desc: "Насладитесь всесторонним исламским опытом, объединяющим прекрасные чтения, энциклопедию пророческих хадисов, умные интерактивные азкары и время молитв.",
@@ -4210,7 +4238,7 @@
                 title_azkar: "Крепость мусульманина - полные азкары и мольбы",
                 title_fatwa: "Фетвы и исламские постановления", title_rafiq: "Адаптивный духовный спутник",
                 title_murshid: "Муршид - ваш умный исламский помощник",
-                title_radio: "Прямые трансляции коранических радиостанций", title_about: "О нас"
+                title_radio: "Прямые трансляции коранических радиостанций", title_sounds: "Проповеди", title_alerts: "Уведомления", title_about: "О нас"
             }
         };
 
@@ -7302,6 +7330,8 @@
             const clamped = Math.min(ZIKR_FONT_MAX, Math.max(ZIKR_FONT_MIN, scale));
             document.documentElement.style.setProperty('--zikr-font-scale', clamped.toFixed(2));
             try { localStorage.setItem('zikrFontScale', clamped.toFixed(2)); } catch (e) {}
+            const valueEl = document.getElementById('zikr-font-value');
+            if (valueEl) valueEl.textContent = Math.round(clamped * 100) + '%';
             return clamped;
         }
 
