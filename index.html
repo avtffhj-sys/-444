@@ -1377,6 +1377,41 @@
 
         .toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
 
+        /* شريط تقدّم تنزيل الملفات الصوتية (المواعظ وسور القرآن الكريم) على الهاتف:
+           يظهر أثناء أي عملية تنزيل (مباشر أو حفظ بدون إنترنت) ويعرض اسم الملف
+           ونسبة التحميل وحجمه، ويختفي تلقائيًا عند اكتمال العملية. */
+        .download-progress-bar {
+            position: fixed;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%) translateY(20px);
+            width: min(94%, 420px);
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--primary);
+            border-radius: 14px;
+            padding: 12px 16px;
+            z-index: 2100;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease, visibility 0.3s;
+        }
+
+        .download-progress-bar.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+        .download-progress-info { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.85rem; color: var(--text-main); }
+        .download-progress-info i { color: var(--primary); }
+        .download-progress-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .download-progress-percent { flex-shrink: 0; color: var(--primary); font-weight: 800; }
+
+        .download-progress-track { margin-top: 8px; height: 6px; border-radius: 6px; background: var(--border-color); overflow: hidden; }
+        .download-progress-fill { height: 100%; width: 0%; background: var(--primary); border-radius: 6px; transition: width 0.2s ease; }
+        .download-progress-fill.indeterminate { width: 100% !important; animation: downloadProgressPulse 1.2s ease-in-out infinite; }
+        @keyframes downloadProgressPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+        .download-progress-size { margin-top: 6px; font-size: 0.72rem; color: var(--text-muted); text-align: center; }
+
         @media (max-width: 1024px) {
             .hero-section { grid-template-columns: 1fr; }
             .nav-links { display: none; }
@@ -3077,6 +3112,17 @@
     </div>
 
     <div class="toast-notification" id="toast">تم النسخ بنجاح</div>
+
+    <!-- شريط تقدّم تنزيل الملفات الصوتية (يظهر عند تنزيل أي موعظة أو سورة، أو حفظها للاستماع بدون إنترنت) -->
+    <div class="download-progress-bar" id="download-progress-bar">
+        <div class="download-progress-info">
+            <i class="fa-solid fa-download"></i>
+            <span class="download-progress-name" id="download-progress-name"></span>
+            <span class="download-progress-percent" id="download-progress-percent">0%</span>
+        </div>
+        <div class="download-progress-track"><div class="download-progress-fill" id="download-progress-fill"></div></div>
+        <div class="download-progress-size" id="download-progress-size"></div>
+    </div>
 
     <!-- نافذة منبثقة عامة: عداد المناسبات + بطاقة التهنئة -->
     <div class="app-modal-overlay" id="app-modal-overlay" onclick="closeAppModalOnOverlay(event)">
@@ -5315,32 +5361,122 @@
             });
         });
 
-        function downloadAudioFile(url, filename) {
+        /* ============================================================
+           شريط تقدّم التنزيل: يُستخدم عند تنزيل أي موعظة أو سورة من القرآن
+           الكريم (تنزيل مباشر أو حفظ للاستماع بدون إنترنت)، ويعرض اسم
+           الملف ونسبة التحميل وحجمه بشكل حي أثناء تقدّم العملية.
+        ============================================================ */
+        function formatBytes(bytes) {
+            if (!isFinite(bytes) || bytes <= 0) return '';
+            if (bytes < 1024) return `${bytes} بايت`;
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} كيلوبايت`;
+            return `${(bytes / (1024 * 1024)).toFixed(1)} ميجابايت`;
+        }
+
+        // يضبط ارتفاع شريط التنزيل ليبقى فوق شريط المشغل الصوتي السفلي إن كان ظاهرًا،
+        // حتى لا يتداخل الشريطان فوق بعضهما على شاشات الهواتف
+        function positionDownloadProgressBar() {
+            const bar = document.getElementById('download-progress-bar');
+            if (!bar) return;
+            const player = document.querySelector('.global-audio-player.player-visible');
+            const offset = player ? player.getBoundingClientRect().height : 0;
+            bar.style.bottom = `calc(${offset}px + 20px + env(safe-area-inset-bottom))`;
+        }
+        window.addEventListener('resize', positionDownloadProgressBar);
+
+        function showDownloadProgressBar(title) {
+            const bar = document.getElementById('download-progress-bar');
+            if (!bar) return;
+            document.getElementById('download-progress-name').textContent = title || '';
+            document.getElementById('download-progress-percent').textContent = '0%';
+            const fill = document.getElementById('download-progress-fill');
+            fill.style.width = '0%';
+            fill.classList.remove('indeterminate');
+            document.getElementById('download-progress-size').textContent = '';
+            positionDownloadProgressBar();
+            bar.classList.add('show');
+        }
+
+        function updateDownloadProgressBar(loaded, total) {
+            const fill = document.getElementById('download-progress-fill');
+            const percentEl = document.getElementById('download-progress-percent');
+            const sizeEl = document.getElementById('download-progress-size');
+            if (!fill) return;
+            if (total > 0) {
+                const pct = Math.min(100, Math.round((loaded / total) * 100));
+                fill.classList.remove('indeterminate');
+                fill.style.width = pct + '%';
+                percentEl.textContent = pct + '%';
+                sizeEl.textContent = `${formatBytes(loaded)} / ${formatBytes(total)}`;
+            } else {
+                // بعض الخوادم لا ترسل حجم الملف الإجمالي (Content-Length)، فنعرض الحجم
+                // الذي تم تنزيله فعليًا مع مؤشر تحميل متحرك بدل نسبة مئوية غير معروفة
+                fill.classList.add('indeterminate');
+                percentEl.textContent = '';
+                sizeEl.textContent = formatBytes(loaded);
+            }
+        }
+
+        function hideDownloadProgressBar(delayMs = 800) {
+            const bar = document.getElementById('download-progress-bar');
+            if (!bar) return;
+            setTimeout(() => {
+                bar.classList.remove('show');
+                document.getElementById('download-progress-fill')?.classList.remove('indeterminate');
+            }, delayMs);
+        }
+
+        // يجلب ملفًا صوتيًا مع تتبّع تقدّم التنزيل حيًا (نسبة مئوية + حجم الملف)
+        // عبر قراءة الاستجابة كتدفّق (Stream) بدل انتظارها دفعة واحدة، ثم يُرجع Blob
+        // الملف الكامل بعد اكتمال القراءة. يُستخدم في التنزيل المباشر وفي الحفظ بدون إنترنت.
+        async function fetchWithProgress(url) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('تعذر جلب الملف');
+            if (!response.body || !response.body.getReader) {
+                // متصفح لا يدعم قراءة الاستجابة كتدفّق: نرجع للطريقة المعتادة دون شريط تقدّم حي
+                const blob = await response.blob();
+                updateDownloadProgressBar(blob.size, blob.size);
+                return blob;
+            }
+            const totalStr = response.headers.get('Content-Length');
+            const total = totalStr ? parseInt(totalStr, 10) : 0;
+            const reader = response.body.getReader();
+            const chunks = [];
+            let loaded = 0;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                loaded += value.length;
+                updateDownloadProgressBar(loaded, total);
+            }
+            return new Blob(chunks);
+        }
+
+        async function downloadAudioFile(url, filename) {
             showToast("جاري بدء التحميل...");
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error("تعذر جلب الملف");
-                    return response.blob();
-                })
-                .then(blob => {
-                    const blobUrl = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = blobUrl;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(blobUrl);
-                    showToast("تم التحميل بنجاح");
-                })
-                .catch(() => {
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.target = '_blank';
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                });
+            showDownloadProgressBar(filename);
+            try {
+                const blob = await fetchWithProgress(url);
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(blobUrl);
+                showToast("تم التحميل بنجاح");
+            } catch (e) {
+                const a = document.createElement('a');
+                a.href = url;
+                a.target = '_blank';
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+            } finally {
+                hideDownloadProgressBar();
+            }
         }
 
         // يتتبّع سياق التشغيل الحالي (السور المتاحة على نفس الخادم + الفهرس)
@@ -5467,6 +5603,30 @@
 
             playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
             updateNowPlaying(`سورة ${name}`, `${reciter.name} (${moshaf.name || ''})`);
+
+            // إن كانت هذه السورة محفوظة محليًا للاستماع بدون إنترنت، نشغّلها مباشرة من
+            // النسخة المحفوظة (Blob) دون أي اتصال بالشبكة، تمامًا كما تعمل المواعظ المحفوظة
+            if (lastSurahBlobUrl) {
+                URL.revokeObjectURL(lastSurahBlobUrl);
+                lastSurahBlobUrl = null;
+            }
+            const offlineAudioUrl = `${server}${surahNum3}.mp3`;
+            const offlineRecord = await getSurahOffline(offlineAudioUrl).catch(() => null);
+            if (offlineRecord && offlineRecord.blob) {
+                if (playbackContext.index !== index) return;
+                const blobUrl = URL.createObjectURL(offlineRecord.blob);
+                lastSurahBlobUrl = blobUrl;
+                audio.src = blobUrl;
+                audio.play().catch(err => console.log(err));
+                showToast(`جاري تشغيل سورة ${name} (بدون إنترنت)`);
+                return;
+            }
+
+            if (!navigator.onLine) {
+                showToast(`لا يوجد اتصال بالإنترنت، ولم يتم حفظ سورة ${name} مسبقًا للاستماع بدون نت.`);
+                return;
+            }
+
             showToast(`جاري تحميل سورة ${name}...`);
 
             // إن كانت صيغة الترقيم الصحيحة لهذا الخادم معروفة من تشغيل سابق (نفس القارئ/الرواية)،
@@ -5535,6 +5695,116 @@
             return set.size > 0 ? set : full;
         }
 
+        /* ============================================================
+           تخزين سور القرآن الكريم محليًا عبر IndexedDB لتعمل بدون إنترنت
+           (نفس أسلوب تخزين المواعظ أعلاه تمامًا، بقاعدة بيانات مستقلة
+           خاصة بالسور حتى لا تختلط بمكتبة المواعظ)
+        ============================================================ */
+        const OFFLINE_QURAN_DB = 'quran-sunnah-offline-surahs';
+        const OFFLINE_QURAN_STORE = 'surahs';
+
+        function openOfflineQuranDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(OFFLINE_QURAN_DB, 1);
+                req.onupgradeneeded = () => {
+                    const db = req.result;
+                    if (!db.objectStoreNames.contains(OFFLINE_QURAN_STORE)) {
+                        db.createObjectStore(OFFLINE_QURAN_STORE, { keyPath: 'url' });
+                    }
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function saveSurahOffline(url, blob, meta) {
+            const db = await openOfflineQuranDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(OFFLINE_QURAN_STORE, 'readwrite');
+                tx.objectStore(OFFLINE_QURAN_STORE).put({ url, blob, name: meta.name, reciter: meta.reciter, savedAt: Date.now() });
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        async function getSurahOffline(url) {
+            const db = await openOfflineQuranDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(OFFLINE_QURAN_STORE, 'readonly');
+                const req = tx.objectStore(OFFLINE_QURAN_STORE).get(url);
+                req.onsuccess = () => resolve(req.result || null);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function deleteSurahOffline(url) {
+            const db = await openOfflineQuranDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(OFFLINE_QURAN_STORE, 'readwrite');
+                tx.objectStore(OFFLINE_QURAN_STORE).delete(url);
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        async function listOfflineSurahUrls() {
+            try {
+                const db = await openOfflineQuranDB();
+                return await new Promise((resolve, reject) => {
+                    const tx = db.transaction(OFFLINE_QURAN_STORE, 'readonly');
+                    const req = tx.objectStore(OFFLINE_QURAN_STORE).getAllKeys();
+                    req.onsuccess = () => resolve(new Set(req.result));
+                    req.onerror = () => reject(req.error);
+                });
+            } catch (e) {
+                return new Set();
+            }
+        }
+
+        let lastSurahBlobUrl = null;
+
+        // يحفظ سورة معيّنة محليًا للاستماع بدون إنترنت، أو يحذف نسختها المحفوظة إن كانت
+        // محفوظة بالفعل (نفس منطق toggleSoundOffline الخاص بالمواعظ أعلاه بالضبط)
+        async function toggleSurahOffline(url, name, reciterName, btn) {
+            const existing = await getSurahOffline(url).catch(() => null);
+            if (existing) {
+                await deleteSurahOffline(url);
+                btn.classList.remove('is-saved');
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
+                btn.title = 'حفظ للاستماع بدون نت';
+                showToast(`تم حذف نسخة سورة ${name} المحفوظة بدون نت`);
+                return;
+            }
+
+            btn.classList.add('is-saving');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            showToast(`جاري حفظ سورة ${name} للاستماع بدون إنترنت...`);
+            showDownloadProgressBar(`سورة ${name}`);
+            try {
+                const blob = await fetchWithProgress(url);
+                await saveSurahOffline(url, blob, { name, reciter: reciterName });
+                btn.classList.remove('is-saving');
+                btn.classList.add('is-saved');
+                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                btn.title = 'محفوظ - اضغط للحذف';
+                showToast(`تم حفظ سورة ${name}، يمكنك الاستماع إليها الآن بدون إنترنت`);
+            } catch (e) {
+                btn.classList.remove('is-saving');
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
+                showToast('تعذر الحفظ، تحقق من اتصالك بالإنترنت وحاول مجددًا');
+            } finally {
+                hideDownloadProgressBar();
+            }
+        }
+
+        // ذاكرة مؤقتة بروابط السور المحفوظة بدون إنترنت، تُحمَّل مبكرًا حتى تظهر شارة
+        // "متاح بدون إنترنت" على البطاقات الصحيحة من أول عرض للشبكة (نفس نمط soundsOfflineUrlsCache)
+        let surahsOfflineUrlsCache = new Set();
+        listOfflineSurahUrls().then((set) => {
+            surahsOfflineUrlsCache = set;
+            if (currentReciter && currentMoshaf) renderSurahsGrid(currentReciter, currentMoshaf);
+        });
+
         function renderSurahsGrid(reciter, moshaf) {
             if (!reciter || !moshaf) return;
             const grid = document.getElementById('surah-grid');
@@ -5544,22 +5814,31 @@
             const server = rawServer.endsWith('/') ? rawServer : rawServer + '/';
             const availableSurahs = parseSurahList(moshaf.surah_list);
 
+            const offlineUrls = surahsOfflineUrlsCache || new Set();
+
             staticSurahNames.forEach((name, i) => {
                 const surahNumberInt = i + 1;
                 const surahNum3 = surahNumberInt.toString().padStart(3, '0');
                 const audioUrl = `${server}${surahNum3}.mp3`;
                 const isAvailable = availableSurahs.has(surahNumberInt);
+                const isSaved = offlineUrls.has(audioUrl);
                 const card = document.createElement('div');
                 card.className = isAvailable ? 'surah-card glass-panel' : 'surah-card glass-panel surah-unavailable';
                 if (!isAvailable) {
                     card.title = `سورة ${name} غير مسجّلة لدى "${reciter.name}" بهذه الرواية، ستُشغَّل تلقائيًا من قارئ آخر عند الضغط عليها.`;
                 }
                 card.innerHTML = `
-                    <div><strong>${surahNumberInt}. سورة ${name}</strong></div>
+                    <div>
+                        <strong>${surahNumberInt}. سورة ${name}</strong>
+                        <div class="offline-badge" style="${isSaved ? '' : 'display:none;'}"><i class="fa-solid fa-check-circle"></i> متاح بدون إنترنت</div>
+                    </div>
                     <div class="surah-actions">
                         ${isAvailable ? '' : '<span class="surah-unavailable-badge">غير متوفرة بهذه الرواية</span>'}
                         <button class="surah-download-btn" title="تحميل مباشر للسورة">
                             <i class="fa-solid fa-download"></i>
+                        </button>
+                        <button class="offline-save-btn ${isSaved ? 'is-saved' : ''}" title="${isSaved ? 'محفوظ - اضغط للحذف' : 'حفظ للاستماع بدون نت'}">
+                            <i class="fa-solid ${isSaved ? 'fa-check' : 'fa-cloud-arrow-down'}"></i>
                         </button>
                         <i class="fa-solid fa-circle-play" style="color:var(--primary); font-size:1.4rem;"></i>
                     </div>
@@ -5569,6 +5848,14 @@
                     e.stopPropagation();
                     const fileName = `سورة_${name}_${reciter.name}.mp3`;
                     downloadAudioFile(audioUrl, fileName);
+                });
+
+                const offlineBtn = card.querySelector('.offline-save-btn');
+                const offlineBadge = card.querySelector('.offline-badge');
+                offlineBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    await toggleSurahOffline(audioUrl, name, reciter.name, offlineBtn);
+                    offlineBadge.style.display = offlineBtn.classList.contains('is-saved') ? 'flex' : 'none';
                 });
 
                 card.addEventListener('click', () => {
@@ -5837,10 +6124,9 @@
             btn.classList.add('is-saving');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             showToast('جاري الحفظ للاستماع بدون إنترنت...');
+            showDownloadProgressBar(s.title);
             try {
-                const res = await fetch(s.url);
-                if (!res.ok) throw new Error('تعذر جلب الملف');
-                const blob = await res.blob();
+                const blob = await fetchWithProgress(s.url);
                 await saveSoundOffline(s.url, blob, { title: s.title, sheikh: s.sheikh });
                 btn.classList.remove('is-saving');
                 btn.classList.add('is-saved');
@@ -5851,6 +6137,8 @@
                 btn.classList.remove('is-saving');
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
                 showToast('تعذر الحفظ، تحقق من اتصالك بالإنترنت وحاول مجددًا');
+            } finally {
+                hideDownloadProgressBar();
             }
         }
 
